@@ -216,7 +216,6 @@ class Chamber_Boss {
             'query_var'         => true,
             'rewrite'           => array('slug' => 'business-category'),
             'show_in_rest'      => true, // Enable Gutenberg support
-            'meta_box_cb'       => false, // Disable default meta box for Gutenberg, we'll use a custom one
         );
         
         register_taxonomy('business_category', array('business_listing'), $args);
@@ -667,16 +666,6 @@ class Chamber_Boss {
             'normal',
             'high'
         );
-
-        // Add meta box for Business Categories explicitly for Gutenberg compatibility
-        add_meta_box(
-            'business_listing_categories',
-            __('Business Categories', 'chamber-boss'),
-            array($this, 'business_listing_categories_meta_box_callback'),
-            'business_listing',
-            'side',
-            'high'
-        );
     }
     
     /**
@@ -717,28 +706,6 @@ class Chamber_Boss {
     }
 
     /**
-     * Business listing categories meta box callback
-     */
-    public function business_listing_categories_meta_box_callback($post) {
-        $terms = get_terms(array(
-            'taxonomy'   => 'business_category',
-            'hide_empty' => false,
-        ));
-
-        $selected_terms = wp_get_post_terms($post->ID, 'business_category', array('fields' => 'ids'));
-
-        if (!empty($terms) && !is_wp_error($terms)) {
-            echo '<div class="category-checklist">';
-            foreach ($terms as $term) {
-                echo '<label><input type="checkbox" name="business_category[]" value="' . esc_attr($term->term_id) . '" ' . checked(in_array($term->term_id, $selected_terms), true, false) . ' /> ' . esc_html($term->name) . '</label><br/>';
-            }
-            echo '</div>';
-        } else {
-            echo '<p>No business categories found. Please create some in the <a href="edit-tags.php?taxonomy=business_category&post_type=business_listing">Business Categories</a> section.</p>';
-        }
-    }
-    
-    /**
      * Save business listing meta
      */
     public function save_business_listing_meta($post_id) {
@@ -771,13 +738,6 @@ class Chamber_Boss {
         $is_featured = isset($_POST['is_featured']) ? 1 : 0;
         update_post_meta($post_id, '_is_featured', $is_featured);
 
-        // Save business categories
-        if (isset($_POST['business_category'])) {
-            $categories = array_map('intval', $_POST['business_category']);
-            wp_set_post_terms($post_id, $categories, 'business_category', false);
-        } else {
-            wp_set_post_terms($post_id, array(), 'business_category', false); // Clear categories if none selected
-        }
     }
     
     /**

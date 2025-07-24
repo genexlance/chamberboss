@@ -168,6 +168,21 @@
   background: #1d4ed8;
 }
 
+/* Admin Styles */
+.form-table th {
+  width: 200px;
+}
+
+.form-table td input.regular-text {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-table td textarea.large-text {
+  width: 100%;
+  max-width: 400px;
+}
+
 /* Buttons */
 .btn-primary {
   display: inline-block;

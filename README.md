@@ -96,3 +96,8 @@ To customize the plugin:
    cd plugin && zip -r chamber-membership-manager.zip chamber-membership-manager
    ```
 3. Move the new ZIP file to `site/assets/` to update the download
+
+
+shortcodes
+[chamber-signup]
+[chamber-directory]

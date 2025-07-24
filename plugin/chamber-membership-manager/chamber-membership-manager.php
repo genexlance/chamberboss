@@ -80,6 +80,14 @@ class Chamber_Boss {
         // Add meta boxes for business listings
         add_action('add_meta_boxes', array($this, 'add_business_listing_meta_boxes'));
         add_action('save_post', array($this, 'save_business_listing_meta'));
+        
+        // Handle member signup form
+        add_action('wp_ajax_cb_member_signup', array($this, 'handle_member_signup'));
+        add_action('wp_ajax_nopriv_cb_member_signup', array($this, 'handle_member_signup'));
+        
+        // Add admin page for manual member management
+        add_action('admin_menu', array($this, 'add_member_management_page'));
+        add_shortcode('chamber-featured-listings', array($this, 'featured_business_listings_shortcode'));
     }
     
     /**
@@ -173,8 +181,9 @@ class Chamber_Boss {
             'has_archive'        => true,
             'hierarchical'       => false,
             'menu_position'      => null,
-            'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
+            'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields', 'comments'),
             'show_in_rest'       => true,
+            'taxonomies'         => array('business_category'), // Add taxonomy support
         );
         
         register_post_type('business_listing', $args);
@@ -206,9 +215,17 @@ class Chamber_Boss {
             'show_admin_column' => true,
             'query_var'         => true,
             'rewrite'           => array('slug' => 'business-category'),
+            'show_in_rest'      => true, // Enable Gutenberg support
         );
         
         register_taxonomy('business_category', array('business_listing'), $args);
+
+        // Flush rewrite rules on taxonomy registration. This is crucial for custom taxonomies to appear.
+        // We only want to do this once on plugin activation or update.
+        if (!get_option('cb_business_category_flushed')) {
+            flush_rewrite_rules();
+            update_option('cb_business_category_flushed', true);
+        }
     }
     
     /**
@@ -261,6 +278,12 @@ class Chamber_Boss {
     public function enqueue_scripts() {
         wp_enqueue_style('cb-styles', CB_PLUGIN_URL . 'assets/css/styles.css', array(), CB_PLUGIN_VERSION);
         wp_enqueue_script('cb-scripts', CB_PLUGIN_URL . 'assets/js/scripts.js', array('jquery'), CB_PLUGIN_VERSION, true);
+        
+        // Localize script for AJAX
+        wp_localize_script('cb-scripts', 'cb_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('cb_member_signup')
+        ));
     }
     
     /**
@@ -285,6 +308,162 @@ class Chamber_Boss {
             'chamber-boss-settings',
             array($this, 'settings_page')
         );
+    }
+    
+    /**
+     * Add member management page
+     */
+    public function add_member_management_page() {
+        add_submenu_page(
+            'chamber-boss',
+            'Manage Members',
+            'Manage Members',
+            'manage_options',
+            'chamber-boss-members',
+            array($this, 'member_management_page')
+        );
+    }
+    
+    /**
+     * Member management page
+     */
+    public function member_management_page() {
+        // Handle form submission
+        if (isset($_POST['cb_add_member']) && wp_verify_nonce($_POST['cb_member_nonce'], 'cb_add_member')) {
+            $this->add_member_manually($_POST);
+        }
+        
+        ?>
+        <div class="wrap">
+            <h1>Manage Members</h1>
+            
+            <h2>Add New Member</h2>
+            <form method="post">
+                <?php wp_nonce_field('cb_add_member', 'cb_member_nonce'); ?>
+                
+                <table class="form-table">
+                    <tr>
+                        <th><label for="first_name">First Name</label></th>
+                        <td><input type="text" id="first_name" name="first_name" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="last_name">Last Name</label></th>
+                        <td><input type="text" id="last_name" name="last_name" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="email">Email</label></th>
+                        <td><input type="email" id="email" name="email" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="business_name">Business Name</label></th>
+                        <td><input type="text" id="business_name" name="business_name" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="membership_type">Membership Type</label></th>
+                        <td>
+                            <select id="membership_type" name="membership_type">
+                                <option value="basic">Basic</option>
+                                <option value="premium">Premium</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="status">Status</label></th>
+                        <td>
+                            <select id="status" name="status">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                
+                <?php submit_button('Add Member', 'primary', 'cb_add_member'); ?>
+            </form>
+            
+            <h2>Current Members</h2>
+            <?php
+            // Display members table
+            $users = get_users(array('role' => 'chamber_member'));
+            if (!empty($users)) {
+                echo '<table class="widefat">';
+                echo '<thead><tr><th>Name</th><th>Email</th><th>Business</th><th>Status</th></tr></thead>';
+                echo '<tbody>';
+                foreach ($users as $user) {
+                    $business = get_page_by_title($user->business_name ?? '', OBJECT, 'business_listing');
+                    echo '<tr>';
+                    echo '<td>' . esc_html($user->first_name . ' ' . $user->last_name) . '</td>';
+                    echo '<td>' . esc_html($user->user_email) . '</td>';
+                    echo '<td>' . ($business ? '<a href="' . get_edit_post_link($business->ID) . '">' . esc_html($user->business_name) . '</a>' : 'N/A') . '</td>';
+                    echo '<td>Active</td>';
+                    echo '</tr>';
+                }
+                echo '</tbody>';
+                echo '</table>';
+            } else {
+                echo '<p>No members found.</p>';
+            }
+            ?>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Add member manually
+     */
+    private function add_member_manually($data) {
+        // Create user
+        $userdata = array(
+            'user_login'  => $data['email'],
+            'user_email'  => $data['email'],
+            'user_pass'   => wp_generate_password(),
+            'first_name'  => $data['first_name'],
+            'last_name'   => $data['last_name'],
+            'role'        => 'chamber_member'
+        );
+        
+        $user_id = wp_insert_user($userdata);
+        
+        if (is_wp_error($user_id)) {
+            add_action('admin_notices', function() use ($user_id) {
+                echo '<div class="notice notice-error"><p>Error creating user: ' . $user_id->get_error_message() . '</p></div>';
+            });
+            return;
+        }
+        
+        // Update user meta
+        update_user_meta($user_id, 'business_name', $data['business_name']);
+        
+        // Create membership record
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'cb_memberships';
+        
+        $wpdb->insert(
+            $table_name,
+            array(
+                'user_id' => $user_id,
+                'membership_type' => $data['membership_type'],
+                'status' => $data['status']
+            )
+        );
+        
+        // Create business listing
+        $post_id = wp_insert_post(array(
+            'post_title' => $data['business_name'],
+            'post_content' => '',
+            'post_status' => 'publish',
+            'post_author' => $user_id,
+            'post_type' => 'business_listing'
+        ));
+        
+        if (!is_wp_error($post_id)) {
+            // Set business name as user meta
+            update_user_meta($user_id, 'business_name', $data['business_name']);
+        }
+        
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-success"><p>Member added successfully!</p></div>';
+        });
     }
     
     /**
@@ -441,11 +620,20 @@ class Chamber_Boss {
         echo '<p>Manage your chamber memberships and business listings.</p>';
         echo '<h2>Quick Stats</h2>';
         echo '<ul>';
-        echo '<li>Total Members: 0</li>';
-        echo '<li>Active Memberships: 0</li>';
-        echo '<li>Pending Listings: 0</li>';
+        echo '<li>Total Members: ' . count(get_users(array('role' => 'chamber_member'))) . '</li>';
+        echo '<li>Active Memberships: ' . $this->get_active_membership_count() . '</li>';
+        echo '<li>Business Listings: ' . wp_count_posts('business_listing')->publish . '</li>';
         echo '</ul>';
         echo '</div>';
+    }
+    
+    /**
+     * Get active membership count
+     */
+    private function get_active_membership_count() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'cb_memberships';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE status = 'active'");
     }
     
     /**
@@ -491,6 +679,7 @@ class Chamber_Boss {
         $phone = get_post_meta($post->ID, '_business_phone', true);
         $website = get_post_meta($post->ID, '_business_website', true);
         $address = get_post_meta($post->ID, '_business_address', true);
+        $is_featured = get_post_meta($post->ID, '_is_featured', true);
         
         ?>
         <table class="form-table">
@@ -505,6 +694,11 @@ class Chamber_Boss {
             <tr>
                 <th><label for="business_address">Address</label></th>
                 <td><textarea id="business_address" name="business_address" rows="3" class="large-text"><?php echo esc_textarea($address); ?></textarea></td>
+            </tr>
+            <tr>
+                <th><label for="is_featured">Featured Listing</label></th>
+                <td><input type="checkbox" id="is_featured" name="is_featured" value="1" <?php checked(1, $is_featured); ?> />
+                <p class="description">Check this box to mark this business as a featured listing.</p></td>
             </tr>
         </table>
         <?php
@@ -538,6 +732,10 @@ class Chamber_Boss {
         if (isset($_POST['business_address'])) {
             update_post_meta($post_id, '_business_address', sanitize_textarea_field($_POST['business_address']));
         }
+
+        // Save featured status
+        $is_featured = isset($_POST['is_featured']) ? 1 : 0;
+        update_post_meta($post_id, '_is_featured', $is_featured);
     }
     
     /**
@@ -563,10 +761,14 @@ class Chamber_Boss {
                         'hide_empty' => true,
                     ));
                     
+                    // Add "All" category
+                    $current_category = isset($_GET['category']) ? $_GET['category'] : '';
+                    $all_class = ($current_category == '') ? ' class="active"' : '';
+                    echo '<li><a href="?' . remove_query_arg('category') . '"' . $all_class . '>All</a></li>';
+                    
                     foreach ($categories as $category) {
-                        $current_category = isset($_GET['category']) ? $_GET['category'] : '';
                         $class = ($current_category == $category->slug) ? ' class="active"' : '';
-                        echo '<li><a href="?category=' . $category->slug . '"' . $class . '>' . $category->name . '</a></li>';
+                        echo '<li><a href="?' . add_query_arg('category', $category->slug) . '"' . $class . '>' . $category->name . '</a></li>';
                     }
                     ?>
                 </ul>
@@ -660,6 +862,92 @@ class Chamber_Boss {
     }
     
     /**
+     * Featured business listings shortcode
+     */
+    public function featured_business_listings_shortcode($atts) {
+        ob_start();
+        
+        $args = array(
+            'post_type'      => 'business_listing',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1, // Display all featured listings
+            'meta_query'     => array(
+                array(
+                    'key'   => '_is_featured',
+                    'value' => 1,
+                    'compare' => '=',
+                ),
+            ),
+        );
+        
+        $featured_listings = new WP_Query($args);
+        
+        ?>
+        <div class="cb-featured-listings">
+            <h2>Featured Business Listings</h2>
+            <?php
+            if ($featured_listings->have_posts()) {
+                while ($featured_listings->have_posts()) {
+                    $featured_listings->the_post();
+                    ?>
+                    <div class="cb-listing">
+                        <h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                        <?php if (has_post_thumbnail()) : ?>
+                            <div class="cb-listing-image">
+                                <?php the_post_thumbnail('thumbnail'); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $phone = get_post_meta(get_the_ID(), '_business_phone', true);
+                        $website = get_post_meta(get_the_ID(), '_business_website', true);
+                        $address = get_post_meta(get_the_ID(), '_business_address', true);
+                        ?>
+                        
+                        <div class="cb-listing-content">
+                            <?php the_excerpt(); ?>
+                            
+                            <?php if ($phone) : ?>
+                                <p><strong>Phone:</strong> <?php echo esc_html($phone); ?></p>
+                            <?php endif; ?>
+                            
+                            <?php if ($website) : ?>
+                                <p><strong>Website:</strong> <a href="<?php echo esc_url($website); ?>" target="_blank"><?php echo esc_html($website); ?></a></p>
+                            <?php endif; ?>
+                            
+                            <?php if ($address) : ?>
+                                <p><strong>Address:</strong> <?php echo esc_html($address); ?></p>
+                            <?php endif; ?>
+                            
+                            <div class="cb-listing-categories">
+                                <?php
+                                $categories = get_the_terms(get_the_ID(), 'business_category');
+                                if ($categories && !is_wp_error($categories)) {
+                                    echo '<strong>Categories:</strong> ';
+                                    $category_names = array();
+                                    foreach ($categories as $category) {
+                                        $category_names[] = $category->name;
+                                    }
+                                    echo implode(', ', $category_names);
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                }
+                wp_reset_postdata();
+            } else {
+                echo '<p>No featured business listings found.</p>';
+            }
+            ?>
+        </div>
+        <?php
+        
+        return ob_get_clean();
+    }
+    
+    /**
      * Member signup shortcode
      */
     public function member_signup_shortcode($atts) {
@@ -702,6 +990,69 @@ class Chamber_Boss {
         </div>
         <?php
         return ob_get_clean();
+    }
+    
+    /**
+     * Handle member signup
+     */
+    public function handle_member_signup() {
+        // Check nonce
+        if (!wp_verify_nonce($_POST['cb_signup_nonce'], 'cb_member_signup')) {
+            wp_die('Security check failed');
+        }
+        
+        // Get form data
+        $first_name = sanitize_text_field($_POST['cb_first_name']);
+        $last_name = sanitize_text_field($_POST['cb_last_name']);
+        $email = sanitize_email($_POST['cb_email']);
+        $password = $_POST['cb_password'];
+        $business_name = sanitize_text_field($_POST['cb_business_name']);
+        
+        // Create user
+        $userdata = array(
+            'user_login'  => $email,
+            'user_email'  => $email,
+            'user_pass'   => $password,
+            'first_name'  => $first_name,
+            'last_name'   => $last_name,
+            'role'        => 'chamber_member'
+        );
+        
+        $user_id = wp_insert_user($userdata);
+        
+        if (is_wp_error($user_id)) {
+            wp_send_json_error($user_id->get_error_message());
+        }
+        
+        // Update user meta
+        update_user_meta($user_id, 'business_name', $business_name);
+        
+        // Create business listing
+        $post_id = wp_insert_post(array(
+            'post_title' => $business_name,
+            'post_content' => '',
+            'post_status' => 'publish',
+            'post_author' => $user_id,
+            'post_type' => 'business_listing'
+        ));
+        
+        // Create membership record (without Stripe for testing)
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'cb_memberships';
+        
+        $wpdb->insert(
+            $table_name,
+            array(
+                'user_id' => $user_id,
+                'membership_type' => 'basic',
+                'status' => 'active'
+            )
+        );
+        
+        // Add to MailPoet if available
+        $this->add_user_to_mailpoet_list($user_id);
+        
+        wp_send_json_success('Member registered successfully!');
     }
     
     /**

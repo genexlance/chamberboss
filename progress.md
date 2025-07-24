@@ -56,32 +56,17 @@ This document tracks the progress of the Chamber Membership Manager project, a W
 
 ## Pending Tasks
 
-### 1. Advanced Features (For Future Versions)
-- ❌ Advanced listing options (featured listings, custom fields)
-- ❌ Google Maps integration for location-based searches
-- ❌ Analytics dashboard for membership metrics
-- ❌ Email templates for membership notifications
-- ❌ Import/export functionality for business listings
-
-### 2. Website Improvements
-- ❌ Add actual screenshots or demo video
-- ❌ Implement contact/support form
-- ❌ Add user testimonials section
-- ❌ Create a blog section for updates and tips
-- ❌ Add Google Analytics tracking
+See `tasks.md` for pending tasks.
 
 ## Current Status
-The Chamber Membership Manager plugin has been enhanced with all requested features. The plugin now includes:
-
-1. Business listings with defined fields (logo, title, description, phone number, website, address, category)
-2. A member signup shortcode
-3. Enhanced business directory with category filtering
+The Chamber Membership Manager plugin has been enhanced with all requested features but needs some additional fixes to ensure proper functionality.
 
 ## Next Steps
-1. Test the updated features
-2. Deploy website to Netlify
-3. Submit plugin to WordPress.org repository
-4. Begin user testing with chamber of commerce partners
+1. Fix business categories in the editor
+2. Implement manual member addition
+3. Test the updated features
+4. Deploy website to Netlify
+5. Submit plugin to WordPress.org repository
 
 ## Files Created
 - `/site/` - Complete website for plugin promotion and download

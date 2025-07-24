@@ -701,6 +701,27 @@ class Chamber_Boss {
                 <p class="description">Check this box to mark this business as a featured listing.</p></td>
             </tr>
         </table>
+
+        <h2>Business Categories</h2>
+        <div class="category-checklist">
+            <?php
+            $terms = get_terms(array(
+                'taxonomy'   => 'business_category',
+                'hide_empty' => false,
+            ));
+
+            $selected_terms = wp_get_post_terms($post->ID, 'business_category', array('fields' => 'ids'));
+
+            if (!empty($terms) && !is_wp_error($terms)) {
+                foreach ($terms as $term) {
+                    echo '<label><input type="checkbox" name="business_category[]" value="' . esc_attr($term->term_id) . '" ' . checked(in_array($term->term_id, $selected_terms), true, false) . ' /> ' . esc_html($term->name) . '</label><br/>';
+                }
+            } else {
+                echo '<p>No business categories found. Please create some in the <a href="edit.php?post_type=business_listing&page=chamber-boss-settings">Chamber Boss settings</a>.</p>';
+            }
+            ?>
+        </div>
+        <br/>
         <?php
     }
     
@@ -736,6 +757,14 @@ class Chamber_Boss {
         // Save featured status
         $is_featured = isset($_POST['is_featured']) ? 1 : 0;
         update_post_meta($post_id, '_is_featured', $is_featured);
+
+        // Save business categories
+        if (isset($_POST['business_category'])) {
+            $categories = array_map('intval', $_POST['business_category']);
+            wp_set_post_terms($post_id, $categories, 'business_category', false);
+        } else {
+            wp_set_post_terms($post_id, array(), 'business_category', false); // Clear categories if none selected
+        }
     }
     
     /**

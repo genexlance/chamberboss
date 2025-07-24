@@ -6,6 +6,7 @@
 - [x] Give admins the ability to add members manually
 - [x] Allow admins to assign business listing features
 - [x] Create shortcode to show featured listings
+- [x] Fix business categories in block editor (Gutenberg)
 
 ### 2. Advanced Features (For Future Versions)
 - [ ] Analytics dashboard for membership metrics

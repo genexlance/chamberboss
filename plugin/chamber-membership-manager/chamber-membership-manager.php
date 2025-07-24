@@ -69,12 +69,17 @@ class Chamber_Boss {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'settings_init'));
         add_shortcode('chamber-directory', array($this, 'business_directory_shortcode'));
+        add_shortcode('chamber-signup', array($this, 'member_signup_shortcode'));
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
         
         // MailPoet integration
         add_action('user_register', array($this, 'add_user_to_mailpoet_list'));
         add_action('profile_update', array($this, 'update_user_in_mailpoet_list'));
+        
+        // Add meta boxes for business listings
+        add_action('add_meta_boxes', array($this, 'add_business_listing_meta_boxes'));
+        add_action('save_post', array($this, 'save_business_listing_meta'));
     }
     
     /**
@@ -86,6 +91,9 @@ class Chamber_Boss {
         
         // Register custom post types
         $this->register_post_types();
+        
+        // Register custom taxonomies
+        $this->register_taxonomies();
         
         // Register custom roles
         $this->register_roles();
@@ -170,6 +178,37 @@ class Chamber_Boss {
         );
         
         register_post_type('business_listing', $args);
+    }
+    
+    /**
+     * Register custom taxonomies
+     */
+    public function register_taxonomies() {
+        // Business Categories
+        $labels = array(
+            'name'              => _x('Business Categories', 'taxonomy general name', 'chamber-boss'),
+            'singular_name'     => _x('Business Category', 'taxonomy singular name', 'chamber-boss'),
+            'search_items'      => __('Search Categories', 'chamber-boss'),
+            'all_items'         => __('All Categories', 'chamber-boss'),
+            'parent_item'       => __('Parent Category', 'chamber-boss'),
+            'parent_item_colon' => __('Parent Category:', 'chamber-boss'),
+            'edit_item'         => __('Edit Category', 'chamber-boss'),
+            'update_item'       => __('Update Category', 'chamber-boss'),
+            'add_new_item'      => __('Add New Category', 'chamber-boss'),
+            'new_item_name'     => __('New Category Name', 'chamber-boss'),
+            'menu_name'         => __('Categories', 'chamber-boss'),
+        );
+        
+        $args = array(
+            'hierarchical'      => true,
+            'labels'            => $labels,
+            'show_ui'           => true,
+            'show_admin_column' => true,
+            'query_var'         => true,
+            'rewrite'           => array('slug' => 'business-category'),
+        );
+        
+        register_taxonomy('business_category', array('business_listing'), $args);
     }
     
     /**
@@ -428,6 +467,80 @@ class Chamber_Boss {
     }
     
     /**
+     * Add meta boxes for business listings
+     */
+    public function add_business_listing_meta_boxes() {
+        add_meta_box(
+            'business_listing_details',
+            'Business Details',
+            array($this, 'business_listing_meta_box_callback'),
+            'business_listing',
+            'normal',
+            'high'
+        );
+    }
+    
+    /**
+     * Business listing meta box callback
+     */
+    public function business_listing_meta_box_callback($post) {
+        // Add nonce for security
+        wp_nonce_field('save_business_listing_meta', 'business_listing_meta_nonce');
+        
+        // Get current values
+        $phone = get_post_meta($post->ID, '_business_phone', true);
+        $website = get_post_meta($post->ID, '_business_website', true);
+        $address = get_post_meta($post->ID, '_business_address', true);
+        
+        ?>
+        <table class="form-table">
+            <tr>
+                <th><label for="business_phone">Phone Number</label></th>
+                <td><input type="text" id="business_phone" name="business_phone" value="<?php echo esc_attr($phone); ?>" class="regular-text" /></td>
+            </tr>
+            <tr>
+                <th><label for="business_website">Website</label></th>
+                <td><input type="url" id="business_website" name="business_website" value="<?php echo esc_attr($website); ?>" class="regular-text" /></td>
+            </tr>
+            <tr>
+                <th><label for="business_address">Address</label></th>
+                <td><textarea id="business_address" name="business_address" rows="3" class="large-text"><?php echo esc_textarea($address); ?></textarea></td>
+            </tr>
+        </table>
+        <?php
+    }
+    
+    /**
+     * Save business listing meta
+     */
+    public function save_business_listing_meta($post_id) {
+        // Check if nonce is valid
+        if (!isset($_POST['business_listing_meta_nonce']) || !wp_verify_nonce($_POST['business_listing_meta_nonce'], 'save_business_listing_meta')) {
+            return;
+        }
+        
+        // Check if user has permission to edit
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+        
+        // Save phone number
+        if (isset($_POST['business_phone'])) {
+            update_post_meta($post_id, '_business_phone', sanitize_text_field($_POST['business_phone']));
+        }
+        
+        // Save website
+        if (isset($_POST['business_website'])) {
+            update_post_meta($post_id, '_business_website', esc_url_raw($_POST['business_website']));
+        }
+        
+        // Save address
+        if (isset($_POST['business_address'])) {
+            update_post_meta($post_id, '_business_address', sanitize_textarea_field($_POST['business_address']));
+        }
+    }
+    
+    /**
      * Business directory shortcode
      */
     public function business_directory_shortcode($atts) {
@@ -441,6 +554,24 @@ class Chamber_Boss {
                 </form>
             </div>
             
+            <div class="cb-categories">
+                <h3>Business Categories</h3>
+                <ul>
+                    <?php
+                    $categories = get_terms(array(
+                        'taxonomy' => 'business_category',
+                        'hide_empty' => true,
+                    ));
+                    
+                    foreach ($categories as $category) {
+                        $current_category = isset($_GET['category']) ? $_GET['category'] : '';
+                        $class = ($current_category == $category->slug) ? ' class="active"' : '';
+                        echo '<li><a href="?category=' . $category->slug . '"' . $class . '>' . $category->name . '</a></li>';
+                    }
+                    ?>
+                </ul>
+            </div>
+            
             <div class="cb-listings">
                 <?php
                 $args = array(
@@ -449,8 +580,20 @@ class Chamber_Boss {
                     'posts_per_page' => 10,
                 );
                 
+                // Add search filter
                 if (isset($_GET['search']) && !empty($_GET['search'])) {
                     $args['s'] = sanitize_text_field($_GET['search']);
+                }
+                
+                // Add category filter
+                if (isset($_GET['category']) && !empty($_GET['category'])) {
+                    $args['tax_query'] = array(
+                        array(
+                            'taxonomy' => 'business_category',
+                            'field'    => 'slug',
+                            'terms'    => sanitize_text_field($_GET['category']),
+                        ),
+                    );
                 }
                 
                 $listings = new WP_Query($args);
@@ -466,8 +609,41 @@ class Chamber_Boss {
                                     <?php the_post_thumbnail('thumbnail'); ?>
                                 </div>
                             <?php endif; ?>
+                            
+                            <?php
+                            $phone = get_post_meta(get_the_ID(), '_business_phone', true);
+                            $website = get_post_meta(get_the_ID(), '_business_website', true);
+                            $address = get_post_meta(get_the_ID(), '_business_address', true);
+                            ?>
+                            
                             <div class="cb-listing-content">
                                 <?php the_excerpt(); ?>
+                                
+                                <?php if ($phone) : ?>
+                                    <p><strong>Phone:</strong> <?php echo esc_html($phone); ?></p>
+                                <?php endif; ?>
+                                
+                                <?php if ($website) : ?>
+                                    <p><strong>Website:</strong> <a href="<?php echo esc_url($website); ?>" target="_blank"><?php echo esc_html($website); ?></a></p>
+                                <?php endif; ?>
+                                
+                                <?php if ($address) : ?>
+                                    <p><strong>Address:</strong> <?php echo esc_html($address); ?></p>
+                                <?php endif; ?>
+                                
+                                <div class="cb-listing-categories">
+                                    <?php
+                                    $categories = get_the_terms(get_the_ID(), 'business_category');
+                                    if ($categories && !is_wp_error($categories)) {
+                                        echo '<strong>Categories:</strong> ';
+                                        $category_names = array();
+                                        foreach ($categories as $category) {
+                                            $category_names[] = $category->name;
+                                        }
+                                        echo implode(', ', $category_names);
+                                    }
+                                    ?>
+                                </div>
                             </div>
                         </div>
                         <?php
@@ -478,6 +654,51 @@ class Chamber_Boss {
                 }
                 ?>
             </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+    
+    /**
+     * Member signup shortcode
+     */
+    public function member_signup_shortcode($atts) {
+        ob_start();
+        ?>
+        <div class="cb-signup">
+            <h2>Chamber Member Sign Up</h2>
+            <form method="post" class="cb-membership-form">
+                <?php wp_nonce_field('cb_member_signup', 'cb_signup_nonce'); ?>
+                
+                <p>
+                    <label for="cb_first_name">First Name</label>
+                    <input type="text" id="cb_first_name" name="cb_first_name" required>
+                </p>
+                
+                <p>
+                    <label for="cb_last_name">Last Name</label>
+                    <input type="text" id="cb_last_name" name="cb_last_name" required>
+                </p>
+                
+                <p>
+                    <label for="cb_email">Email</label>
+                    <input type="email" id="cb_email" name="cb_email" required>
+                </p>
+                
+                <p>
+                    <label for="cb_password">Password</label>
+                    <input type="password" id="cb_password" name="cb_password" required>
+                </p>
+                
+                <p>
+                    <label for="cb_business_name">Business Name</label>
+                    <input type="text" id="cb_business_name" name="cb_business_name" required>
+                </p>
+                
+                <p>
+                    <input type="submit" value="Sign Up" class="btn-primary">
+                </p>
+            </form>
         </div>
         <?php
         return ob_get_clean();

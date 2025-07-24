@@ -1,14 +1,5 @@
 jQuery(document).ready(function($) {
-    // Any frontend JavaScript for the plugin can go here
-    
-    // Example: Add confirmation for delete actions
-    $('.cb-delete-listing').on('click', function(e) {
-        if (!confirm('Are you sure you want to delete this listing?')) {
-            e.preventDefault();
-        }
-    });
-    
-    // Example: Handle form submissions with AJAX
+    // Handle member signup form submission
     $('.cb-membership-form').on('submit', function(e) {
         e.preventDefault();
         
@@ -23,8 +14,9 @@ jQuery(document).ready(function($) {
         $.post(form.attr('action'), form.serialize(), function(response) {
             if (response.success) {
                 // Show success message
-                alert('Membership processed successfully!');
+                alert('Membership signup processed successfully!');
                 // Redirect or update UI as needed
+                form[0].reset();
             } else {
                 // Show error message
                 alert('Error processing membership: ' + response.data);
@@ -35,5 +27,12 @@ jQuery(document).ready(function($) {
             // Reset button
             submitButton.val(originalText).prop('disabled', false);
         });
+    });
+    
+    // Example: Add confirmation for delete actions
+    $('.cb-delete-listing').on('click', function(e) {
+        if (!confirm('Are you sure you want to delete this listing?')) {
+            e.preventDefault();
+        }
     });
 });

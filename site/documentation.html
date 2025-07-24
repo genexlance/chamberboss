@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation | Chamber Membership Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Chamber Membership Manager</h1>
+                <p>Powerful WordPress Plugin for Chambers of Commerce</p>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="index.html#demo">Demo</a></li>
+                    <li><a href="index.html#pricing">Pricing</a></li>
+                    <li><a href="index.html#documentation">Documentation</a></li>
+                    <li><a href="index.html#download" class="btn-primary">Download</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="documentation-page">
+        <div class="container">
+            <h1>Plugin Documentation</h1>
+            
+            <div class="doc-section">
+                <h2>Installation</h2>
+                <ol>
+                    <li>Download the plugin ZIP file from the main page</li>
+                    <li>Go to your WordPress admin dashboard</li>
+                    <li>Navigate to Plugins > Add New</li>
+                    <li>Click "Upload Plugin" at the top</li>
+                    <li>Choose the downloaded ZIP file</li>
+                    <li>Click "Install Now"</li>
+                    <li>After installation, click "Activate Plugin"</li>
+                </ol>
+            </div>
+            
+            <div class="doc-section">
+                <h2>Configuration</h2>
+                <h3>Stripe Settings</h3>
+                <p>After activating the plugin, you'll need to configure your Stripe API keys:</p>
+                <ol>
+                    <li>Go to Chamber Members > Settings in your WordPress admin</li>
+                    <li>Enter your Stripe Publishable Key and Secret Key</li>
+                    <li>If you're testing, enable Test Mode</li>
+                    <li>Save the settings</li>
+                </ol>
+                
+                <h3>MailPoet Integration</h3>
+                <p>To enable MailPoet integration:</p>
+                <ol>
+                    <li>Make sure the MailPoet plugin is installed and activated</li>
+                    <li>In the Chamber Membership Manager settings, configure your MailPoet lists</li>
+                    <li>Save the settings</li>
+                </ol>
+            </div>
+            
+            <div class="doc-section">
+                <h2>Using the Plugin</h2>
+                <h3>Business Directory</h3>
+                <p>To display the business directory on your site:</p>
+                <ol>
+                    <li>Create a new page or edit an existing one</li>
+                    <li>Add the shortcode <code>[chamber-directory]</code> to the page content</li>
+                    <li>Publish or update the page</li>
+                </ol>
+                
+                <h3>Member Registration</h3>
+                <p>Members can register by:</p>
+                <ol>
+                    <li>Visiting your site's registration page</li>
+                    <li>Filling out the registration form</li>
+                    <li>Processing payment through Stripe</li>
+                    <li>Creating their business listing after successful payment</li>
+                </ol>
+            </div>
+            
+            <div class="doc-section">
+                <h2>Troubleshooting</h2>
+                <h3>Common Issues</h3>
+                <ul>
+                    <li><strong>Plugin not activating:</strong> Make sure you're using WordPress 6.0 or higher and PHP 8.0 or higher</li>
+                    <li><strong>Stripe payments not working:</strong> Check that your API keys are correct and that you're using the right mode (test/live)</li>
+                    <li><strong>Directory not showing listings:</strong> Make sure listings are published and not pending approval</li>
+                </ul>
+                
+                <h3>Getting Support</h3>
+                <p>If you're experiencing issues not covered in this documentation, please contact our support team at support@chamber-plugins.com</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>Chamber Membership Manager</h3>
+                    <p>A WordPress plugin designed for Chambers of Commerce to manage memberships and business directories.</p>
+                </div>
+                <div class="footer-links">
+                    <ul>
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                        <li><a href="index.html#documentation">Documentation</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Chamber Membership Manager. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

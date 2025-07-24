@@ -216,6 +216,7 @@ class Chamber_Boss {
             'query_var'         => true,
             'rewrite'           => array('slug' => 'business-category'),
             'show_in_rest'      => true, // Enable Gutenberg support
+            'meta_box_cb'       => false, // Disable default meta box for Gutenberg, we'll use a custom one
         );
         
         register_taxonomy('business_category', array('business_listing'), $args);
@@ -666,6 +667,16 @@ class Chamber_Boss {
             'normal',
             'high'
         );
+
+        // Add meta box for Business Categories explicitly for Gutenberg compatibility
+        add_meta_box(
+            'business_listing_categories',
+            __('Business Categories', 'chamber-boss'),
+            array($this, 'business_listing_categories_meta_box_callback'),
+            'business_listing',
+            'side',
+            'high'
+        );
     }
     
     /**
@@ -702,27 +713,29 @@ class Chamber_Boss {
             </tr>
         </table>
 
-        <h2>Business Categories</h2>
-        <div class="category-checklist">
-            <?php
-            $terms = get_terms(array(
-                'taxonomy'   => 'business_category',
-                'hide_empty' => false,
-            ));
-
-            $selected_terms = wp_get_post_terms($post->ID, 'business_category', array('fields' => 'ids'));
-
-            if (!empty($terms) && !is_wp_error($terms)) {
-                foreach ($terms as $term) {
-                    echo '<label><input type="checkbox" name="business_category[]" value="' . esc_attr($term->term_id) . '" ' . checked(in_array($term->term_id, $selected_terms), true, false) . ' /> ' . esc_html($term->name) . '</label><br/>';
-                }
-            } else {
-                echo '<p>No business categories found. Please create some in the <a href="edit.php?post_type=business_listing&page=chamber-boss-settings">Chamber Boss settings</a>.</p>';
-            }
-            ?>
-        </div>
-        <br/>
         <?php
+    }
+
+    /**
+     * Business listing categories meta box callback
+     */
+    public function business_listing_categories_meta_box_callback($post) {
+        $terms = get_terms(array(
+            'taxonomy'   => 'business_category',
+            'hide_empty' => false,
+        ));
+
+        $selected_terms = wp_get_post_terms($post->ID, 'business_category', array('fields' => 'ids'));
+
+        if (!empty($terms) && !is_wp_error($terms)) {
+            echo '<div class="category-checklist">';
+            foreach ($terms as $term) {
+                echo '<label><input type="checkbox" name="business_category[]" value="' . esc_attr($term->term_id) . '" ' . checked(in_array($term->term_id, $selected_terms), true, false) . ' /> ' . esc_html($term->name) . '</label><br/>';
+            }
+            echo '</div>';
+        } else {
+            echo '<p>No business categories found. Please create some in the <a href="edit-tags.php?taxonomy=business_category&post_type=business_listing">Business Categories</a> section.</p>';
+        }
     }
     
     /**

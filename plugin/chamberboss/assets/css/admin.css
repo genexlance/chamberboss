@@ -1,0 +1,463 @@
+/* Chamberboss Admin Styles */
+
+/* Dashboard Styles */
+.chamberboss-dashboard {
+    margin-top: 20px;
+}
+
+.chamberboss-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chamberboss-stat-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.chamberboss-stat-card .stat-icon {
+    margin-right: 15px;
+    font-size: 32px;
+    color: #2271b1;
+}
+
+.chamberboss-stat-card .stat-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.chamberboss-stat-card .stat-content p {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+}
+
+.chamberboss-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+    .chamberboss-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chamberboss-dashboard-widget {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.chamberboss-dashboard-widget .widget-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #c3c4c7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f6f7f7;
+}
+
+.chamberboss-dashboard-widget .widget-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chamberboss-dashboard-widget .widget-content {
+    padding: 0;
+}
+
+.chamberboss-dashboard-widget .widget-content table {
+    margin: 0;
+}
+
+.chamberboss-dashboard-widget .widget-content p {
+    padding: 20px;
+    margin: 0;
+    color: #646970;
+}
+
+/* Alert Styles */
+.chamberboss-alert {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.chamberboss-alert-warning {
+    background: #fcf9e8;
+    border-left: 4px solid #dba617;
+}
+
+.chamberboss-alert .alert-icon {
+    margin-right: 15px;
+    font-size: 20px;
+    color: #dba617;
+}
+
+.chamberboss-alert .alert-content h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chamberboss-alert .alert-content p {
+    margin: 0 0 15px 0;
+    color: #646970;
+}
+
+/* Badge Styles */
+.chamberboss-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+}
+
+.chamberboss-badge-success {
+    background: #00a32a;
+    color: #fff;
+}
+
+.chamberboss-badge-warning {
+    background: #dba617;
+    color: #fff;
+}
+
+.chamberboss-badge-danger {
+    background: #d63638;
+    color: #fff;
+}
+
+.chamberboss-badge-secondary {
+    background: #646970;
+    color: #fff;
+}
+
+.chamberboss-badge-info {
+    background: #2271b1;
+    color: #fff;
+}
+
+/* Filters */
+.chamberboss-filters {
+    margin: 20px 0;
+}
+
+.chamberboss-filters .search-form {
+    float: right;
+    margin-top: -5px;
+}
+
+.chamberboss-filters .search-box {
+    margin: 0;
+}
+
+.chamberboss-filters .search-box input[type="search"] {
+    width: 250px;
+    margin-right: 5px;
+}
+
+/* Member View Styles */
+.chamberboss-member-view {
+    margin-top: 20px;
+}
+
+.member-info-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+    .member-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.member-details-card,
+.subscription-details-card,
+.transaction-history-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.member-details-card h2,
+.subscription-details-card h2,
+.transaction-history-card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 1px solid #c3c4c7;
+    padding-bottom: 10px;
+}
+
+.transaction-history-card {
+    grid-column: 1 / -1;
+}
+
+/* Settings Styles */
+.chamberboss-settings {
+    margin-top: 20px;
+}
+
+.chamberboss-settings-nav {
+    border-bottom: 1px solid #c3c4c7;
+    margin-bottom: 20px;
+    
+}
+
+.chamberboss-settings-nav .nav-tab {
+    position: relative;
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 0 5px -1px 0;
+    border: 1px solid #ccc;
+    background: #eee;
+    color: #646970;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.chamberboss-settings-nav .nav-tab:hover {
+    color: #2271b1;
+}
+
+.chamberboss-settings-nav .nav-tab-active {
+    background: #fff;
+    border-color: #c3c4c7;
+    color: #1d2327;
+}
+
+.chamberboss-settings-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.chamberboss-settings-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chamberboss-settings-section .form-table th {
+    width: 200px;
+    padding-left: 0;
+}
+
+/* Stripe Configuration */
+.stripe-key-display {
+    font-family: monospace;
+    background: #f6f7f7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border: 1px solid #c3c4c7;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.stripe-mode-indicator {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 10px;
+}
+
+.stripe-mode-test {
+    background: #fcf9e8;
+    color: #dba617;
+    border: 1px solid #dba617;
+}
+
+.stripe-mode-live {
+    background: #f0f6fc;
+    color: #0073aa;
+    border: 1px solid #0073aa;
+}
+
+/* Responsive Tables */
+@media (max-width: 782px) {
+    .wp-list-table {
+        font-size: 14px;
+    }
+    
+    .wp-list-table th,
+    .wp-list-table td {
+        padding: 8px 10px;
+    }
+    
+    .chamberboss-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chamberboss-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .member-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading States */
+.chamberboss-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.chamberboss-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #c3c4c7;
+    border-top: 2px solid #2271b1;
+    border-radius: 50%;
+    animation: chamberboss-spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes chamberboss-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Enhancements */
+.chamberboss-form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chamberboss-form-row .form-field {
+    flex: 1;
+}
+
+.chamberboss-form-row .form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.chamberboss-form-row .form-field input,
+.chamberboss-form-row .form-field select,
+.chamberboss-form-row .form-field textarea {
+    width: 100%;
+}
+
+/* Success Messages */
+.chamberboss-notice {
+    padding: 12px 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.chamberboss-notice-success {
+    background: #f0f6fc;
+    border-left-color: #00a32a;
+    color: #1d2327;
+}
+
+.chamberboss-notice-error {
+    background: #fcf0f1;
+    border-left-color: #d63638;
+    color: #1d2327;
+}
+
+.chamberboss-notice-warning {
+    background: #fcf9e8;
+    border-left-color: #dba617;
+    color: #1d2327;
+}
+
+/* Button Enhancements */
+.button.chamberboss-button-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.button.chamberboss-button-primary:hover {
+    background: #135e96;
+    border-color: #135e96;
+}
+
+.button.chamberboss-button-danger {
+    background: #d63638;
+    border-color: #d63638;
+    color: #fff;
+}
+
+.button.chamberboss-button-danger:hover {
+    background: #b32d2e;
+    border-color: #b32d2e;
+}
+
+/* Utility Classes */
+.chamberboss-text-center {
+    text-align: center;
+}
+
+.chamberboss-text-right {
+    text-align: right;
+}
+
+.chamberboss-mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.chamberboss-mt-20 {
+    margin-top: 20px;
+}
+
+.chamberboss-hidden {
+    display: none;
+}
+
+/* Print Styles */
+@media print {
+    .chamberboss-dashboard-widget,
+    .chamberboss-settings-section,
+    .member-details-card,
+    .subscription-details-card,
+    .transaction-history-card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .button,
+    .chamberboss-alert {
+        display: none;
+    }
+}
+

@@ -51,7 +51,7 @@ The WordPress plugin (`/plugin/chamber-membership-manager/`) includes all core f
 │   └── assets/                     # Website assets
 │       ├── plugin-preview.svg      # Plugin preview image
 │       ├── demo-screenshot.svg     # Demo screenshot
-│       └── chamber-membership-manager.zip  # Downloadable plugin
+│       └── chamberboss.zip  # Downloadable plugin
 ├── plugin/                         # WordPress plugin
 │   └── chamber-membership-manager/ # Plugin files
 │       ├── chamber-membership-manager.php  # Main plugin file
@@ -78,7 +78,7 @@ The WordPress plugin (`/plugin/chamber-membership-manager/`) includes all core f
 
 The website is ready for deployment to Netlify. Simply upload the contents of the `/site/` directory.
 
-The plugin is ready for distribution and can be installed directly in WordPress by uploading the ZIP file available at `site/assets/chamber-membership-manager.zip`.
+The plugin is ready for distribution and can be installed directly in WordPress by uploading the ZIP file available at `site/assets/chamberboss.zip`.
 
 ## Next Steps
 

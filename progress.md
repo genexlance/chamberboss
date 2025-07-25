@@ -71,7 +71,7 @@ The Chamber Membership Manager plugin has been enhanced with all requested featu
 ## Files Created
 - `/site/` - Complete website for plugin promotion and download
 - `/plugin/` - Complete WordPress plugin ready for distribution
-- `site/assets/chamber-membership-manager.zip` - Packaged plugin for download
+- `site/assets/chamberboss.zip` - Packaged plugin for download
 
 ## Deployment Instructions
 1. Upload the website files from `/site/` to Netlify

@@ -183,6 +183,59 @@
   max-width: 400px;
 }
 
+/* Business Listing Category Meta Box Styles */
+#business_listing_categories .categorydiv {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  background: #fafafa;
+}
+
+#business_listing_categories .categorychecklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#business_listing_categories .categorychecklist li {
+  margin: 5px 0;
+  padding: 0;
+}
+
+#business_listing_categories .categorychecklist label {
+  display: block;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+#business_listing_categories .categorychecklist input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+#business_listing_categories .categorychecklist label:hover {
+  background-color: #e6f3ff;
+  border-radius: 3px;
+  padding-left: 5px;
+  margin-left: -5px;
+}
+
+#business_listing_categories p {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+#business_listing_categories a {
+  text-decoration: none;
+  color: #2563eb;
+}
+
+#business_listing_categories a:hover {
+  text-decoration: underline;
+}
+
 /* Buttons */
 .btn-primary {
   display: inline-block;

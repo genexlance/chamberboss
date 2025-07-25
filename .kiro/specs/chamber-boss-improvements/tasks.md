@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Fix business listing category display and enforce classic editor
+- [x] 1. Fix business listing category display and enforce classic editor
   - Implement filter to disable Gutenberg for business_listing post type
   - Fix taxonomy registration to ensure proper category display in classic editor
   - Add category meta box to classic editor interface

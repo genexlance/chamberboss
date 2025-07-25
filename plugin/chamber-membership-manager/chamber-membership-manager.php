@@ -88,6 +88,9 @@ class Chamber_Boss {
         // Add admin page for manual member management
         add_action('admin_menu', array($this, 'add_member_management_page'));
         add_shortcode('chamber-featured-listings', array($this, 'featured_business_listings_shortcode'));
+        
+        // Disable Gutenberg for business listings and enforce classic editor
+        add_filter('use_block_editor_for_post_type', array($this, 'disable_gutenberg_for_business_listings'), 10, 2);
     }
     
     /**
@@ -181,7 +184,7 @@ class Chamber_Boss {
             'has_archive'        => true,
             'hierarchical'       => false,
             'menu_position'      => null,
-            'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields', 'comments'),
+            'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
             'show_in_rest'       => true,
             'taxonomies'         => array('business_category'), // Add taxonomy support
         );
@@ -213,9 +216,13 @@ class Chamber_Boss {
             'labels'            => $labels,
             'show_ui'           => true,
             'show_admin_column' => true,
+            'show_in_menu'      => true,
+            'show_in_nav_menus' => true,
+            'show_tagcloud'     => true,
             'query_var'         => true,
             'rewrite'           => array('slug' => 'business-category'),
-            'show_in_rest'      => true, // Enable Gutenberg support
+            'show_in_rest'      => true, // Enable REST API support
+            'meta_box_cb'       => false, // Disable default meta box since we're creating custom one
         );
         
         register_taxonomy('business_category', array('business_listing'), $args);
@@ -655,6 +662,16 @@ class Chamber_Boss {
     }
     
     /**
+     * Disable Gutenberg block editor for business listings
+     */
+    public function disable_gutenberg_for_business_listings($use_block_editor, $post_type) {
+        if ($post_type === 'business_listing') {
+            return false;
+        }
+        return $use_block_editor;
+    }
+    
+    /**
      * Add meta boxes for business listings
      */
     public function add_business_listing_meta_boxes() {
@@ -665,6 +682,16 @@ class Chamber_Boss {
             'business_listing',
             'normal',
             'high'
+        );
+        
+        // Add category meta box for classic editor
+        add_meta_box(
+            'business_listing_categories',
+            'Business Categories',
+            array($this, 'business_listing_categories_meta_box_callback'),
+            'business_listing',
+            'side',
+            'default'
         );
     }
     
@@ -704,40 +731,98 @@ class Chamber_Boss {
 
         <?php
     }
+    
+    /**
+     * Business listing categories meta box callback
+     */
+    public function business_listing_categories_meta_box_callback($post) {
+        // Add nonce for security
+        wp_nonce_field('save_business_listing_categories', 'business_listing_categories_nonce');
+        
+        // Get current categories
+        $categories = wp_get_post_terms($post->ID, 'business_category');
+        $current_category_ids = array();
+        if (!is_wp_error($categories)) {
+            foreach ($categories as $category) {
+                $current_category_ids[] = $category->term_id;
+            }
+        }
+        
+        // Get all available categories
+        $all_categories = get_terms(array(
+            'taxonomy' => 'business_category',
+            'hide_empty' => false,
+        ));
+        
+        if (!empty($all_categories) && !is_wp_error($all_categories)) {
+            echo '<div id="taxonomy-business_category" class="categorydiv">';
+            echo '<div id="business_category-all" class="tabs-panel">';
+            echo '<ul id="business_categorychecklist" class="categorychecklist form-no-clear">';
+            
+            foreach ($all_categories as $category) {
+                $checked = in_array($category->term_id, $current_category_ids) ? 'checked="checked"' : '';
+                echo '<li id="business_category-' . $category->term_id . '">';
+                echo '<label class="selectit">';
+                echo '<input value="' . $category->term_id . '" type="checkbox" name="business_categories[]" id="in-business_category-' . $category->term_id . '" ' . $checked . '>';
+                echo ' ' . esc_html($category->name);
+                echo '</label>';
+                echo '</li>';
+            }
+            
+            echo '</ul>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Add link to manage categories
+            echo '<p><a href="' . admin_url('edit-tags.php?taxonomy=business_category&post_type=business_listing') . '">Manage Categories</a></p>';
+        } else {
+            echo '<p>No categories available. <a href="' . admin_url('edit-tags.php?taxonomy=business_category&post_type=business_listing') . '">Create some categories</a> first.</p>';
+        }
+    }
 
     /**
      * Save business listing meta
      */
     public function save_business_listing_meta($post_id) {
-        // Check if nonce is valid
-        if (!isset($_POST['business_listing_meta_nonce']) || !wp_verify_nonce($_POST['business_listing_meta_nonce'], 'save_business_listing_meta')) {
-            return;
-        }
-        
-        // Check if user has permission to edit
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-        
-        // Save phone number
-        if (isset($_POST['business_phone'])) {
-            update_post_meta($post_id, '_business_phone', sanitize_text_field($_POST['business_phone']));
-        }
-        
-        // Save website
-        if (isset($_POST['business_website'])) {
-            update_post_meta($post_id, '_business_website', esc_url_raw($_POST['business_website']));
-        }
-        
-        // Save address
-        if (isset($_POST['business_address'])) {
-            update_post_meta($post_id, '_business_address', sanitize_textarea_field($_POST['business_address']));
-        }
+        // Check if nonce is valid for business details
+        if (isset($_POST['business_listing_meta_nonce']) && wp_verify_nonce($_POST['business_listing_meta_nonce'], 'save_business_listing_meta')) {
+            // Check if user has permission to edit
+            if (current_user_can('edit_post', $post_id)) {
+                // Save phone number
+                if (isset($_POST['business_phone'])) {
+                    update_post_meta($post_id, '_business_phone', sanitize_text_field($_POST['business_phone']));
+                }
+                
+                // Save website
+                if (isset($_POST['business_website'])) {
+                    update_post_meta($post_id, '_business_website', esc_url_raw($_POST['business_website']));
+                }
+                
+                // Save address
+                if (isset($_POST['business_address'])) {
+                    update_post_meta($post_id, '_business_address', sanitize_textarea_field($_POST['business_address']));
+                }
 
-        // Save featured status
-        $is_featured = isset($_POST['is_featured']) ? 1 : 0;
-        update_post_meta($post_id, '_is_featured', $is_featured);
-
+                // Save featured status
+                $is_featured = isset($_POST['is_featured']) ? 1 : 0;
+                update_post_meta($post_id, '_is_featured', $is_featured);
+            }
+        }
+        
+        // Check if nonce is valid for categories
+        if (isset($_POST['business_listing_categories_nonce']) && wp_verify_nonce($_POST['business_listing_categories_nonce'], 'save_business_listing_categories')) {
+            // Check if user has permission to edit
+            if (current_user_can('edit_post', $post_id)) {
+                // Save categories
+                if (isset($_POST['business_categories']) && is_array($_POST['business_categories'])) {
+                    $category_ids = array_map('intval', $_POST['business_categories']);
+                    wp_set_post_terms($post_id, $category_ids, 'business_category');
+                } else {
+                    // Remove all categories if none selected
+                    wp_set_post_terms($post_id, array(), 'business_category');
+                }
+            }
+        }
     }
     
     /**

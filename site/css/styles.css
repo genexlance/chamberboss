@@ -319,27 +319,26 @@ code {
 }
 
 .pricing-card {
-  background: var(--light);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+
   text-align: center;
   transition: var(--transition);
 }
 
 .pricing-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--box-shadow-hover);
+  transform: scale(1.05);
+
 }
 
 .pricing-card.featured {
   border: 2px solid var(--primary);
   position: relative;
-  transform: scale(1.05);
+  
 }
 
 .pricing-card.featured:hover {
-  transform: scale(1.07);
+  
 }
 
 .pricing-card h3 {
@@ -366,7 +365,7 @@ code {
 
 .pricing-card ul li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e2e8f0;
+  font-weight:bold;
 }
 
 .pricing-card ul li:last-child {

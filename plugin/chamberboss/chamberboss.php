@@ -112,6 +112,10 @@ final class Chamberboss {
      * Plugin activation
      */
     public function activate() {
+        // Ensure necessary classes are loaded for activation
+        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
+        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
+
         // Create database tables
         Chamberboss\Core\Database::on_activation_create_tables();
         

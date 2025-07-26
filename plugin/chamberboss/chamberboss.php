@@ -16,6 +16,8 @@
  * Network: false
  */
 
+// GEMINI_DEBUG_MARKER_20250726
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -27,6 +29,10 @@ define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CHAMBERBOSS_PLUGIN_BASENAME', plugin_basename(__FILE__));
+
+require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
+require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
+require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
 
 
 
@@ -115,18 +121,6 @@ final class Chamberboss {
      * Plugin activation
      */
     public function activate() {
-        error_log('CHAMBERBOSS_PLUGIN_DIR: ' . CHAMBERBOSS_PLUGIN_DIR);
-        $baseClassPath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
-        $databasePath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
-        $postTypesPath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
-
-        error_log('Attempting to require_once: ' . $baseClassPath);
-        require_once $baseClassPath;
-        error_log('Attempting to require_once: ' . $databasePath);
-        require_once $databasePath;
-        error_log('Attempting to require_once: ' . $postTypesPath);
-        require_once $postTypesPath;
-
         // Create database tables
         Chamberboss\Core\Database::on_activation_create_tables();
         

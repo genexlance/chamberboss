@@ -23,6 +23,7 @@ class AdminMenu extends BaseClass {
         new MembersPage();
         new CategoriesPage();
         new ListingsPage();
+        new ExportsPage();
     }
     
     /**
@@ -88,6 +89,16 @@ class AdminMenu extends BaseClass {
             'manage_chamberboss',
             'chamberboss-transactions',
             [$this, 'transactions_page']
+        );
+
+        // Exports
+        add_submenu_page(
+            'chamberboss',
+            __('Exports', 'chamberboss'),
+            __('Exports', 'chamberboss'),
+            'manage_options',
+            'chamberboss-exports',
+            [$this, 'exports_page']
         );
         
         // Settings
@@ -177,6 +188,14 @@ class AdminMenu extends BaseClass {
         $transactions = new TransactionsPage();
         $transactions->render();
     }
+
+    /**
+     * Exports page
+     */
+    public function exports_page() {
+        $exports = new ExportsPage();
+        $exports->render();
+    }
     
     /**
      * Settings page
@@ -252,4 +271,3 @@ class AdminMenu extends BaseClass {
         register_setting('chamberboss_email', 'chamberboss_email_welcome_message');
     }
 }
-

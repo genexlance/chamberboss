@@ -24,7 +24,6 @@ class MembersPage extends BaseClass {
         // Handle form submissions
         add_action('admin_post_add_new_member', [$this, 'process_add_member']);
         add_action('admin_post_edit_member', [$this, 'process_edit_member']);
-        add_action('admin_init', [$this, 'export_members_csv']);
     }
     
     /**
@@ -66,7 +65,6 @@ class MembersPage extends BaseClass {
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Members', 'chamberboss'); ?></h1>
             <a href="<?php echo admin_url('admin.php?page=chamberboss-members&action=add'); ?>" class="page-title-action"><?php _e('Add New', 'chamberboss'); ?></a>
-            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-members&action=export_members'), 'export_members_nonce'); ?>" class="page-title-action"><?php _e('Export Members', 'chamberboss'); ?></a>
             
             <!-- Filters -->
             <div class="chamberboss-filters">
@@ -776,19 +774,19 @@ class MembersPage extends BaseClass {
      */
     private function format_currency($amount, $currency = 'USD') {
         $symbols = [
-            'USD' => '
+            'USD' => ''
     
     }
 
 ,
             'EUR' => '€',
             'GBP' => '£',
-            'CAD' => 'C
+            'CAD' => 'C'
     
     }
 
 ,
-            'AUD' => 'A
+            'AUD' => 'A'
     
     }
 
@@ -850,4 +848,3 @@ class MembersPage extends BaseClass {
     }
     
     }
-

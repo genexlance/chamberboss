@@ -21,7 +21,6 @@ class ListingsPage extends BaseClass {
         add_action('admin_post_chamberboss_quick_action', [$this, 'process_quick_actions']);
         add_action('admin_post_chamberboss_feature_toggle', [$this, 'process_quick_actions']);
         add_action('admin_init', [$this, 'handle_bulk_actions']); // Keep existing bulk actions on admin_init
-        add_action('admin_init', [$this, 'export_listings_csv']);
     }
     
     /**
@@ -60,7 +59,6 @@ class ListingsPage extends BaseClass {
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Business Listings', 'chamberboss'); ?></h1>
             <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&action=add'); ?>" class="page-title-action"><?php _e('Add New', 'chamberboss'); ?></a>
-            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-listings&action=export_listings'), 'export_listings_nonce'); ?>" class="page-title-action"><?php _e('Export Listings', 'chamberboss'); ?></a>
             
             <!-- Status Filters -->
             <div class="chamberboss-filters">
@@ -736,4 +734,3 @@ class ListingsPage extends BaseClass {
     }
 
     }
-

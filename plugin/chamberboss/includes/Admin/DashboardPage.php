@@ -299,23 +299,5 @@ class DashboardPage extends BaseClass {
         return $symbol . number_format($amount, 2);
     }
     
-    /**
-     * Get status badge HTML
-     * @param string $status
-     * @return string
-     */
-    private function get_status_badge($status) {
-        $badges = [
-            'active' => '<span class="chamberboss-badge chamberboss-badge-success">Active</span>',
-            'inactive' => '<span class="chamberboss-badge chamberboss-badge-secondary">Inactive</span>',
-            'expired' => '<span class="chamberboss-badge chamberboss-badge-warning">Expired</span>',
-            'cancelled' => '<span class="chamberboss-badge chamberboss-badge-danger">Cancelled</span>',
-            'completed' => '<span class="chamberboss-badge chamberboss-badge-success">Completed</span>',
-            'pending' => '<span class="chamberboss-badge chamberboss-badge-warning">Pending</span>',
-            'failed' => '<span class="chamberboss-badge chamberboss-badge-danger">Failed</span>'
-        ];
-        
-        return $badges[$status] ?? '<span class="chamberboss-badge chamberboss-badge-secondary">' . ucfirst($status) . '</span>';
     }
-}
 

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chamberboss Installation & User Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="documentation-page">
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <img src="assets/logo.svg" alt="ChamberBoss" width="100" height="100" /><h1>ChamberBoss</h1>
+                <p>Powerful WordPress Plugin for Chambers of Commerce</p>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="index.html#demo">Demo</a></li>
+                    <li><a href="index.html#pricing">Pricing</a></li>
+                    <li><a href="index.html#documentation">Documentation</a></li>
+                    <li><a href="index.html#download" class="btn-primary">Download</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Installation & User Guide</h1>
+                <p class="subtitle">Your complete guide to setting up, configuring, and using the Chamberboss plugin.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="doc-section" id="installation">
+            <h2>Plugin Installation</h2>
+            <p>Follow these simple steps to get Chamberboss up and running on your WordPress site.</p>
+            <ol>
+                <li><strong>Download the Plugin:</strong> Click the "Download" button on the <a href="index.html">main page</a> to get the <code>chamberboss.zip</code> file.</li>
+                <li><strong>Log in to WordPress:</strong> Access your WordPress admin dashboard.</li>
+                <li><strong>Navigate to Plugins:</strong> Go to <strong>Plugins > Add New</strong>.</li>
+                <li><strong>Upload Plugin:</strong> Click the <strong>Upload Plugin</strong> button at the top.</li>
+                <li><strong>Choose and Install:</strong> Select the <code>chamberboss.zip</code> file you downloaded and click <strong>Install Now</strong>.</li>
+                <li><strong>Activate:</strong> Once installed, click <strong>Activate Plugin</strong>. You'll now see a "Chamberboss" menu in your admin sidebar.</li>
+            </ol>
+        </div>
+
+        <div class="doc-section" id="dashboard">
+            <h2>Dashboard Overview</h2>
+            <p>The Chamberboss Dashboard gives you a quick overview of your chamber's key metrics.</p>
+            <ul>
+                <li><strong>Total Members:</strong> The total number of members in your chamber.</li>
+                <li><strong>Active Members:</strong> The number of members with an active subscription.</li>
+                <li><strong>Business Listings:</strong> The total number of business listings in your directory.</li>
+                <li><strong>Monthly Revenue:</strong> Your chamber's revenue for the current month.</li>
+                <li><strong>Recent Members:</strong> A list of the newest members to join.</li>
+                <li><strong>Recent Transactions:</strong> A log of the latest payments and transactions.</li>
+                <li><strong>Expiring Memberships:</strong> A warning for memberships that are due to expire soon.</li>
+            </ul>
+        </div>
+
+        <div class="doc-section" id="members">
+            <h2>Managing Members</h2>
+            <p>The "Members" page is where you can view, add, and edit your chamber members.</p>
+            <h3>Viewing Members</h3>
+            <p>The main table lists all your members. You can filter the list by status (All, Active, Expired, Expiring Soon) and search for specific members by name.</p>
+            <h3>Adding a New Member</h3>
+            <ol>
+                <li>Click the <strong>Add New Member</strong> button.</li>
+                <li>Fill in the member's details, including their name, email, company, and contact information.</li>
+                <li>Click <strong>Add Member</strong>. The new member will be created with an active status and a one-year membership.</li>
+            </ol>
+            <h3>Editing a Member</h3>
+            <p>From the member list, click "View" to see a member's detailed profile. Here you can:</p>
+            <ul>
+                <li>View their contact information, subscription details, and transaction history.</li>
+                <li>See any business listings they've created.</li>
+                <li>Click <strong>Edit Member</strong> to update their information or manually change their subscription status and dates.</li>
+            </ul>
+        </div>
+
+        <div class="doc-section" id="listings">
+            <h2>Managing Business Listings</h2>
+            <p>This section allows you to manage the business listings submitted by your members.</p>
+            <h3>Viewing Listings</h3>
+            <p>The listings table shows all submissions. You can filter by status (e.g., Published, Pending, Featured) and search for listings.</p>
+            <h3>Approving and Managing Listings</h3>
+            <p>When a member submits a listing, it will have a "Pending" status. From the "View" screen for a specific listing, you can:</p>
+            <ul>
+                <li><strong>Approve & Publish:</strong> Make the listing live in your public directory.</li>
+                <li><strong>Reject:</strong> Permanently delete the listing.</li>
+                <li><strong>Mark as Featured:</strong> Highlight the listing in the directory.</li>
+            </ul>
+            <p>You can also use the bulk actions dropdown to manage multiple listings at once.</p>
+        </div>
+
+        <div class="doc-section" id="categories">
+            <h2>Listing Categories</h2>
+            <p>Organize your business directory by creating categories. On the "Categories" page, you can add new categories by providing a name and a slug (a URL-friendly version of the name). You can also delete existing categories.</p>
+        </div>
+
+        <div class="doc-section" id="settings">
+            <h2>Configuring Settings</h2>
+            <p>The "Settings" page is crucial for configuring the plugin to your needs. It's divided into several tabs.</p>
+            
+            <h3>General Settings</h3>
+            <ul>
+                <li><strong>Membership Price:</strong> Set the annual cost for membership.</li>
+                <li><strong>Currency:</strong> Choose the currency for payments (e.g., USD, EUR).</li>
+                <li><strong>Renewal Notification Days:</strong> Set how many days before expiration a renewal email should be sent.</li>
+            </ul>
+
+            <h3 id="stripe-setup">Stripe Payment Gateway</h3>
+            <p>This is where you connect your Stripe account to process payments.</p>
+            <ol>
+                <li><strong>Log in to Stripe:</strong> Go to your <a href="https://dashboard.stripe.com/" target="_blank">Stripe Dashboard</a>.</li>
+                <li><strong>Find API Keys:</strong> Navigate to the <strong>Developers > API keys</strong> section.</li>
+                <li><strong>Toggle Test/Live Mode:</strong> Stripe provides two sets of keys: one for testing and one for real transactions. Use the toggle in the top-right of your Stripe dashboard to switch between them. It's highly recommended to start in <strong>Test Mode</strong>.</li>
+                <li><strong>Copy Keys:</strong> Copy the <strong>Publishable key</strong> and <strong>Secret key</strong> for both test and live modes and paste them into the corresponding fields in the Chamberboss Stripe settings.</li>
+                <li><strong>Set Up Webhook:</strong>
+                    <ul>
+                        <li>In your Stripe Dashboard, go to <strong>Developers > Webhooks</strong>.</li>
+                        <li>Click <strong>Add endpoint</strong>.</li>
+                        <li>For the "Endpoint URL", paste the URL shown in your Chamberboss settings (it looks like <code>https://yourwebsite.com/chamberboss/webhook/</code>).</li>
+                        <li>Click <strong>+ Select events</strong> and choose <code>checkout.session.completed</code>, <code>customer.subscription.updated</code>, and <code>invoice.payment_succeeded</code>.</li>
+                        <li>Click <strong>Add endpoint</strong>.</li>
+                        <li>After creating it, click on the new endpoint and find the <strong>Signing secret</strong>. Copy this and paste it into the "Webhook Secret" field in your Chamberboss settings.</li>
+                    </ul>
+                </li>
+                <li><strong>Save and Activate:</strong> Once all keys and the webhook secret are entered, choose your desired mode (start with "Test") and click <strong>Save Stripe Settings</strong>.</li>
+            </ol>
+
+            <h3>MailPoet</h3>
+            <p>If you use the MailPoet plugin for newsletters, you can integrate it here. Enable the integration, choose a default mailing list, and decide if you want to automatically add new members to it.</p>
+
+            <h3>Email</h3>
+            <p>Customize the emails sent by Chamberboss. You can edit the "From" name and address, as well as the subject and content for both the welcome email to new members and the renewal reminder email. Use the provided placeholders like <code>{member_name}</code> to personalize the messages.</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>Chamber Membership Manager</h3>
+                    <p>A WordPress plugin designed for Chambers of Commerce to manage memberships and business directories.</p>
+                </div>
+                <div class="footer-links">
+                    <ul>
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                        <li><a href="index.html#documentation">Documentation</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Chamber Membership Manager. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

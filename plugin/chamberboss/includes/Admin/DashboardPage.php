@@ -20,6 +20,7 @@ class DashboardPage extends BaseClass {
      */
     protected function init() {
         $this->database = new Database();
+        add_action('admin_post_chamberboss_approve_listing', [$this, 'approve_listing']);
     }
     
     /**
@@ -196,6 +197,69 @@ class DashboardPage extends BaseClass {
                     </div>
                 </div>
                 <?php endif; ?>
+
+                <!-- Pending Listings for Approval -->
+                <div class="chamberboss-dashboard-widget">
+                    <div class="widget-header">
+                        <h2><?php _e('Pending Business Listings', 'chamberboss'); ?></h2>
+                        <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&post_status=pending'); ?>" class="button button-secondary">
+                            <?php _e('View All Pending', 'chamberboss'); ?>
+                        </a>
+                    </div>
+                    <div class="widget-content">
+                        <?php
+                        $pending_listings = get_posts([
+                            'post_type' => 'chamberboss_listing',
+                            'post_status' => 'pending',
+                            'numberposts' => 5,
+                            'orderby' => 'date',
+                            'order' => 'ASC'
+                        ]);
+                        
+                        if (!empty($pending_listings)):
+                        ?>
+                            <table class="wp-list-table widefat fixed striped">
+                                <thead>
+                                    <tr>
+                                        <th><?php _e('Business Name', 'chamberboss'); ?></th>
+                                        <th><?php _e('Submitted By', 'chamberboss'); ?></th>
+                                        <th><?php _e('Date', 'chamberboss'); ?></th>
+                                        <th><?php _e('Action', 'chamberboss'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($pending_listings as $listing):
+                                        $author = get_user_by('id', $listing->post_author);
+                                    ?>
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&action=view&listing_id=' . $listing->ID); ?>">
+                                                        <?php echo esc_html($listing->post_title); ?>
+                                                    </a>
+                                                </strong>
+                                            </td>
+                                            <td><?php echo esc_html($author ? $author->display_name : 'Unknown'); ?></td>
+                                            <td><?php echo date('M j, Y', strtotime($listing->post_date)); ?></td>
+                                            <td>
+                                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                                    <?php wp_nonce_field('chamberboss_approve_listing', 'approve_listing_nonce'); ?>
+                                                    <input type="hidden" name="action" value="chamberboss_approve_listing">
+                                                    <input type="hidden" name="listing_id" value="<?php echo $listing->ID; ?>">
+                                                    <button type="submit" class="button button-primary button-small">
+                                                        <?php _e('Approve', 'chamberboss'); ?>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <p><?php _e('No pending business listings.', 'chamberboss'); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
         <?php
@@ -287,17 +351,45 @@ class DashboardPage extends BaseClass {
      */
     private function format_currency($amount, $currency = 'USD') {
         $symbols = [
-            'USD' => '$',
+            'USD' => '
+
+,
             'EUR' => '€',
             'GBP' => '£',
-            'CAD' => 'C$',
-            'AUD' => 'A$'
+            'CAD' => 'C
+
+,
+            'AUD' => 'A
+
+
         ];
         
         $symbol = $symbols[$currency] ?? $currency . ' ';
         
         return $symbol . number_format($amount, 2);
     }
-    
+
+    /**
+     * Approve a business listing.
+     */
+    public function approve_listing() {
+        if (!current_user_can('manage_chamberboss_listings')) {
+            wp_die(__('You do not have permission to approve listings.', 'chamberboss'));
+        }
+
+        $listing_id = intval($_POST['listing_id'] ?? 0);
+        $nonce = sanitize_text_field($_POST['approve_listing_nonce'] ?? '');
+
+        if (!$listing_id || !wp_verify_nonce($nonce, 'chamberboss_approve_listing')) {
+            wp_die(__('Invalid request or security check failed.', 'chamberboss'));
+        }
+
+        wp_update_post([
+            'ID' => $listing_id,
+            'post_status' => 'publish',
+        ]);
+
+        wp_redirect(admin_url('admin.php?page=chamberboss&message=listing_approved'));
+        exit;
     }
 

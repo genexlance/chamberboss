@@ -28,8 +28,7 @@ define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CHAMBERBOSS_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
-require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
+
 
 // Autoloader for plugin classes
 spl_autoload_register(function ($class) {

@@ -24,6 +24,7 @@ class MembersPage extends BaseClass {
         // Handle form submissions
         add_action('admin_post_add_new_member', [$this, 'process_add_member']);
         add_action('admin_post_edit_member', [$this, 'process_edit_member']);
+        add_action('admin_init', [$this, 'export_members_csv']);
     }
     
     /**
@@ -66,6 +67,9 @@ class MembersPage extends BaseClass {
             <h1 class="wp-heading-inline"><?php _e('Members', 'chamberboss'); ?></h1>
             <a href="<?php echo admin_url('admin.php?page=chamberboss-members&action=add'); ?>" class="page-title-action">
                 <?php _e('Add New Member', 'chamberboss'); ?>
+            </a>
+            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-members&action=export_members'), 'export_members_nonce'); ?>" class="page-title-action">
+                <?php _e('Export Members', 'chamberboss'); ?>
             </a>
             
             <!-- Filters -->
@@ -776,16 +780,77 @@ class MembersPage extends BaseClass {
      */
     private function format_currency($amount, $currency = 'USD') {
         $symbols = [
-            'USD' => '$',
+            'USD' => '
+    
+    }
+
+,
             'EUR' => '€',
             'GBP' => '£',
-            'CAD' => 'C$',
-            'AUD' => 'A$'
+            'CAD' => 'C
+    
+    }
+
+,
+            'AUD' => 'A
+    
+    }
+
+
         ];
         
         $symbol = $symbols[$currency] ?? $currency . ' ';
         
         return $symbol . number_format($amount, 2);
+    }
+
+    public function export_members_csv() {
+        if (isset($_GET['action']) && $_GET['action'] == 'export_members') {
+            if (!current_user_can('manage_options')) {
+                return;
+            }
+
+            if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'export_members_nonce')) {
+                return;
+            }
+
+            $members = $this->get_members('all', '', 1, -1);
+
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename=chamberboss-members-' . date('Y-m-d') . '.csv');
+
+            $output = fopen('php://output', 'w');
+
+            fputcsv($output, [
+                __('Name', 'chamberboss'),
+                __('Email', 'chamberboss'),
+                __('Company', 'chamberboss'),
+                __('Phone', 'chamberboss'),
+                __('Address', 'chamberboss'),
+                __('Website', 'chamberboss'),
+                __('Status', 'chamberboss'),
+                __('Membership Start', 'chamberboss'),
+                __('Membership End', 'chamberboss'),
+            ]);
+
+            foreach ($members as $member) {
+                $row = [
+                    $member->post_title,
+                    get_post_meta($member->ID, '_chamberboss_member_email', true),
+                    get_post_meta($member->ID, '_chamberboss_member_company', true),
+                    get_post_meta($member->ID, '_chamberboss_member_phone', true),
+                    get_post_meta($member->ID, '_chamberboss_member_address', true),
+                    get_post_meta($member->ID, '_chamberboss_member_website', true),
+                    get_post_meta($member->ID, '_chamberboss_subscription_status', true),
+                    get_post_meta($member->ID, '_chamberboss_subscription_start', true),
+                    get_post_meta($member->ID, '_chamberboss_subscription_end', true),
+                ];
+                fputcsv($output, $row);
+            }
+
+            fclose($output);
+            exit;
+        }
     }
     
     }

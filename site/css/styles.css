@@ -97,6 +97,7 @@ code {
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 11px solid #313d4d;
 }
 
 .header .container {
@@ -192,7 +193,9 @@ code {
   padding: 5rem 0;
   position: relative;
   z-index: 1;
-  overflow: hidden; /* Ensures ::before doesn't overflow */
+  overflow: hidden; 
+  border-bottom: 11px solid #313d4d;
+  margin-bottom:33px;
 }
 
 .hero::before {
@@ -278,7 +281,8 @@ code {
 /* Demo */
 .demo {
   padding: 5rem 0;
-  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #1a324b 0%, #030d1a 100%);
+  color:#fff;
 }
 
 .demo-content {
@@ -372,7 +376,8 @@ code {
 /* Documentation */
 .documentation {
   padding: 5rem 0;
-  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #1a324b 0%, #030d1a 100%);
+  color:#fff;
 }
 
 .docs-content {

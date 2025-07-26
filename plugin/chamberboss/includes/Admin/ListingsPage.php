@@ -21,6 +21,7 @@ class ListingsPage extends BaseClass {
         add_action('admin_post_chamberboss_quick_action', [$this, 'process_quick_actions']);
         add_action('admin_post_chamberboss_feature_toggle', [$this, 'process_quick_actions']);
         add_action('admin_init', [$this, 'handle_bulk_actions']); // Keep existing bulk actions on admin_init
+        add_action('admin_init', [$this, 'export_listings_csv']);
     }
     
     /**
@@ -60,6 +61,9 @@ class ListingsPage extends BaseClass {
             <h1 class="wp-heading-inline"><?php _e('Business Listings', 'chamberboss'); ?></h1>
             <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&action=add'); ?>" class="page-title-action">
                 <?php _e('Add New Listing', 'chamberboss'); ?>
+            </a>
+            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-listings&action=export_listings'), 'export_listings_nonce'); ?>" class="page-title-action">
+                <?php _e('Export Listings', 'chamberboss'); ?>
             </a>
             
             <!-- Status Filters -->
@@ -681,6 +685,58 @@ class ListingsPage extends BaseClass {
         $sql .= " WHERE " . implode(' AND ', $where);
         
         return intval($wpdb->get_var($sql));
+    }
+
+    public function export_listings_csv() {
+        if (isset($_GET['action']) && $_GET['action'] == 'export_listings') {
+            if (!current_user_can('manage_options')) {
+                return;
+            }
+
+            if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'export_listings_nonce')) {
+                return;
+            }
+
+            $listings = $this->get_listings('all', '', 1, -1);
+
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename=chamberboss-listings-' . date('Y-m-d') . '.csv');
+
+            $output = fopen('php://output', 'w');
+
+            fputcsv($output, [
+                __('Business Name', 'chamberboss'),
+                __('Description', 'chamberboss'),
+                __('Category', 'chamberboss'),
+                __('Phone', 'chamberboss'),
+                __('Address', 'chamberboss'),
+                __('Website', 'chamberboss'),
+                __('Status', 'chamberboss'),
+                __('Featured', 'chamberboss'),
+                __('Author', 'chamberboss'),
+                __('Date', 'chamberboss'),
+            ]);
+
+            foreach ($listings as $listing) {
+                $author = get_user_by('id', $listing->post_author);
+                $row = [
+                    $listing->post_title,
+                    $listing->post_content,
+                    get_post_meta($listing->ID, '_chamberboss_listing_category', true),
+                    get_post_meta($listing->ID, '_chamberboss_listing_phone', true),
+                    get_post_meta($listing->ID, '_chamberboss_listing_address', true),
+                    get_post_meta($listing->ID, '_chamberboss_listing_website', true),
+                    $listing->post_status,
+                    get_post_meta($listing->ID, '_chamberboss_listing_featured', true) ? 'Yes' : 'No',
+                    $author ? $author->display_name : '',
+                    $listing->post_date,
+                ];
+                fputcsv($output, $row);
+            }
+
+            fclose($output);
+            exit;
+        }
     }
 
     }

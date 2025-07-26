@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation | Chamber Membership Manager</title>
+    <title>FAQs | Chamberboss</title>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="documentation-page">
     <header class="header">
         <div class="container">
             <div class="logo">
-                <h1>Chamber Membership Manager</h1>
+                <img src="assets/logo.svg" alt="ChamberBoss" width="100" height="100" /><h1>ChamberBoss</h1>
                 <p>Powerful WordPress Plugin for Chambers of Commerce</p>
             </div>
             <nav class="nav">
@@ -26,77 +26,65 @@
         </div>
     </header>
 
-    <section class="documentation-page">
+    <section class="hero">
         <div class="container">
-            <h1>Plugin Documentation</h1>
-            
-            <div class="doc-section">
-                <h2>Installation</h2>
-                <ol>
-                    <li>Download the plugin ZIP file from the main page</li>
-                    <li>Go to your WordPress admin dashboard</li>
-                    <li>Navigate to Plugins > Add New</li>
-                    <li>Click "Upload Plugin" at the top</li>
-                    <li>Choose the downloaded ZIP file</li>
-                    <li>Click "Install Now"</li>
-                    <li>After installation, click "Activate Plugin"</li>
-                </ol>
-            </div>
-            
-            <div class="doc-section">
-                <h2>Configuration</h2>
-                <h3>Stripe Settings</h3>
-                <p>After activating the plugin, you'll need to configure your Stripe API keys:</p>
-                <ol>
-                    <li>Go to Chamber Members > Settings in your WordPress admin</li>
-                    <li>Enter your Stripe Publishable Key and Secret Key</li>
-                    <li>If you're testing, enable Test Mode</li>
-                    <li>Save the settings</li>
-                </ol>
-                
-                <h3>MailPoet Integration</h3>
-                <p>To enable MailPoet integration:</p>
-                <ol>
-                    <li>Make sure the MailPoet plugin is installed and activated</li>
-                    <li>In the Chamber Membership Manager settings, configure your MailPoet lists</li>
-                    <li>Save the settings</li>
-                </ol>
-            </div>
-            
-            <div class="doc-section">
-                <h2>Using the Plugin</h2>
-                <h3>Business Directory</h3>
-                <p>To display the business directory on your site:</p>
-                <ol>
-                    <li>Create a new page or edit an existing one</li>
-                    <li>Add the shortcode <code>[chamber-directory]</code> to the page content</li>
-                    <li>Publish or update the page</li>
-                </ol>
-                
-                <h3>Member Registration</h3>
-                <p>Members can register by:</p>
-                <ol>
-                    <li>Visiting your site's registration page</li>
-                    <li>Filling out the registration form</li>
-                    <li>Processing payment through Stripe</li>
-                    <li>Creating their business listing after successful payment</li>
-                </ol>
-            </div>
-            
-            <div class="doc-section">
-                <h2>Troubleshooting</h2>
-                <h3>Common Issues</h3>
-                <ul>
-                    <li><strong>Plugin not activating:</strong> Make sure you're using WordPress 6.0 or higher and PHP 8.0 or higher</li>
-                    <li><strong>Stripe payments not working:</strong> Check that your API keys are correct and that you're using the right mode (test/live)</li>
-                    <li><strong>Directory not showing listings:</strong> Make sure listings are published and not pending approval</li>
-                </ul>
-                
-                <h3>Getting Support</h3>
-                <p>If you're experiencing issues not covered in this documentation, please contact our support team at support@chamber-plugins.com</p>
+            <div class="hero-content">
+                <h1>Frequently Asked Questions</h1>
+                <p class="subtitle">Answers to common questions about the Chamberboss plugin.</p>
             </div>
         </div>
     </section>
+
+    <div class="container">
+        <div class="doc-section">
+            <h2>General Questions</h2>
+            
+            <h3>Can we customize the membership price?</h3>
+            <p>Yes. In the Chamberboss settings, you can set the annual membership price to any amount you choose. You can also select your preferred currency.</p>
+
+            <h3>How are membership renewals handled?</h3>
+            <p>The plugin automatically sends a renewal reminder email to members before their subscription expires. You can customize the content of this email and how many days in advance it's sent from the settings page.</p>
+
+            <h3>Can we manually add or edit members?</h3>
+            <p>Absolutely. From the "Members" page in the WordPress admin, you can add new members manually or edit the details of existing members, including their subscription status and expiration date.</p>
+        </div>
+
+        <div class="doc-section">
+            <h2>Business Directory</h2>
+
+            <h3>Do we have to approve new business listings?</h3>
+            <p>Yes. When a member submits a new business listing, it is set to "Pending" by default. A chamber administrator must review and approve the listing before it appears in the public directory. This gives you full control over the content.</p>
+
+            <h3>Can we feature certain business listings?</h3>
+            <p>Yes. You can mark any listing as "Featured" from the listing management page. This allows you to highlight specific members in your directory, which can be offered as a premium benefit.</p>
+
+            <h3>How do we organize the business directory?</h3>
+            <p>You can create custom categories (e.g., "Restaurants," "Retail," "Professional Services") from the "Categories" page. Members can then select a category when submitting their listing, making the directory easy for visitors to navigate.</p>
+        </div>
+
+        <div class="doc-section">
+            <h2>Payments & Integration</h2>
+
+            <h3>What payment gateways are supported?</h3>
+            <p>Chamberboss integrates exclusively with Stripe, a secure and widely trusted payment processor. This allows you to accept credit card payments for memberships safely and efficiently.</p>
+
+            <h3>Is it possible to test the payment system?</h3>
+            <p>Yes. The plugin has a "Test Mode" for Stripe. This allows you to simulate transactions and ensure everything is working correctly without processing real payments. We provide detailed instructions for this in our <a href="installation.html">Installation Guide</a>.</p>
+
+            <h3>Does this plugin work with other WordPress plugins?</h3>
+            <p>Chamberboss is built to standard WordPress coding practices to ensure compatibility. It also includes a direct integration for the popular MailPoet plugin, allowing you to automatically manage your member mailing lists.</p>
+        </div>
+
+        <div class="doc-section">
+            <h2>Support & Troubleshooting</h2>
+
+            <h3>What if we need help setting up the plugin?</h3>
+            <p>We offer comprehensive documentation, including a detailed <a href="installation.html">Installation & User Guide</a>. If you require hands-on assistance, we also provide premium support and setup services. Please contact us for more information.</p>
+
+            <h3>What are the technical requirements?</h3>
+            <p>Chamberboss is designed to work with modern WordPress installations. We recommend using the latest version of WordPress and a PHP version of 7.4 or higher for optimal performance and security.</p>
+        </div>
+    </div>
 
     <footer class="footer">
         <div class="container">
@@ -119,7 +107,5 @@
             </div>
         </div>
     </footer>
-
-    <script src="js/main.js"></script>
 </body>
 </html>

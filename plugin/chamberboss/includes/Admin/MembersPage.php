@@ -774,26 +774,11 @@ class MembersPage extends BaseClass {
      */
     private function format_currency($amount, $currency = 'USD') {
         $symbols = [
-            'USD' => '
-        
-        $symbol = $symbols[$currency] ?? $currency . ' ';
-        
-        return $symbol . number_format($amount, 2);
-    },
+            'USD' => ',
             'EUR' => '€',
             'GBP' => '£',
-            'CAD' => 'C
-        
-        $symbol = $symbols[$currency] ?? $currency . ' ';
-        
-        return $symbol . number_format($amount, 2);
-    },
+            'CAD' => 'C,
             'AUD' => 'A
-        
-        $symbol = $symbols[$currency] ?? $currency . ' ';
-        
-        return $symbol . number_format($amount, 2);
-    }
         ];
         
         $symbol = $symbols[$currency] ?? $currency . ' ';

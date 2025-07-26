@@ -59,12 +59,8 @@ class ListingsPage extends BaseClass {
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Business Listings', 'chamberboss'); ?></h1>
-            <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&action=add'); ?>" class="page-title-action">
-                <?php _e('Add New Listing', 'chamberboss'); ?>
-            </a>
-            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-listings&action=export_listings'), 'export_listings_nonce'); ?>" class="page-title-action">
-                <?php _e('Export Listings', 'chamberboss'); ?>
-            </a>
+            <a href="<?php echo admin_url('admin.php?page=chamberboss-listings&action=add'); ?>" class="page-title-action"><?php _e('Add New', 'chamberboss'); ?></a>
+            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-listings&action=export_listings'), 'export_listings_nonce'); ?>" class="page-title-action"><?php _e('Export Listings', 'chamberboss'); ?></a>
             
             <!-- Status Filters -->
             <div class="chamberboss-filters">

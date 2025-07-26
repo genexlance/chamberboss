@@ -65,12 +65,8 @@ class MembersPage extends BaseClass {
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Members', 'chamberboss'); ?></h1>
-            <a href="<?php echo admin_url('admin.php?page=chamberboss-members&action=add'); ?>" class="page-title-action">
-                <?php _e('Add New Member', 'chamberboss'); ?>
-            </a>
-            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-members&action=export_members'), 'export_members_nonce'); ?>" class="page-title-action">
-                <?php _e('Export Members', 'chamberboss'); ?>
-            </a>
+            <a href="<?php echo admin_url('admin.php?page=chamberboss-members&action=add'); ?>" class="page-title-action"><?php _e('Add New', 'chamberboss'); ?></a>
+            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=chamberboss-members&action=export_members'), 'export_members_nonce'); ?>" class="page-title-action"><?php _e('Export Members', 'chamberboss'); ?></a>
             
             <!-- Filters -->
             <div class="chamberboss-filters">

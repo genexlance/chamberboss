@@ -43,13 +43,8 @@ spl_autoload_register(function ($class) {
     $relative_class = substr($class, $len);
     $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
     
-    error_log("Attempting to load class: " . $class);
-    error_log("Attempting to load file: " . $file);
     if (file_exists($file)) {
         require $file;
-        error_log("Successfully loaded file: " . $file);
-    } else {
-        error_log("File not found: " . $file);
     }
 });
 
@@ -98,8 +93,7 @@ final class Chamberboss {
      */
     public function init() {
         // Initialize core components
-        new Chamberboss\Core\PostTypes(); // Re-enabled
-        new Chamberboss\Core\Database(); // Re-enabled
+        
         new Chamberboss\Admin\AdminMenu(); // Re-enabled
         new Chamberboss\Public\Directory(); // Re-enabled
         new Chamberboss\Public\MemberDashboard();
@@ -119,6 +113,10 @@ final class Chamberboss {
      * Plugin activation
      */
     public function activate() {
+        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
+        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
+        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
+
         // Create database tables
         Chamberboss\Core\Database::on_activation_create_tables();
         

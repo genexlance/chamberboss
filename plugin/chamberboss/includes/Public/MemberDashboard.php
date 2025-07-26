@@ -84,14 +84,14 @@ class MemberDashboard extends BaseClass {
         }
 
         // Get member meta (assuming these are stored as user meta for the member)
-        $first_name = get_user_meta($user_id, 'first_name', true) ?: $user->first_name;
-        $last_name = get_user_meta($user_id, 'last_name', true) ?: $user->last_name;
-        $member_email = get_user_meta($user_id, '_chamberboss_member_email', true) ?: $user->user_email;
-        $member_phone = get_user_meta($user_id, '_chamberboss_member_phone', true);
-        $member_company = get_user_meta($user_id, '_chamberboss_member_company', true);
-        $member_address = get_user_meta($user_id, '_chamberboss_member_address', true);
-        $member_website = get_user_meta($user_id, '_chamberboss_member_website', true);
-        $member_notes = get_user_meta($user_id, '_chamberboss_member_notes', true);
+        $first_name = $user->first_name;
+        $last_name = $user->last_name;
+        $member_email = $user->user_email;
+        $member_phone = get_user_meta($user_id, 'member_phone', true);
+        $member_company = get_user_meta($user_id, 'member_company', true);
+        $member_address = get_user_meta($user_id, 'member_address', true);
+        $member_website = get_user_meta($user_id, 'member_website', true);
+        $member_notes = get_user_meta($user_id, 'member_notes', true);
 
         ?>
         <h2><?php _e('Edit My Profile', 'chamberboss'); ?></h2>
@@ -284,14 +284,11 @@ class MemberDashboard extends BaseClass {
                 ]);
 
                 // Update user meta
-                update_user_meta($user_id, 'first_name', $data['first_name'] ?? '');
-                update_user_meta($user_id, 'last_name', $data['last_name'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_email', $data['user_email'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_notes', $data['member_notes'] ?? '');
+                update_user_meta($user_id, 'member_phone', $data['member_phone'] ?? '');
+                update_user_meta($user_id, 'member_company', $data['member_company'] ?? '');
+                update_user_meta($user_id, 'member_address', $data['member_address'] ?? '');
+                update_user_meta($user_id, 'member_website', $data['member_website'] ?? '');
+                update_user_meta($user_id, 'member_notes', $data['member_notes'] ?? '');
 
                 wp_redirect(add_query_arg('profile_updated', 'true', get_permalink()));
                 exit;

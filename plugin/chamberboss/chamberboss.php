@@ -43,8 +43,13 @@ spl_autoload_register(function ($class) {
     $relative_class = substr($class, $len);
     $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
     
+    error_log("Attempting to load class: " . $class);
+    error_log("Attempting to load file: " . $file);
     if (file_exists($file)) {
         require $file;
+        error_log("Successfully loaded file: " . $file);
+    } else {
+        error_log("File not found: " . $file);
     }
 });
 

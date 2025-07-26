@@ -94,12 +94,14 @@ final class Chamberboss {
     public function init() {
         // Initialize core components
         
-        new Chamberboss\Admin\AdminMenu(); // Re-enabled
-        new Chamberboss\Public\Directory(); // Re-enabled
+        new Chamberboss\Core\PostTypes();
+        new Chamberboss\Core\Database();
+        new Chamberboss\Admin\AdminMenu();
+        new Chamberboss\Public\Directory();
         new Chamberboss\Public\MemberDashboard();
-        new Chamberboss\Payments\StripeIntegration(); // Re-enabled
-        new Chamberboss\Email\MailPoetIntegration(); // Re-enabled
-        new Chamberboss\Notifications\NotificationSystem(); // Re-enabled
+        new Chamberboss\Payments\StripeIntegration();
+        new Chamberboss\Email\MailPoetIntegration();
+        new Chamberboss\Notifications\NotificationSystem();
     }
     
     /**
@@ -113,9 +115,17 @@ final class Chamberboss {
      * Plugin activation
      */
     public function activate() {
-        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
-        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
-        require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
+        error_log('CHAMBERBOSS_PLUGIN_DIR: ' . CHAMBERBOSS_PLUGIN_DIR);
+        $baseClassPath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
+        $databasePath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
+        $postTypesPath = CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/PostTypes.php';
+
+        error_log('Attempting to require_once: ' . $baseClassPath);
+        require_once $baseClassPath;
+        error_log('Attempting to require_once: ' . $databasePath);
+        require_once $databasePath;
+        error_log('Attempting to require_once: ' . $postTypesPath);
+        require_once $postTypesPath;
 
         // Create database tables
         Chamberboss\Core\Database::on_activation_create_tables();

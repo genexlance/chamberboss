@@ -458,32 +458,24 @@ class SettingsPage extends BaseClass {
      * Render email settings
      */
     private function render_email_settings() {
-        $from_name = $this->get_option('chamberboss_email_from_name', get_bloginfo('name'));
-        $from_address = $this->get_option('chamberboss_email_from_address', get_option('admin_email'));
-        $renewal_subject = $this->get_option('chamberboss_email_renewal_subject', 'Your membership is expiring soon');
-        $renewal_message = $this->get_option('chamberboss_email_renewal_message', $this->get_default_renewal_message());
-        $welcome_subject = $this->get_option('chamberboss_email_welcome_subject', 'Welcome to our Chamber of Commerce!');
-        $welcome_message = $this->get_option('chamberboss_email_welcome_message', $this->get_default_welcome_message());
-        
         ?>
         <div class="chamberboss-settings-section">
             <h3><?php _e('Email Settings', 'chamberboss'); ?></h3>
             
             <form method="post" action="options.php">
                 <?php settings_fields('chamberboss_email_settings'); ?>
-                <?php do_settings_sections('chamberboss_email_settings'); ?>
                 
                 <h4><?php _e('Email Sender', 'chamberboss'); ?></h4>
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="email_from_name"><?php _e('From Name', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_from_name"><?php _e('From Name', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <input type="text" 
                                    id="chamberboss_email_from_name" 
                                    name="chamberboss_email_from_name" 
-                                   value="<?php echo esc_attr($from_name); ?>" 
+                                   value="<?php echo esc_attr(get_option('chamberboss_email_from_name', get_bloginfo('name'))); ?>" 
                                    class="regular-text" 
                                    required>
                         </td>
@@ -491,13 +483,13 @@ class SettingsPage extends BaseClass {
                     
                     <tr>
                         <th scope="row">
-                            <label for="email_from_address"><?php _e('From Email Address', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_from_address"><?php _e('From Email Address', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <input type="email" 
                                    id="chamberboss_email_from_address" 
                                    name="chamberboss_email_from_address" 
-                                   value="<?php echo esc_attr($from_address); ?>" 
+                                   value="<?php echo esc_attr(get_option('chamberboss_email_from_address', get_option('admin_email'))); ?>" 
                                    class="regular-text" 
                                    required>
                         </td>
@@ -508,13 +500,13 @@ class SettingsPage extends BaseClass {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="renewal_subject"><?php _e('Subject', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_renewal_subject"><?php _e('Subject', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <input type="text" 
                                    id="chamberboss_email_renewal_subject" 
                                    name="chamberboss_email_renewal_subject" 
-                                   value="<?php echo esc_attr($renewal_subject); ?>" 
+                                   value="<?php echo esc_attr(get_option('chamberboss_email_renewal_subject', 'Your membership is expiring soon')); ?>" 
                                    class="large-text" 
                                    required>
                         </td>
@@ -522,14 +514,14 @@ class SettingsPage extends BaseClass {
                     
                     <tr>
                         <th scope="row">
-                            <label for="renewal_message"><?php _e('Message', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_renewal_message"><?php _e('Message', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <textarea id="chamberboss_email_renewal_message" 
                                       name="chamberboss_email_renewal_message" 
                                       rows="8" 
                                       class="large-text" 
-                                      required><?php echo esc_textarea($renewal_message); ?></textarea>
+                                      required><?php echo esc_textarea(get_option('chamberboss_email_renewal_message', $this->get_default_renewal_message())); ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {member_name}, {expiry_date}, {renewal_url}', 'chamberboss'); ?>
                             </p>
@@ -541,13 +533,13 @@ class SettingsPage extends BaseClass {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="welcome_subject"><?php _e('Subject', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_welcome_subject"><?php _e('Subject', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <input type="text" 
                                    id="chamberboss_email_welcome_subject" 
                                    name="chamberboss_email_welcome_subject" 
-                                   value="<?php echo esc_attr($welcome_subject); ?>" 
+                                   value="<?php echo esc_attr(get_option('chamberboss_email_welcome_subject', 'Welcome to our Chamber of Commerce!')); ?>" 
                                    class="large-text" 
                                    required>
                         </td>
@@ -555,14 +547,14 @@ class SettingsPage extends BaseClass {
                     
                     <tr>
                         <th scope="row">
-                            <label for="welcome_message"><?php _e('Message', 'chamberboss'); ?></label>
+                            <label for="chamberboss_email_welcome_message"><?php _e('Message', 'chamberboss'); ?></label>
                         </th>
                         <td>
                             <textarea id="chamberboss_email_welcome_message" 
                                       name="chamberboss_email_welcome_message" 
                                       rows="8" 
                                       class="large-text" 
-                                      required><?php echo esc_textarea($welcome_message); ?></textarea>
+                                      required><?php echo esc_textarea(get_option('chamberboss_email_welcome_message', $this->get_default_welcome_message())); ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {member_name}, {login_url}, {directory_url}', 'chamberboss'); ?>
                             </p>

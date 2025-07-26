@@ -83,62 +83,113 @@ class MemberDashboard extends BaseClass {
             return;
         }
 
-        // Get member meta (assuming these are stored as user meta for the member)
+        $is_edit_mode = isset($_GET['edit']) && $_GET['edit'] === 'true';
+
+        // Fetch profile data
         $first_name = $user->first_name;
         $last_name = $user->last_name;
-        $member_email = $user->user_email;
-        $member_phone = get_user_meta($user_id, 'member_phone', true);
-        $member_company = get_user_meta($user_id, 'member_company', true);
-        $member_address = get_user_meta($user_id, 'member_address', true);
-        $member_website = get_user_meta($user_id, 'member_website', true);
-        $member_notes = get_user_meta($user_id, 'member_notes', true);
+        $email = $user->user_email;
+        $phone = get_user_meta($user_id, '_chamberboss_member_phone', true);
+        $company = get_user_meta($user_id, '_chamberboss_member_company', true);
+        $address = get_user_meta($user_id, '_chamberboss_member_address', true);
+        $website = get_user_meta($user_id, '_chamberboss_member_website', true);
+        $notes = get_user_meta($user_id, '_chamberboss_member_notes', true);
 
-        ?>
-        <h2><?php _e('Edit My Profile', 'chamberboss'); ?></h2>
-        <form method="post" action="<?php echo esc_url(get_permalink()); ?>">
-            <?php wp_nonce_field('chamberboss_update_profile', 'profile_nonce'); ?>
-            <input type="hidden" name="action" value="update_profile">
-            <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
+        if ($is_edit_mode) {
+            // EDITING VIEW (the form)
+            ?>
+            <h2><?php _e('Edit My Profile', 'chamberboss'); ?></h2>
+            <form method="post" action="<?php echo esc_url(remove_query_arg('edit')); ?>">
+                <?php wp_nonce_field('chamberboss_update_profile', 'profile_nonce'); ?>
+                <input type="hidden" name="action" value="update_profile">
+                <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
 
+                <table class="form-table">
+                    <tr>
+                        <th><label for="first_name"><?php _e('First Name', 'chamberboss'); ?></label></th>
+                        <td><input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($first_name); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="last_name"><?php _e('Last Name', 'chamberboss'); ?></label></th>
+                        <td><input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($last_name); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="user_email"><?php _e('Email', 'chamberboss'); ?></label></th>
+                        <td><input type="email" name="user_email" id="user_email" value="<?php echo esc_attr($email); ?>" class="regular-text" required /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="member_phone"><?php _e('Phone', 'chamberboss'); ?></label></th>
+                        <td><input type="text" name="member_phone" id="member_phone" value="<?php echo esc_attr($phone); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="member_company"><?php _e('Company', 'chamberboss'); ?></label></th>
+                        <td><input type="text" name="member_company" id="member_company" value="<?php echo esc_attr($company); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="member_address"><?php _e('Address', 'chamberboss'); ?></label></th>
+                        <td><textarea name="member_address" id="member_address" class="large-text" rows="3"><?php echo esc_textarea($address); ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <th><label for="member_website"><?php _e('Website', 'chamberboss'); ?></label></th>
+                        <td><input type="url" name="member_website" id="member_website" value="<?php echo esc_attr($website); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="member_notes"><?php _e('Notes', 'chamberboss'); ?></label></th>
+                        <td><textarea name="member_notes" id="member_notes" class="large-text" rows="5"><?php echo esc_textarea($notes); ?></textarea></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" name="submit" id="submit" class="button button-primary" value="<?php _e('Update Profile', 'chamberboss'); ?>">
+                    <a href="<?php echo esc_url(remove_query_arg('edit')); ?>" class="button"><?php _e('Cancel', 'chamberboss'); ?></a>
+                </p>
+            </form>
+            <?php
+        } else {
+            // VIEWING VIEW (read-only)
+            ?>
+            <h2><?php _e('My Profile', 'chamberboss'); ?></h2>
+            <?php if (isset($_GET['profile_updated']) && $_GET['profile_updated'] === 'true') : ?>
+                <div class="chamberboss-notice chamberboss-notice-success" style="margin-bottom: 15px;">
+                    <p><?php _e('Profile updated successfully.', 'chamberboss'); ?></p>
+                </div>
+            <?php endif; ?>
+            <a href="<?php echo esc_url(add_query_arg('edit', 'true')); ?>" class="button button-primary" style="margin-bottom: 15px;"><?php _e('Edit Profile', 'chamberboss'); ?></a>
             <table class="form-table">
                 <tr>
-                    <th><label for="first_name"><?php _e('First Name', 'chamberboss'); ?></label></th>
-                    <td><input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($first_name); ?>" class="regular-text" /></td>
+                    <th><?php _e('First Name', 'chamberboss'); ?></th>
+                    <td><?php echo esc_html($first_name); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="last_name"><?php _e('Last Name', 'chamberboss'); ?></label></th>
-                    <td><input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($last_name); ?>" class="regular-text" /></td>
+                    <th><?php _e('Last Name', 'chamberboss'); ?></th>
+                    <td><?php echo esc_html($last_name); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="user_email"><?php _e('Email', 'chamberboss'); ?></label></th>
-                    <td><input type="email" name="user_email" id="user_email" value="<?php echo esc_attr($member_email); ?>" class="regular-text" required /></td>
+                    <th><?php _e('Email', 'chamberboss'); ?></th>
+                    <td><?php echo esc_html($email); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="member_phone"><?php _e('Phone', 'chamberboss'); ?></label></th>
-                    <td><input type="text" name="member_phone" id="member_phone" value="<?php echo esc_attr($member_phone); ?>" class="regular-text" /></td>
+                    <th><?php _e('Phone', 'chamberboss'); ?></th>
+                    <td><?php echo esc_html($phone); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="member_company"><?php _e('Company', 'chamberboss'); ?></label></th>
-                    <td><input type="text" name="member_company" id="member_company" value="<?php echo esc_attr($member_company); ?>" class="regular-text" /></td>
+                    <th><?php _e('Company', 'chamberboss'); ?></th>
+                    <td><?php echo esc_html($company); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="member_address"><?php _e('Address', 'chamberboss'); ?></label></th>
-                    <td><textarea name="member_address" id="member_address" class="large-text" rows="3"><?php echo esc_textarea($member_address); ?></textarea></td>
+                    <th><?php _e('Address', 'chamberboss'); ?></th>
+                    <td><?php echo nl2br(esc_html($address)); ?></td>
                 </tr>
                 <tr>
-                    <th><label for="member_website"><?php _e('Website', 'chamberboss'); ?></label></th>
-                    <td><input type="url" name="member_website" id="member_website" value="<?php echo esc_attr($member_website); ?>" class="regular-text" /></td>
+                    <th><?php _e('Website', 'chamberboss'); ?></th>
+                    <td><a href="<?php echo esc_url($website); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($website); ?></a></td>
                 </tr>
                 <tr>
-                    <th><label for="member_notes"><?php _e('Notes', 'chamberboss'); ?></label></th>
-                    <td><textarea name="member_notes" id="member_notes" class="large-text" rows="5"><?php echo esc_textarea($member_notes); ?></textarea></td>
+                    <th><?php _e('Notes', 'chamberboss'); ?></th>
+                    <td><?php echo nl2br(esc_html($notes)); ?></td>
                 </tr>
             </table>
-            <p class="submit">
-                <input type="submit" name="submit" id="submit" class="button button-primary" value="<?php _e('Update Profile', 'chamberboss'); ?>">
-            </p>
-        </form>
-        <?php
+            <?php
+        }
     }
 
     private function render_member_listings($user_id) {
@@ -284,11 +335,11 @@ class MemberDashboard extends BaseClass {
                 ]);
 
                 // Update user meta
-                update_user_meta($user_id, 'member_phone', $data['member_phone'] ?? '');
-                update_user_meta($user_id, 'member_company', $data['member_company'] ?? '');
-                update_user_meta($user_id, 'member_address', $data['member_address'] ?? '');
-                update_user_meta($user_id, 'member_website', $data['member_website'] ?? '');
-                update_user_meta($user_id, 'member_notes', $data['member_notes'] ?? '');
+                update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
+                update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
+                update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
+                update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
+                update_user_meta($user_id, '_chamberboss_member_notes', $data['member_notes'] ?? '');
 
                 wp_redirect(add_query_arg('profile_updated', 'true', get_permalink()));
                 exit;

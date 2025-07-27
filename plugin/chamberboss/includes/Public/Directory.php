@@ -378,6 +378,15 @@ class Directory extends BaseClass {
                 </div>
                 <?php endif; ?>
                 
+                <!-- TEMPORARY DEBUG INFO -->
+                <div style="background: #fff3cd; padding: 10px; margin: 10px 0; border: 1px solid #ffeaa7;">
+                    <strong>DEBUG INFO:</strong><br>
+                    Form ID: chamberboss-member-registration<br>
+                    Stripe Configured: <?php echo $stripe_config->is_configured() ? 'YES' : 'NO'; ?><br>
+                    Payment Enabled: <?php echo $payment_enabled ? 'YES' : 'NO'; ?><br>
+                    Current Time: <?php echo current_time('mysql'); ?>
+                </div>
+                
                 <div class="form-actions">
                     <button type="submit" class="submit-button" <?php echo $payment_enabled ? 'id="submit-payment"' : ''; ?>>
                         <?php echo $payment_enabled ? __('Join & Pay Now', 'chamberboss') : __('Register', 'chamberboss'); ?>
@@ -385,6 +394,7 @@ class Directory extends BaseClass {
                     
                     <!-- TEMPORARY DEBUG BUTTON -->
                     <button type="button" id="test-ajax-button" style="margin-left: 10px; background: #ccc;">Test AJAX</button>
+                    <button type="button" onclick="console.log('Button clicked, jQuery available:', !!window.jQuery)" style="margin-left: 10px; background: #f0f;">Test Console</button>
                 </div>
                 
                 <div id="registration-messages" class="form-messages"></div>
@@ -491,6 +501,14 @@ class Directory extends BaseClass {
         // TEMPORARY - Add to WordPress debug log
         if (function_exists('error_log')) {
             error_log('CHAMBERBOSS DEBUG: Frontend registration handler called at ' . current_time('mysql'));
+        }
+        
+        // FORCE DEBUG OUTPUT - This should appear in your debug log
+        error_log('=== CHAMBERBOSS REGISTRATION HANDLER DEFINITELY CALLED ===');
+        
+        // FORCE VISUAL DEBUG - This will show as a PHP error on screen
+        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY) {
+            echo "<div style='background:red;color:white;padding:10px;'>CHAMBERBOSS DEBUG: Registration handler called!</div>";
         }
         
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {

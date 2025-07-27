@@ -22,7 +22,11 @@ class SettingsPage extends BaseClass {
         $this->stripe_config = new StripeConfig();
         
         // Handle form submissions
-        add_action('admin_init', [$this, 'handle_settings_save']);
+        add_action('admin_post_save_general_settings', [$this, 'save_general_settings']);
+        add_action('admin_post_save_stripe_settings', [$this, 'save_stripe_settings']);
+        add_action('admin_post_save_mailpoet_settings', [$this, 'save_mailpoet_settings']);
+        add_action('admin_post_save_email_settings', [$this, 'save_email_settings']);
+        add_action('admin_post_save_categories_settings', [$this, 'save_categories_settings']);
     }
     
     /**
@@ -104,7 +108,7 @@ class SettingsPage extends BaseClass {
         <div class="chamberboss-settings-section">
             <h3><?php _e('General Settings', 'chamberboss'); ?></h3>
             
-            <form method="post" action="">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('chamberboss_general_settings', 'chamberboss_general_nonce'); ?>
                 <input type="hidden" name="action" value="save_general_settings">
                 
@@ -182,7 +186,7 @@ class SettingsPage extends BaseClass {
         <div class="chamberboss-settings-section">
             <h3><?php _e('Stripe Configuration', 'chamberboss'); ?></h3>
             
-            <form method="post" action="">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('chamberboss_stripe_settings', 'chamberboss_stripe_nonce'); ?>
                 <input type="hidden" name="action" value="save_stripe_settings">
                 
@@ -387,7 +391,7 @@ class SettingsPage extends BaseClass {
                 </div>
             <?php endif; ?>
             
-            <form method="post" action="">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('chamberboss_mailpoet_settings', 'chamberboss_mailpoet_nonce'); ?>
                 <input type="hidden" name="action" value="save_mailpoet_settings">
                 
@@ -461,7 +465,7 @@ class SettingsPage extends BaseClass {
         <div class="chamberboss-settings-section">
             <h3><?php _e('Email Settings', 'chamberboss'); ?></h3>
             
-            <form method="post" action="">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('chamberboss_email_settings', 'chamberboss_email_nonce'); ?>
                 <input type="hidden" name="action" value="save_email_settings">
                 
@@ -579,39 +583,12 @@ class SettingsPage extends BaseClass {
         <?php
     }
     
-    /**
-     * Handle settings save
-     */
-    public function handle_settings_save() {
-        if (!isset($_POST['action'])) {
-            return;
-        }
-        
-        $action = $_POST['action'];
-        
-        switch ($action) {
-            case 'save_general_settings':
-                $this->save_general_settings();
-                break;
-            case 'save_stripe_settings':
-                $this->save_stripe_settings();
-                break;
-            case 'save_mailpoet_settings':
-                $this->save_mailpoet_settings();
-                break;
-            case 'save_email_settings':
-                $this->save_email_settings();
-                break;
-            case 'save_categories_settings':
-                $this->save_categories_settings();
-                break;
-        }
-    }
+
     
     /**
      * Save general settings
      */
-    private function save_general_settings() {
+    public function save_general_settings() {
         if (!$this->verify_nonce($_POST['chamberboss_general_nonce'] ?? '', 'chamberboss_general_settings')) {
             return;
         }
@@ -635,7 +612,7 @@ class SettingsPage extends BaseClass {
     /**
      * Save Stripe settings
      */
-    private function save_stripe_settings() {
+    public function save_stripe_settings() {
         if (!$this->verify_nonce($_POST['chamberboss_stripe_nonce'] ?? '', 'chamberboss_stripe_settings')) {
             return;
         }
@@ -662,7 +639,7 @@ class SettingsPage extends BaseClass {
     /**
      * Save MailPoet settings
      */
-    private function save_mailpoet_settings() {
+    public function save_mailpoet_settings() {
         if (!$this->verify_nonce($_POST['chamberboss_mailpoet_nonce'] ?? '', 'chamberboss_mailpoet_settings')) {
             return;
         }
@@ -686,7 +663,7 @@ class SettingsPage extends BaseClass {
     /**
      * Save email settings
      */
-    private function save_email_settings() {
+    public function save_email_settings() {
         if (!$this->verify_nonce($_POST['chamberboss_email_nonce'] ?? '', 'chamberboss_email_settings')) {
             return;
         }
@@ -716,7 +693,7 @@ class SettingsPage extends BaseClass {
     /**
      * Save categories settings
      */
-    private function save_categories_settings() {
+    public function save_categories_settings() {
         if (!$this->verify_nonce($_POST['chamberboss_categories_nonce'] ?? '', 'chamberboss_categories_settings')) {
             return;
         }

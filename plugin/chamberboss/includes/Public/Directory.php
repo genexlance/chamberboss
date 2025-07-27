@@ -13,6 +13,12 @@ class Directory extends BaseClass {
      * Initialize directory
      */
     protected function init() {
+        // DEBUG: Log that init is being called
+        error_log('🔧 CHAMBERBOSS DEBUG: Directory init() method called at ' . current_time('mysql'));
+        
+        // Check if Stripe classes are available during init
+        $stripe_available = class_exists('\\Stripe\\Stripe') ? 'YES' : 'NO';
+        error_log('🔧 CHAMBERBOSS DEBUG: Stripe classes available during init: ' . $stripe_available);
         // Add shortcodes
         add_shortcode('chamberboss_directory', [$this, 'directory_shortcode']);
         add_shortcode('chamberboss_member_registration', [$this, 'member_registration_shortcode']);
@@ -30,6 +36,9 @@ class Directory extends BaseClass {
         // TEMPORARY - Test AJAX handler
         add_action('wp_ajax_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
         add_action('wp_ajax_nopriv_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
+        
+        // DEBUG: Confirm AJAX handlers were registered
+        error_log('🔧 CHAMBERBOSS DEBUG: All AJAX handlers registered successfully');
         
         // Enqueue frontend scripts and styles
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
@@ -830,6 +839,10 @@ class Directory extends BaseClass {
      * Enqueue frontend assets
      */
     public function enqueue_frontend_assets() {
+        // DEBUG: Log that this method is being called
+        error_log('🔧 CHAMBERBOSS DEBUG: enqueue_frontend_assets() called at ' . current_time('mysql'));
+        // DEBUG: Log CSS enqueue
+        error_log('🔧 CHAMBERBOSS DEBUG: Enqueueing frontend CSS from: ' . CHAMBERBOSS_PLUGIN_URL . 'assets/css/frontend.css');
         wp_enqueue_style(
             'chamberboss-frontend',
             CHAMBERBOSS_PLUGIN_URL . 'assets/css/frontend.css',
@@ -840,6 +853,7 @@ class Directory extends BaseClass {
         // Enqueue Stripe.js if needed
         $stripe_config = new \Chamberboss\Payments\StripeConfig();
         if ($stripe_config->is_configured()) {
+            error_log('🔧 CHAMBERBOSS DEBUG: Stripe configured - enqueueing Stripe.js');
             wp_enqueue_script(
                 'stripe-js',
                 'https://js.stripe.com/v3/',
@@ -847,8 +861,12 @@ class Directory extends BaseClass {
                 null,
                 true
             );
+        } else {
+            error_log('🔧 CHAMBERBOSS DEBUG: Stripe NOT configured - skipping Stripe.js');
         }
         
+        // DEBUG: Log JS enqueue
+        error_log('🔧 CHAMBERBOSS DEBUG: Enqueueing frontend JS from: ' . CHAMBERBOSS_PLUGIN_URL . 'assets/js/frontend.js');
         wp_enqueue_script(
             'chamberboss-frontend',
             CHAMBERBOSS_PLUGIN_URL . 'assets/js/frontend.js',
@@ -871,8 +889,12 @@ class Directory extends BaseClass {
         // Add Stripe key if configured
         if ($stripe_config->is_configured()) {
             $localize_data['stripe_publishable_key'] = $stripe_config->get_publishable_key();
+            error_log('🔧 CHAMBERBOSS DEBUG: Adding Stripe publishable key to localization');
+        } else {
+            error_log('🔧 CHAMBERBOSS DEBUG: Stripe not configured - no publishable key added');
         }
         
+        error_log('🔧 CHAMBERBOSS DEBUG: Localizing script with data: ' . print_r($localize_data, true));
         wp_localize_script('chamberboss-frontend', 'chamberboss_frontend', $localize_data);
     }
     
@@ -979,6 +1001,8 @@ class Directory extends BaseClass {
      * Handle payment intent creation for registration
      */
     public function handle_create_payment_intent() {
+        // DEBUG: Log that handler is being called
+        error_log('🔧 CHAMBERBOSS DEBUG: handle_create_payment_intent method called at ' . current_time('mysql'));
         if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
             $this->send_json_response(['message' => 'Invalid nonce'], false);
             return;

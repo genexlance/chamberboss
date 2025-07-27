@@ -85,7 +85,7 @@ class MemberDashboard extends BaseClass {
 
         $is_edit_mode = isset($_GET['edit']) && $_GET['edit'] === 'true';
 
-        // Fetch profile data
+        // Fetch profile data with debugging
         $first_name = $user->first_name;
         $last_name = $user->last_name;
         $email = $user->user_email;
@@ -93,7 +93,17 @@ class MemberDashboard extends BaseClass {
         $company = get_user_meta($user_id, '_chamberboss_member_company', true);
         $address = get_user_meta($user_id, '_chamberboss_member_address', true);
         $website = get_user_meta($user_id, '_chamberboss_member_website', true);
-        $notes = get_user_meta($user_id, '_chamberboss_member_notes', true);
+        
+        // Debug logging for empty fields
+        if (WP_DEBUG) {
+            error_log("[ChamberBoss Dashboard] Profile data for user {$user_id}:");
+            error_log("  First Name: " . ($first_name ?: 'empty'));
+            error_log("  Last Name: " . ($last_name ?: 'empty'));
+            error_log("  Phone: " . ($phone ?: 'empty'));
+            error_log("  Company: " . ($company ?: 'empty'));
+            error_log("  Address: " . ($address ?: 'empty'));
+            error_log("  Website: " . ($website ?: 'empty'));
+        }
 
         if ($is_edit_mode) {
             // EDITING VIEW (the form)
@@ -133,10 +143,6 @@ class MemberDashboard extends BaseClass {
                         <th><label for="member_website"><?php _e('Website', 'chamberboss'); ?></label></th>
                         <td><input type="url" name="member_website" id="member_website" value="<?php echo esc_attr($website); ?>" class="regular-text" /></td>
                     </tr>
-                    <tr>
-                        <th><label for="member_notes"><?php _e('Notes', 'chamberboss'); ?></label></th>
-                        <td><textarea name="member_notes" id="member_notes" class="large-text" rows="5"><?php echo esc_textarea($notes); ?></textarea></td>
-                    </tr>
                 </table>
                 <p class="submit">
                     <input type="submit" name="submit" id="submit" class="button button-primary" value="<?php _e('Update Profile', 'chamberboss'); ?>">
@@ -157,11 +163,11 @@ class MemberDashboard extends BaseClass {
             <table class="form-table">
                 <tr>
                     <th><?php _e('First Name', 'chamberboss'); ?></th>
-                    <td><?php echo esc_html($first_name); ?></td>
+                    <td><?php echo $first_name ? esc_html($first_name) : '<em>Not provided</em>'; ?></td>
                 </tr>
                 <tr>
                     <th><?php _e('Last Name', 'chamberboss'); ?></th>
-                    <td><?php echo esc_html($last_name); ?></td>
+                    <td><?php echo $last_name ? esc_html($last_name) : '<em>Not provided</em>'; ?></td>
                 </tr>
                 <tr>
                     <th><?php _e('Email', 'chamberboss'); ?></th>
@@ -169,23 +175,19 @@ class MemberDashboard extends BaseClass {
                 </tr>
                 <tr>
                     <th><?php _e('Phone', 'chamberboss'); ?></th>
-                    <td><?php echo esc_html($phone); ?></td>
+                    <td><?php echo $phone ? esc_html($phone) : '<em>Not provided</em>'; ?></td>
                 </tr>
                 <tr>
                     <th><?php _e('Company', 'chamberboss'); ?></th>
-                    <td><?php echo esc_html($company); ?></td>
+                    <td><?php echo $company ? esc_html($company) : '<em>Not provided</em>'; ?></td>
                 </tr>
                 <tr>
                     <th><?php _e('Address', 'chamberboss'); ?></th>
-                    <td><?php echo nl2br(esc_html($address)); ?></td>
+                    <td><?php echo $address ? nl2br(esc_html($address)) : '<em>Not provided</em>'; ?></td>
                 </tr>
                 <tr>
                     <th><?php _e('Website', 'chamberboss'); ?></th>
-                    <td><a href="<?php echo esc_url($website); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($website); ?></a></td>
-                </tr>
-                <tr>
-                    <th><?php _e('Notes', 'chamberboss'); ?></th>
-                    <td><?php echo nl2br(esc_html($notes)); ?></td>
+                    <td><?php echo $website ? '<a href="' . esc_url($website) . '" target="_blank" rel="noopener noreferrer">' . esc_html($website) . '</a>' : '<em>Not provided</em>'; ?></td>
                 </tr>
             </table>
             <?php
@@ -326,20 +328,37 @@ class MemberDashboard extends BaseClass {
 
                 $data = $this->sanitize_input($_POST);
 
+                // Debug logging for update
+                if (WP_DEBUG) {
+                    error_log("[ChamberBoss Dashboard] Updating profile for user {$user_id}:");
+                    error_log("  First Name: " . ($data['first_name'] ?? 'not provided'));
+                    error_log("  Last Name: " . ($data['last_name'] ?? 'not provided')); 
+                    error_log("  Email: " . ($data['user_email'] ?? 'not provided'));
+                    error_log("  Phone: " . ($data['member_phone'] ?? 'not provided'));
+                    error_log("  Company: " . ($data['member_company'] ?? 'not provided'));
+                    error_log("  Address: " . ($data['member_address'] ?? 'not provided'));
+                    error_log("  Website: " . ($data['member_website'] ?? 'not provided'));
+                }
+
                 // Update user data
-                wp_update_user([
+                $user_update_result = wp_update_user([
                     'ID' => $user_id,
                     'first_name' => $data['first_name'] ?? '',
                     'last_name' => $data['last_name'] ?? '',
                     'user_email' => $data['user_email'] ?? $current_user->user_email, // Allow email update
                 ]);
 
+                if (is_wp_error($user_update_result)) {
+                    error_log('[ChamberBoss Dashboard] User update failed: ' . $user_update_result->get_error_message());
+                } else {
+                    error_log('[ChamberBoss Dashboard] User data updated successfully');
+                }
+
                 // Update user meta
                 update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
                 update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
                 update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
                 update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
-                update_user_meta($user_id, '_chamberboss_member_notes', $data['member_notes'] ?? '');
 
                 wp_redirect(add_query_arg('profile_updated', 'true', get_permalink()));
                 exit;

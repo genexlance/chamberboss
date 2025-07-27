@@ -30,10 +30,7 @@ define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CHAMBERBOSS_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-// Load Composer autoloader for Stripe PHP SDK
-if (file_exists(CHAMBERBOSS_PLUGIN_DIR . 'vendor/autoload.php')) {
-    require_once CHAMBERBOSS_PLUGIN_DIR . 'vendor/autoload.php';
-}
+// Load Composer autoloader for Stripe PHP SDK - will be loaded in init() method
 
 require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/BaseClass.php';
 require_once CHAMBERBOSS_PLUGIN_DIR . 'includes/Core/Database.php';
@@ -103,8 +100,23 @@ final class Chamberboss {
      * Initialize plugin
      */
     public function init() {
-        // Initialize core components
+        // DEBUG: Check if Stripe classes are available during main init
+        $stripe_available = class_exists('\\Stripe\\Stripe') ? 'YES' : 'NO';
+        error_log('🔧 CHAMBERBOSS DEBUG: Stripe classes available during main init: ' . $stripe_available);
         
+        // Try to manually load Stripe classes if not available
+        if (!class_exists('\\Stripe\\Stripe')) {
+            $vendor_autoload = CHAMBERBOSS_PLUGIN_DIR . 'vendor/autoload.php';
+            if (file_exists($vendor_autoload)) {
+                require_once $vendor_autoload;
+                $stripe_available_after = class_exists('\\Stripe\\Stripe') ? 'YES' : 'NO';
+                error_log('🔧 CHAMBERBOSS DEBUG: Stripe classes available after manual require: ' . $stripe_available_after);
+            } else {
+                error_log('🔧 CHAMBERBOSS DEBUG: Vendor autoload file not found at: ' . $vendor_autoload);
+            }
+        }
+        
+        // Initialize core components
         new Chamberboss\Core\PostTypes();
         new Chamberboss\Core\Database();
         new Chamberboss\Admin\AdminMenu();

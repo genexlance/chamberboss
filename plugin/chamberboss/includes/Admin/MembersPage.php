@@ -206,6 +206,27 @@ class MembersPage extends BaseClass {
         ?>
         <div class="wrap">
             <h1><?php _e('Add New Member', 'chamberboss'); ?></h1>
+            
+            <?php 
+            // Display any error messages
+            settings_errors('chamberboss_members');
+            
+            // Show specific error messages based on URL parameter
+            if (isset($_GET['error'])) {
+                $error_type = sanitize_text_field($_GET['error']);
+                switch ($error_type) {
+                    case 'email_exists':
+                        echo '<div class="notice notice-error"><p><strong>Error:</strong> A member with this email already exists.</p></div>';
+                        break;
+                    case 'required_fields':
+                        echo '<div class="notice notice-error"><p><strong>Error:</strong> Name and email are required fields.</p></div>';
+                        break;
+                    case 'creation_failed':
+                        echo '<div class="notice notice-error"><p><strong>Error:</strong> Failed to create member. Please try again.</p></div>';
+                        break;
+                }
+            }
+            ?>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('chamberboss_add_member_action', 'add_member_nonce'); ?>
                 <input type="hidden" name="action" value="add_new_member">
@@ -666,9 +687,10 @@ class MembersPage extends BaseClass {
             // Validate required fields
             if (empty($data['member_name']) || empty($data['member_email'])) {
                 error_log('[Chamberboss Debug] Member name or email is empty.');
-                // Display error message
+                // Display error message and redirect back
                 add_settings_error('chamberboss_members', 'add_member_error', __('Name and email are required.', 'chamberboss'), 'error');
-                return;
+                wp_redirect(admin_url('admin.php?page=chamberboss-members&action=add&error=required_fields'));
+                exit;
             }
 
             // Check if email already exists
@@ -686,7 +708,8 @@ class MembersPage extends BaseClass {
             if (!empty($existing_member)) {
                 error_log('[Chamberboss Debug] Member with this email already exists.');
                 add_settings_error('chamberboss_members', 'add_member_error', __('A member with this email already exists.', 'chamberboss'), 'error');
-                return;
+                wp_redirect(admin_url('admin.php?page=chamberboss-members&action=add&error=email_exists'));
+                exit;
             }
 
             // Create member post
@@ -710,8 +733,9 @@ class MembersPage extends BaseClass {
             error_log('[Chamberboss Debug] wp_insert_post returned: ' . print_r($member_id, true));
 
             if (is_wp_error($member_id)) {
-                add_settings_error('chamberboss_members', 'add_member_error', __('Failed to create member.', 'chamberboss'), 'error');
-                return;
+                add_settings_error('chamberboss_members', 'add_member_error', __('Failed to create member: ' . $member_id->get_error_message(), 'chamberboss'), 'error');
+                wp_redirect(admin_url('admin.php?page=chamberboss-members&action=add&error=creation_failed'));
+                exit;
             }
 
             // Trigger member registration action

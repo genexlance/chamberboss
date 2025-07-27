@@ -67,6 +67,9 @@ class Directory extends BaseClass {
      * @return string
      */
     public function member_registration_shortcode($atts) {
+        // FORCE DEBUG - Log every time shortcode is called
+        error_log('=== CHAMBERBOSS SHORTCODE CALLED === at ' . current_time('mysql'));
+        
         $atts = shortcode_atts([
             'redirect_url' => '',
             'show_payment' => true
@@ -297,6 +300,13 @@ class Directory extends BaseClass {
      * @param array $args
      */
     private function render_member_registration_form($args) {
+        // FORCE VISIBLE DEBUG - This MUST show up
+        echo '<div style="background:red;color:white;padding:20px;font-size:20px;text-align:center;margin:20px 0;">
+        🔧 CHAMBERBOSS v1.0.1 UPDATED CODE IS RUNNING! 
+        <br>Time: ' . current_time('mysql') . '
+        <br>If you see this, my code is working!
+        </div>';
+        
         if (is_user_logged_in()) {
             echo '<p>' . __('You are already logged in.', 'chamberboss') . '</p>';
             return;
@@ -549,6 +559,7 @@ class Directory extends BaseClass {
         
         // Check if email already exists as WordPress user
         if (email_exists($data['member_email'])) {
+            error_log('CHAMBERBOSS: Email exists check - user already exists: ' . $data['member_email']);
             $this->send_json_response(['message' => 'A user with this email already exists'], false);
             return;
         }

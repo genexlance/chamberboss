@@ -529,12 +529,13 @@
     
     // Initialize when document is ready
     $(document).ready(function() {
-        console.log('Chamberboss: Document ready, initializing...');
+        console.log('🔧 Chamberboss v1.0.1: Document ready, initializing...');
         console.log('Chamberboss: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
         if (typeof chamberboss_frontend !== 'undefined') {
             console.log('Chamberboss: AJAX URL:', chamberboss_frontend.ajax_url);
             console.log('Chamberboss: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
+        console.log('🚨 CHAMBERBOSS UPDATED CODE IS LOADING!');
         Chamberboss.init();
         console.log('Chamberboss: Initialization complete');
     });

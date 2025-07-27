@@ -380,11 +380,13 @@ class Directory extends BaseClass {
                 
                 <!-- TEMPORARY DEBUG INFO -->
                 <div style="background: #fff3cd; padding: 10px; margin: 10px 0; border: 1px solid #ffeaa7;">
-                    <strong>DEBUG INFO:</strong><br>
+                    <strong>🔧 DEBUG INFO (Version 1.0.1):</strong><br>
                     Form ID: chamberboss-member-registration<br>
                     Stripe Configured: <?php echo $stripe_config->is_configured() ? 'YES' : 'NO'; ?><br>
                     Payment Enabled: <?php echo $payment_enabled ? 'YES' : 'NO'; ?><br>
-                    Current Time: <?php echo current_time('mysql'); ?>
+                    Current Time: <?php echo current_time('mysql'); ?><br>
+                    Plugin Version: <?php echo CHAMBERBOSS_VERSION; ?><br>
+                    <strong>🚨 If you see this, my updated code IS working!</strong>
                 </div>
                 
                 <div class="form-actions">
@@ -819,7 +821,7 @@ class Directory extends BaseClass {
             'chamberboss-frontend',
             CHAMBERBOSS_PLUGIN_URL . 'assets/css/frontend.css',
             [],
-            CHAMBERBOSS_VERSION
+            CHAMBERBOSS_VERSION . '-' . time() // Force cache refresh
         );
         
         // Enqueue Stripe.js if needed
@@ -838,7 +840,7 @@ class Directory extends BaseClass {
             'chamberboss-frontend',
             CHAMBERBOSS_PLUGIN_URL . 'assets/js/frontend.js',
             ['jquery'],
-            CHAMBERBOSS_VERSION,
+            CHAMBERBOSS_VERSION . '-' . time(), // Force cache refresh
             true
         );
         

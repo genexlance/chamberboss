@@ -47,12 +47,29 @@ Chamberboss is a comprehensive WordPress plugin designed specifically for Chambe
 3. Alternatively, zip the plugin folder and upload via WordPress admin
 
 ### Step 2: Install Dependencies
-The plugin requires Composer for dependency management:
+The plugin requires the Stripe PHP SDK for payment processing. Choose one of these methods:
 
+#### Option A: Using Composer (Recommended)
 ```bash
-cd /path/to/wp-content/plugins/chamberboss-plugin
-composer install
+cd /path/to/wp-content/plugins/chamberboss
+composer install --no-dev
 ```
+
+#### Option B: Manual Installation
+If Composer is not available:
+
+1. Download Stripe PHP SDK: [https://github.com/stripe/stripe-php/releases](https://github.com/stripe/stripe-php/releases)
+2. Extract to `chamberboss/vendor/stripe/stripe-php/`
+3. Download Composer autoloader or create your own class loading
+
+#### Option C: Using WP-CLI (if available)
+```bash
+wp plugin install chamberboss --activate
+cd wp-content/plugins/chamberboss
+composer install --no-dev
+```
+
+**Note:** The `vendor/` directory is excluded from version control. You must install dependencies after downloading/cloning.
 
 ### Step 3: Activate Plugin
 1. Go to WordPress Admin → Plugins

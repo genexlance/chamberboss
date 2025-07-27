@@ -6,7 +6,21 @@
 The member registration form shows "Payment processing not configured" instead of payment fields.
 
 ### Solution
-Add Stripe test API keys to enable payment fields.
+1. Install Stripe PHP SDK dependencies (Step 0 below)
+2. Add Stripe test API keys to enable payment fields (Steps 1-2 below)
+
+## Step 0: Install Dependencies ⚠️ REQUIRED
+
+**Before configuring Stripe keys, you MUST install the Stripe PHP SDK:**
+
+```bash
+cd /path/to/wp-content/plugins/chamberboss
+composer install --no-dev
+```
+
+**Alternative:** If Composer not available, see [README.md](plugin/chamberboss/README.md) for manual installation instructions.
+
+**⚠️ Without this step, payment fields will not work even with valid API keys!**
 
 ## Step 1: Get Stripe Test Keys
 

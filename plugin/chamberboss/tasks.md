@@ -67,6 +67,7 @@
 - [x] Add proper error handling for payment failures
 - [x] Update registration form to show payment section by default
 - [x] Test complete signup flow with payment and user creation
+- [x] Fixed conditional payment logic - now works with or without Stripe configured
 
 ## Implementation Summary
 
@@ -98,9 +99,22 @@
    - Includes link to member dashboard
 
 ### To Test:
-1. Ensure Stripe is properly configured in settings
+
+#### Case 1: With Stripe Configured
+1. Configure Stripe in ChumberBoss → Settings → Stripe (add test keys)
 2. Visit member registration page
-3. Fill out form - should see payment section
-4. Submit with test card (4242 4242 4242 4242)
-5. Should create user account and send welcome email
-6. Member should be able to log in at `/members/` dashboard 
+3. Should see payment section with Stripe Elements
+4. Fill out form and use test card (4242 4242 4242 4242) 
+5. Should process payment, create user account, and send welcome email
+
+#### Case 2: Without Stripe Configured  
+1. Leave Stripe settings empty in ChumberBoss → Settings → Stripe
+2. Visit member registration page
+3. Should see "Payment processing not configured. Registration is currently free."
+4. Fill out form and submit
+5. Should create user account immediately and send welcome email
+
+Both cases should result in:
+- WordPress user account created
+- Member can log in at `/members/` dashboard
+- Welcome email sent with login credentials 

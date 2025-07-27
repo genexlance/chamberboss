@@ -298,6 +298,10 @@ class Directory extends BaseClass {
             return;
         }
         
+        // Check if Stripe is configured for payment processing
+        $stripe_config = new \Chamberboss\Payments\StripeConfig();
+        $payment_enabled = $args['show_payment'] && $stripe_config->is_configured();
+        
         $membership_price = $this->get_option('chamberboss_membership_price', '100.00');
         $currency = $this->get_option('chamberboss_currency', 'USD');
         
@@ -344,7 +348,7 @@ class Directory extends BaseClass {
                     </div>
                 </div>
                 
-                <?php if ($args['show_payment']): ?>
+                <?php if ($payment_enabled): ?>
                 <div class="form-section">
                     <h3><?php _e('Membership Payment', 'chamberboss'); ?></h3>
                     
@@ -362,11 +366,17 @@ class Directory extends BaseClass {
                         <!-- Stripe Elements will be inserted here -->
                     </div>
                 </div>
+                <?php elseif ($args['show_payment']): ?>
+                <div class="form-section">
+                    <div class="stripe-not-configured-notice">
+                        <p><em><?php _e('Payment processing is not configured. Registration is currently free.', 'chamberboss'); ?></em></p>
+                    </div>
+                </div>
                 <?php endif; ?>
                 
                 <div class="form-actions">
-                    <button type="submit" class="submit-button" <?php echo $args['show_payment'] ? 'id="submit-payment"' : ''; ?>>
-                        <?php echo $args['show_payment'] ? __('Join & Pay Now', 'chamberboss') : __('Register', 'chamberboss'); ?>
+                    <button type="submit" class="submit-button" <?php echo $payment_enabled ? 'id="submit-payment"' : ''; ?>>
+                        <?php echo $payment_enabled ? __('Join & Pay Now', 'chamberboss') : __('Register', 'chamberboss'); ?>
                     </button>
                 </div>
                 
@@ -464,12 +474,16 @@ class Directory extends BaseClass {
      * Handle member registration AJAX
      */
     public function handle_member_registration() {
+        error_log('[ChumberBoss Registration] Starting registration process');
+        
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {
+            error_log('[ChumberBoss Registration] Nonce verification failed');
             $this->send_json_response(['message' => 'Invalid nonce'], false);
             return;
         }
         
         $data = $this->sanitize_input($_POST);
+        error_log('[ChumberBoss Registration] Form data: ' . print_r($data, true));
         
         // Validate required fields
         if (empty($data['member_name']) || empty($data['member_email'])) {
@@ -477,8 +491,14 @@ class Directory extends BaseClass {
             return;
         }
         
-        // Validate payment intent ID is provided
-        if (empty($data['payment_intent_id'])) {
+        // Check if Stripe is configured and payment is required
+        $stripe_config = new \Chamberboss\Payments\StripeConfig();
+        $payment_required = $stripe_config->is_configured();
+        error_log('[ChumberBoss Registration] Payment required: ' . ($payment_required ? 'YES' : 'NO'));
+        
+        // Validate payment intent ID if payment is required
+        if ($payment_required && empty($data['payment_intent_id'])) {
+            error_log('[ChumberBoss Registration] Payment required but payment_intent_id missing');
             $this->send_json_response(['message' => 'Payment information is required'], false);
             return;
         }
@@ -506,13 +526,14 @@ class Directory extends BaseClass {
             return;
         }
         
-        // Verify payment with Stripe
-        $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
-        $payment_verified = $this->verify_stripe_payment($data['payment_intent_id']);
-        
-        if (!$payment_verified) {
-            $this->send_json_response(['message' => 'Payment verification failed'], false);
-            return;
+        // Verify payment with Stripe if payment is required
+        if ($payment_required) {
+            $payment_verified = $this->verify_stripe_payment($data['payment_intent_id']);
+            
+            if (!$payment_verified) {
+                $this->send_json_response(['message' => 'Payment verification failed'], false);
+                return;
+            }
         }
         
         // Parse name into first and last
@@ -551,7 +572,29 @@ class Directory extends BaseClass {
         update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
         update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
         update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
-        update_user_meta($user_id, '_chamberboss_stripe_payment_intent', $data['payment_intent_id']);
+        
+        // Store payment info if payment was made
+        if ($payment_required && !empty($data['payment_intent_id'])) {
+            update_user_meta($user_id, '_chamberboss_stripe_payment_intent', $data['payment_intent_id']);
+        }
+        
+        // Prepare member meta data
+        $member_meta = [
+            '_chamberboss_member_email' => $data['member_email'],
+            '_chamberboss_member_phone' => $data['member_phone'] ?? '',
+            '_chamberboss_member_company' => $data['member_company'] ?? '',
+            '_chamberboss_member_address' => $data['member_address'] ?? '',
+            '_chamberboss_member_website' => $data['member_website'] ?? '',
+            '_chamberboss_subscription_status' => 'active',
+            '_chamberboss_subscription_start' => current_time('mysql'),
+            '_chamberboss_subscription_end' => date('Y-m-d H:i:s', strtotime('+1 year')),
+            '_chamberboss_user_id' => $user_id, // Store user ID reference
+        ];
+        
+        // Add payment info if payment was made
+        if ($payment_required && !empty($data['payment_intent_id'])) {
+            $member_meta['_chamberboss_stripe_payment_intent'] = $data['payment_intent_id'];
+        }
         
         // Create member post linked to user
         $member_id = wp_insert_post([
@@ -559,18 +602,7 @@ class Directory extends BaseClass {
             'post_title' => $data['member_name'],
             'post_status' => 'publish',
             'post_author' => $user_id, // Link to WordPress user
-            'meta_input' => [
-                '_chamberboss_member_email' => $data['member_email'],
-                '_chamberboss_member_phone' => $data['member_phone'] ?? '',
-                '_chamberboss_member_company' => $data['member_company'] ?? '',
-                '_chamberboss_member_address' => $data['member_address'] ?? '',
-                '_chamberboss_member_website' => $data['member_website'] ?? '',
-                '_chamberboss_subscription_status' => 'active',
-                '_chamberboss_subscription_start' => current_time('mysql'),
-                '_chamberboss_subscription_end' => date('Y-m-d H:i:s', strtotime('+1 year')),
-                '_chamberboss_user_id' => $user_id, // Store user ID reference
-                '_chamberboss_stripe_payment_intent' => $data['payment_intent_id']
-            ]
+            'meta_input' => $member_meta
         ]);
         
         if (is_wp_error($member_id)) {
@@ -586,11 +618,19 @@ class Directory extends BaseClass {
         // Trigger member registration action
         do_action('chamberboss_member_registered', $member_id, $user_id);
         
+        error_log('[ChumberBoss Registration] Registration completed successfully - User ID: ' . $user_id . ', Member ID: ' . $member_id);
+        
+        // Send appropriate success message
+        $success_message = $payment_required 
+            ? 'Registration and payment successful! Welcome email sent with login details.'
+            : 'Registration successful! Welcome email sent with login details.';
+        
         $this->send_json_response([
-            'message' => 'Registration successful! Welcome email sent with login details.',
+            'message' => $success_message,
             'member_id' => $member_id,
             'user_id' => $user_id,
-            'redirect_url' => home_url('/members/')
+            'redirect_url' => home_url('/members/'),
+            'payment_required' => $payment_required
         ]);
     }
     

@@ -305,10 +305,12 @@ class Directory extends BaseClass {
         🔧 CHAMBERBOSS v1.0.1 UPDATED CODE IS RUNNING! 
         <br>Time: ' . current_time('mysql') . '
         <br>If you see this, my code is working!
+        <br>User logged in: ' . (is_user_logged_in() ? 'YES' : 'NO') . '
         </div>';
         
         if (is_user_logged_in()) {
             echo '<p>' . __('You are already logged in.', 'chamberboss') . '</p>';
+            echo '<p><em>Log out to see the registration form with payment fields.</em></p>';
             return;
         }
         

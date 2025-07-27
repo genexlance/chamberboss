@@ -712,12 +712,61 @@ class MembersPage extends BaseClass {
                 exit;
             }
 
-            // Create member post
+            // Parse name into first and last
+            $name_parts = explode(' ', trim($data['member_name']), 2);
+            $first_name = $name_parts[0];
+            $last_name = isset($name_parts[1]) ? $name_parts[1] : '';
+            
+            // Generate username from email
+            $username = sanitize_user(substr($data['member_email'], 0, strpos($data['member_email'], '@')));
+            if (username_exists($username)) {
+                $username = $username . '_' . wp_rand(100, 999);
+            }
+            
+            // Generate temporary password
+            $password = wp_generate_password(12, false);
+            
+            // Create WordPress user first
+            error_log('[Chamberboss Debug] Creating WordPress user - Username: ' . $username . ', Email: ' . $data['member_email']);
+            $user_id = wp_create_user($username, $password, $data['member_email']);
+            
+            if (is_wp_error($user_id)) {
+                error_log('[Chamberboss Debug] User creation failed: ' . $user_id->get_error_message());
+                add_settings_error('chamberboss_members', 'add_member_error', __('Failed to create user account: ' . $user_id->get_error_message(), 'chamberboss'), 'error');
+                wp_redirect(admin_url('admin.php?page=chamberboss-members&action=add&error=user_creation_failed'));
+                exit;
+            }
+            
+            error_log('[Chamberboss Debug] WordPress user created successfully - User ID: ' . $user_id);
+            
+            // Update user data and role
+            $user_update_result = wp_update_user([
+                'ID' => $user_id,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'display_name' => $data['member_name'],
+                'role' => 'chamberboss_member'
+            ]);
+            
+            if (is_wp_error($user_update_result)) {
+                error_log('[Chamberboss Debug] User update failed: ' . $user_update_result->get_error_message());
+            } else {
+                error_log('[Chamberboss Debug] User data updated successfully');
+            }
+            
+            // Store additional member data in user meta
+            update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
+            update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
+            update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
+            update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
+            
+            // Create member post linked to user
             error_log('[Chamberboss Debug] Before wp_insert_post. Data: ' . print_r($data, true));
             $member_id = wp_insert_post([
                 'post_type' => 'chamberboss_member',
                 'post_title' => $data['member_name'],
                 'post_status' => 'publish',
+                'post_author' => $user_id, // Link to WordPress user
                 'meta_input' => [
                     '_chamberboss_member_email' => $data['member_email'],
                     '_chamberboss_member_phone' => $data['member_phone'] ?? '',
@@ -727,26 +776,82 @@ class MembersPage extends BaseClass {
                     '_chamberboss_member_notes' => $data['member_notes'] ?? '', // Add notes to meta
                     '_chamberboss_subscription_status' => 'active',
                     '_chamberboss_subscription_start' => current_time('mysql'),
-                    '_chamberboss_subscription_end' => date('Y-m-d H:i:s', strtotime('+1 year'))
+                    '_chamberboss_subscription_end' => date('Y-m-d H:i:s', strtotime('+1 year')),
+                    '_chamberboss_user_id' => $user_id, // Store user ID reference
                 ]
             ]);
             error_log('[Chamberboss Debug] wp_insert_post returned: ' . print_r($member_id, true));
 
             if (is_wp_error($member_id)) {
+                error_log('[Chamberboss Debug] Member post creation failed: ' . $member_id->get_error_message());
+                // If member post creation fails, clean up the user
+                wp_delete_user($user_id);
                 add_settings_error('chamberboss_members', 'add_member_error', __('Failed to create member: ' . $member_id->get_error_message(), 'chamberboss'), 'error');
                 wp_redirect(admin_url('admin.php?page=chamberboss-members&action=add&error=creation_failed'));
                 exit;
             }
+            
+            error_log('[Chamberboss Debug] Member post created successfully - Member ID: ' . $member_id);
+
+            // Send welcome email with login credentials
+            $this->send_welcome_email($user_id, $username, $password, $data['member_email'], $data['member_name']);
 
             // Trigger member registration action
             do_action('chamberboss_member_registered', $member_id);
 
-            add_settings_error('chamberboss_members', 'add_member_success', __('Member added successfully!', 'chamberboss'), 'updated');
+            add_settings_error('chamberboss_members', 'add_member_success', __('Member added successfully! Welcome email sent with login credentials.', 'chamberboss'), 'updated');
             
             // Redirect to prevent form resubmission
             wp_redirect(admin_url('admin.php?page=chamberboss-members&settings-updated=true'));
             exit;
         }
+    }
+    
+    /**
+     * Send welcome email to new member
+     */
+    private function send_welcome_email($user_id, $username, $password, $email, $name) {
+        error_log('[Chamberboss Debug] Sending welcome email to: ' . $email);
+        
+        $subject = __('Welcome to ChumberBoss - Your Login Credentials', 'chamberboss');
+        
+        $message = sprintf(__('
+Hello %s,
+
+Welcome to ChumberBoss! Your membership account has been created successfully.
+
+LOGIN CREDENTIALS:
+Username: %s
+Password: %s
+Login URL: %s
+
+You can now:
+- Access your member dashboard
+- Submit business listings to our directory
+- Connect with other local businesses
+
+If you have any questions, please don\'t hesitate to contact us.
+
+Best regards,
+The ChumberBoss Team
+        ', 'chamberboss'), 
+            $name,
+            $username, 
+            $password,
+            wp_login_url()
+        );
+        
+        $headers = ['Content-Type: text/plain; charset=UTF-8'];
+        
+        $email_sent = wp_mail($email, $subject, $message, $headers);
+        
+        if ($email_sent) {
+            error_log('[Chamberboss Debug] Welcome email sent successfully to: ' . $email);
+        } else {
+            error_log('[Chamberboss Debug] Failed to send welcome email to: ' . $email);
+        }
+        
+        return $email_sent;
     }
 
     /**

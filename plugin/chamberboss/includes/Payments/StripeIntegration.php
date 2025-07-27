@@ -28,8 +28,8 @@ class StripeIntegration extends BaseClass {
         $this->config = new StripeConfig();
         $this->database = new Database();
         
-        // Initialize Stripe SDK if configured
-        if ($this->config->is_configured()) {
+        // Initialize Stripe SDK if available and configured
+        if ($this->is_stripe_ready()) {
             $this->init_stripe_sdk();
         }
         
@@ -52,20 +52,33 @@ class StripeIntegration extends BaseClass {
     }
     
     /**
+     * Check if Stripe SDK is available and ready
+     * @return bool
+     */
+    private function is_stripe_ready() {
+        return class_exists('\\Stripe\\Stripe') && $this->config->is_configured();
+    }
+    
+    /**
      * Initialize Stripe SDK
      */
     private function init_stripe_sdk() {
         if (!class_exists('\\Stripe\\Stripe')) {
-            // Include Stripe SDK (would need to be installed via Composer)
-            $this->log('Stripe SDK not found. Please install via Composer: composer require stripe/stripe-php', 'error');
-            return;
+            // Only log once to avoid spam
+            if (!get_transient('chamberboss_stripe_sdk_missing_logged')) {
+                $this->log('Stripe SDK not found. Please install via Composer: composer require stripe/stripe-php', 'error');
+                set_transient('chamberboss_stripe_sdk_missing_logged', true, DAY_IN_SECONDS);
+            }
+            return false;
         }
         
         try {
             \Stripe\Stripe::setApiKey($this->config->get_secret_key());
             \Stripe\Stripe::setApiVersion('2023-10-16');
+            return true;
         } catch (Exception $e) {
             $this->log('Failed to initialize Stripe SDK: ' . $e->getMessage(), 'error');
+            return false;
         }
     }
     
@@ -76,7 +89,7 @@ class StripeIntegration extends BaseClass {
      * @return string|false Customer ID or false on failure
      */
     public function create_customer($member_id, $customer_data) {
-        if (!$this->config->is_configured()) {
+        if (!$this->is_stripe_ready()) {
             return false;
         }
         

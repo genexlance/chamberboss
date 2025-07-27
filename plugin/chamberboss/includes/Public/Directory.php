@@ -27,6 +27,10 @@ class Directory extends BaseClass {
         add_action('wp_ajax_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
         add_action('wp_ajax_nopriv_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
         
+        // TEMPORARY - Test AJAX handler
+        add_action('wp_ajax_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
+        add_action('wp_ajax_nopriv_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
+        
         // Enqueue frontend scripts and styles
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
         
@@ -378,6 +382,9 @@ class Directory extends BaseClass {
                     <button type="submit" class="submit-button" <?php echo $payment_enabled ? 'id="submit-payment"' : ''; ?>>
                         <?php echo $payment_enabled ? __('Join & Pay Now', 'chamberboss') : __('Register', 'chamberboss'); ?>
                     </button>
+                    
+                    <!-- TEMPORARY DEBUG BUTTON -->
+                    <button type="button" id="test-ajax-button" style="margin-left: 10px; background: #ccc;">Test AJAX</button>
                 </div>
                 
                 <div id="registration-messages" class="form-messages"></div>
@@ -479,6 +486,11 @@ class Directory extends BaseClass {
         // TEMPORARY DEBUG - Remove this after testing
         if (defined('WP_DEBUG') && WP_DEBUG) {
             file_put_contents('/tmp/chamberboss_debug.log', date('Y-m-d H:i:s') . " - Registration handler called\n", FILE_APPEND);
+        }
+        
+        // TEMPORARY - Add to WordPress debug log
+        if (function_exists('error_log')) {
+            error_log('CHAMBERBOSS DEBUG: Frontend registration handler called at ' . current_time('mysql'));
         }
         
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {
@@ -996,6 +1008,13 @@ class Directory extends BaseClass {
             error_log('Payment intent creation error: ' . $e->getMessage());
             $this->send_json_response(['message' => 'Failed to initialize payment'], false);
         }
+    }
+
+    /**
+     * Handle test AJAX
+     */
+    public function handle_test_ajax() {
+        $this->send_json_response(['message' => 'Test AJAX handler is working!']);
     }
 }
 

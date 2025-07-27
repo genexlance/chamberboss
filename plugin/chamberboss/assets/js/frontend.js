@@ -25,15 +25,46 @@
          */
         initMemberRegistration: function() {
             var $form = $('#chamberboss-member-registration');
-            if (!$form.length) return;
+            console.log('Chamberboss: Looking for registration form, found:', $form.length);
+            
+            if (!$form.length) {
+                console.log('Chamberboss: No registration form found');
+                return;
+            }
+            
+            console.log('Chamberboss: Registration form found, setting up handlers');
             
             // Initialize Stripe if payment section exists
             var $paymentSection = $form.find('#payment-element');
             if ($paymentSection.length && chamberboss_frontend.stripe_publishable_key) {
+                console.log('Chamberboss: Initializing Stripe');
                 this.initStripe();
+            } else {
+                console.log('Chamberboss: No payment section or Stripe key, payment disabled');
             }
             
             $form.on('submit', this.handleMemberRegistration.bind(this));
+            console.log('Chamberboss: Form submit handler attached');
+            
+            // TEMPORARY - Add test AJAX button handler
+            $('#test-ajax-button').on('click', function() {
+                console.log('Chamberboss: Test AJAX button clicked');
+                $.ajax({
+                    url: chamberboss_frontend.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'chamberboss_test_ajax'
+                    },
+                    success: function(response) {
+                        console.log('Chamberboss: Test AJAX success:', response);
+                        alert('AJAX Test: ' + (response.success ? response.data.message : 'Failed'));
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Chamberboss: Test AJAX error:', xhr, status, error);
+                        alert('AJAX Test Failed: ' + error);
+                    }
+                });
+            });
         },
         
         /**
@@ -129,12 +160,15 @@
          * Handle member registration form submission
          */
         handleMemberRegistration: function(e) {
+            console.log('Chamberboss: Form submission handler called');
             e.preventDefault();
             
             var $form = $(e.target);
             var $submitButton = $form.find('button[type="submit"]');
             var $messages = $('#registration-messages');
             var self = this;
+            
+            console.log('Chamberboss: Form elements found - Form:', $form.length, 'Button:', $submitButton.length, 'Messages:', $messages.length);
             
             // Validate required fields first
             var memberName = $form.find('[name="member_name"]').val().trim();
@@ -239,6 +273,9 @@
             
             var self = this;
             
+            console.log('Chamberboss: Making registration AJAX call to:', chamberboss_frontend.ajax_url);
+            console.log('Chamberboss: FormData contents:', Array.from(formData.entries()));
+            
             $.ajax({
                 url: chamberboss_frontend.ajax_url,
                 type: 'POST',
@@ -246,6 +283,7 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
+                    console.log('Chamberboss: Registration AJAX success response:', response);
                     if (response.success) {
                         var successHtml = '<div class="form-message success">' + response.data.message + '</div>';
                         
@@ -284,7 +322,8 @@
                         self.resetForm($form, $submitButton);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.log('Chamberboss: Registration AJAX error:', xhr, status, error);
                     $messages.html('<div class="form-message error">' + chamberboss_frontend.strings.error + '</div>');
                     self.resetForm($form, $submitButton);
                 }
@@ -490,7 +529,14 @@
     
     // Initialize when document is ready
     $(document).ready(function() {
+        console.log('Chamberboss: Document ready, initializing...');
+        console.log('Chamberboss: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
+        if (typeof chamberboss_frontend !== 'undefined') {
+            console.log('Chamberboss: AJAX URL:', chamberboss_frontend.ajax_url);
+            console.log('Chamberboss: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
+        }
         Chamberboss.init();
+        console.log('Chamberboss: Initialization complete');
     });
     
     // Make Chamberboss object globally available

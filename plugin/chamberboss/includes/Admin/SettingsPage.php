@@ -613,7 +613,11 @@ class SettingsPage extends BaseClass {
      * Save Stripe settings
      */
     public function save_stripe_settings() {
+        // Debug: Log all POST data
+        error_log('[Chamberboss Debug] save_stripe_settings called. POST data: ' . print_r($_POST, true));
+        
         if (!$this->verify_nonce($_POST['chamberboss_stripe_nonce'] ?? '', 'chamberboss_stripe_settings')) {
+            error_log('[Chamberboss Debug] Nonce verification failed for Stripe settings');
             return;
         }
         
@@ -630,9 +634,16 @@ class SettingsPage extends BaseClass {
             'webhook_secret' => sanitize_text_field($_POST['webhook_secret'] ?? ''),
         ];
         
-        $this->stripe_config->update_settings($settings);
+        // Log the data being saved for debugging
+        error_log('[Chamberboss Debug] Stripe settings to save: ' . print_r($settings, true));
         
-        wp_redirect(admin_url('admin.php?page=chamberboss-settings&tab=stripe&message=saved'));
+        $result = $this->stripe_config->update_settings($settings);
+        
+        // Log the result
+        error_log('[Chamberboss Debug] Stripe settings save result: ' . ($result ? 'success' : 'failed'));
+        
+        $message = $result ? 'saved' : 'error';
+        wp_redirect(admin_url('admin.php?page=chamberboss-settings&tab=stripe&message=' . $message));
         exit;
     }
     

@@ -97,7 +97,17 @@ class StripeConfig extends BaseClass {
         
         $option = $mode === 'live' ? self::OPTION_STRIPE_LIVE_SECRET_KEY : self::OPTION_STRIPE_TEST_SECRET_KEY;
         
-        return $this->update_option($option, sanitize_text_field($key));
+        error_log('[Chamberboss Debug] set_secret_key: mode=' . $mode . ', option=' . $option . ', key length=' . strlen($key));
+        
+        $result = $this->update_option($option, sanitize_text_field($key));
+        
+        error_log('[Chamberboss Debug] update_option result for ' . $option . ': ' . ($result ? 'success' : 'failed'));
+        
+        // Verify it was saved
+        $saved_value = $this->get_option($option, '');
+        error_log('[Chamberboss Debug] Verification - saved value length: ' . strlen($saved_value));
+        
+        return $result;
     }
     
     /**
@@ -152,29 +162,46 @@ class StripeConfig extends BaseClass {
     public function update_settings($settings) {
         $success = true;
         
+        // Log what we're trying to save
+        error_log('[Chamberboss Debug] StripeConfig::update_settings called with: ' . print_r($settings, true));
+        
         if (isset($settings['mode'])) {
-            $success = $success && $this->set_mode($settings['mode']);
+            $result = $this->set_mode($settings['mode']);
+            error_log('[Chamberboss Debug] set_mode result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
         
         if (isset($settings['test_publishable_key'])) {
-            $success = $success && $this->set_publishable_key($settings['test_publishable_key'], 'test');
+            $result = $this->set_publishable_key($settings['test_publishable_key'], 'test');
+            error_log('[Chamberboss Debug] set_publishable_key (test) result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
         
         if (isset($settings['test_secret_key'])) {
-            $success = $success && $this->set_secret_key($settings['test_secret_key'], 'test');
+            $result = $this->set_secret_key($settings['test_secret_key'], 'test');
+            error_log('[Chamberboss Debug] set_secret_key (test) result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
         
         if (isset($settings['live_publishable_key'])) {
-            $success = $success && $this->set_publishable_key($settings['live_publishable_key'], 'live');
+            $result = $this->set_publishable_key($settings['live_publishable_key'], 'live');
+            error_log('[Chamberboss Debug] set_publishable_key (live) result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
         
         if (isset($settings['live_secret_key'])) {
-            $success = $success && $this->set_secret_key($settings['live_secret_key'], 'live');
+            $result = $this->set_secret_key($settings['live_secret_key'], 'live');
+            error_log('[Chamberboss Debug] set_secret_key (live) result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
         
         if (isset($settings['webhook_secret'])) {
-            $success = $success && $this->set_webhook_secret($settings['webhook_secret']);
+            $result = $this->set_webhook_secret($settings['webhook_secret']);
+            error_log('[Chamberboss Debug] set_webhook_secret result: ' . ($result ? 'success' : 'failed'));
+            $success = $success && $result;
         }
+        
+        error_log('[Chamberboss Debug] StripeConfig::update_settings final result: ' . ($success ? 'success' : 'failed'));
         
         return $success;
     }

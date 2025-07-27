@@ -9,6 +9,12 @@ use Chamberboss\Core\BaseClass;
 class AdminMenu extends BaseClass {
     
     /**
+     * Settings page instance
+     * @var SettingsPage
+     */
+    private $settings_page;
+    
+    /**
      * Initialize admin menu
      */
     protected function init() {
@@ -24,6 +30,7 @@ class AdminMenu extends BaseClass {
         new CategoriesPage();
         new ListingsPage();
         new ExportsPage();
+        $this->settings_page = new SettingsPage();
     }
     
     /**
@@ -201,8 +208,7 @@ class AdminMenu extends BaseClass {
      * Settings page
      */
     public function settings_page() {
-        $settings = new SettingsPage();
-        $settings->render();
+        $this->settings_page->render();
     }
     
     /**

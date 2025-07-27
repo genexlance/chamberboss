@@ -24,6 +24,9 @@ class Directory extends BaseClass {
         add_action('wp_ajax_chamberboss_submit_listing', [$this, 'handle_listing_submission']);
         add_action('wp_ajax_nopriv_chamberboss_submit_listing', [$this, 'handle_listing_submission']);
         
+        add_action('wp_ajax_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
+        add_action('wp_ajax_nopriv_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
+        
         // Enqueue frontend scripts and styles
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
         
@@ -474,7 +477,19 @@ class Directory extends BaseClass {
             return;
         }
         
-        // Check if email already exists
+        // Validate payment intent ID is provided
+        if (empty($data['payment_intent_id'])) {
+            $this->send_json_response(['message' => 'Payment information is required'], false);
+            return;
+        }
+        
+        // Check if email already exists as WordPress user
+        if (email_exists($data['member_email'])) {
+            $this->send_json_response(['message' => 'A user with this email already exists'], false);
+            return;
+        }
+        
+        // Check if email already exists as member
         $existing_member = get_posts([
             'post_type' => 'chamberboss_member',
             'meta_query' => [
@@ -491,32 +506,91 @@ class Directory extends BaseClass {
             return;
         }
         
-        // Create member post
+        // Verify payment with Stripe
+        $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
+        $payment_verified = $this->verify_stripe_payment($data['payment_intent_id']);
+        
+        if (!$payment_verified) {
+            $this->send_json_response(['message' => 'Payment verification failed'], false);
+            return;
+        }
+        
+        // Parse name into first and last
+        $name_parts = explode(' ', trim($data['member_name']), 2);
+        $first_name = $name_parts[0];
+        $last_name = isset($name_parts[1]) ? $name_parts[1] : '';
+        
+        // Generate username from email
+        $username = sanitize_user(substr($data['member_email'], 0, strpos($data['member_email'], '@')));
+        if (username_exists($username)) {
+            $username = $username . '_' . wp_rand(100, 999);
+        }
+        
+        // Generate temporary password
+        $password = wp_generate_password(12, false);
+        
+        // Create WordPress user
+        $user_id = wp_create_user($username, $password, $data['member_email']);
+        
+        if (is_wp_error($user_id)) {
+            $this->send_json_response(['message' => 'Failed to create user account: ' . $user_id->get_error_message()], false);
+            return;
+        }
+        
+        // Update user data
+        wp_update_user([
+            'ID' => $user_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'display_name' => $data['member_name'],
+            'role' => 'chamberboss_member'
+        ]);
+        
+        // Store additional member data in user meta
+        update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
+        update_user_meta($user_id, '_chamberboss_member_company', $data['member_company'] ?? '');
+        update_user_meta($user_id, '_chamberboss_member_address', $data['member_address'] ?? '');
+        update_user_meta($user_id, '_chamberboss_member_website', $data['member_website'] ?? '');
+        update_user_meta($user_id, '_chamberboss_stripe_payment_intent', $data['payment_intent_id']);
+        
+        // Create member post linked to user
         $member_id = wp_insert_post([
             'post_type' => 'chamberboss_member',
             'post_title' => $data['member_name'],
             'post_status' => 'publish',
+            'post_author' => $user_id, // Link to WordPress user
             'meta_input' => [
                 '_chamberboss_member_email' => $data['member_email'],
                 '_chamberboss_member_phone' => $data['member_phone'] ?? '',
                 '_chamberboss_member_company' => $data['member_company'] ?? '',
                 '_chamberboss_member_address' => $data['member_address'] ?? '',
                 '_chamberboss_member_website' => $data['member_website'] ?? '',
-                '_chamberboss_subscription_status' => 'inactive'
+                '_chamberboss_subscription_status' => 'active',
+                '_chamberboss_subscription_start' => current_time('mysql'),
+                '_chamberboss_subscription_end' => date('Y-m-d H:i:s', strtotime('+1 year')),
+                '_chamberboss_user_id' => $user_id, // Store user ID reference
+                '_chamberboss_stripe_payment_intent' => $data['payment_intent_id']
             ]
         ]);
         
         if (is_wp_error($member_id)) {
-            $this->send_json_response(['message' => 'Failed to create member'], false);
+            // If member post creation fails, clean up the user
+            wp_delete_user($user_id);
+            $this->send_json_response(['message' => 'Failed to create member profile'], false);
             return;
         }
         
+        // Send welcome email with login credentials
+        $this->send_welcome_email($user_id, $username, $password, $data['member_email']);
+        
         // Trigger member registration action
-        do_action('chamberboss_member_registered', $member_id);
+        do_action('chamberboss_member_registered', $member_id, $user_id);
         
         $this->send_json_response([
-            'message' => 'Registration successful',
-            'member_id' => $member_id
+            'message' => 'Registration successful! Welcome email sent with login details.',
+            'member_id' => $member_id,
+            'user_id' => $user_id,
+            'redirect_url' => home_url('/members/')
         ]);
     }
     
@@ -646,6 +720,18 @@ class Directory extends BaseClass {
             CHAMBERBOSS_VERSION
         );
         
+        // Enqueue Stripe.js if needed
+        $stripe_config = new \Chamberboss\Payments\StripeConfig();
+        if ($stripe_config->is_configured()) {
+            wp_enqueue_script(
+                'stripe-js',
+                'https://js.stripe.com/v3/',
+                [],
+                null,
+                true
+            );
+        }
+        
         wp_enqueue_script(
             'chamberboss-frontend',
             CHAMBERBOSS_PLUGIN_URL . 'assets/js/frontend.js',
@@ -654,7 +740,8 @@ class Directory extends BaseClass {
             true
         );
         
-        wp_localize_script('chamberboss-frontend', 'chamberboss_frontend', [
+        // Prepare localization data
+        $localize_data = [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('chamberboss_frontend'),
             'strings' => [
@@ -662,7 +749,14 @@ class Directory extends BaseClass {
                 'error' => __('An error occurred. Please try again.', 'chamberboss'),
                 'success' => __('Success!', 'chamberboss'),
             ]
-        ]);
+        ];
+        
+        // Add Stripe key if configured
+        if ($stripe_config->is_configured()) {
+            $localize_data['stripe_publishable_key'] = $stripe_config->get_publishable_key();
+        }
+        
+        wp_localize_script('chamberboss-frontend', 'chamberboss_frontend', $localize_data);
     }
     
     /**
@@ -711,6 +805,125 @@ class Directory extends BaseClass {
         $symbol = $symbols[$currency] ?? $currency . ' ';
         
         return $symbol . number_format($amount, 2);
+    }
+
+    /**
+     * Verify Stripe payment intent
+     * @param string $payment_intent_id
+     * @return bool
+     */
+    private function verify_stripe_payment($payment_intent_id) {
+        try {
+            // Check if Stripe SDK is available
+            if (!class_exists('\\Stripe\\Stripe')) {
+                error_log('Stripe SDK not available for payment verification');
+                return false;
+            }
+            
+            $stripe_config = new \Chamberboss\Payments\StripeConfig();
+            if (!$stripe_config->is_configured()) {
+                error_log('Stripe not configured for payment verification');
+                return false;
+            }
+            
+            \Stripe\Stripe::setApiKey($stripe_config->get_secret_key());
+            $intent = \Stripe\PaymentIntent::retrieve($payment_intent_id);
+            
+            return $intent->status === 'succeeded';
+        } catch (Exception $e) {
+            error_log('Stripe payment verification error: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Send welcome email to new member
+     * @param int $user_id
+     * @param string $username
+     * @param string $password
+     * @param string $email
+     */
+    private function send_welcome_email($user_id, $username, $password, $email) {
+        $subject = 'Welcome to ' . get_bloginfo('name') . ' - Your Account Details';
+        $login_url = home_url('/members/');
+        
+        $message = "Welcome to our chamber!\n\n";
+        $message .= "Your account has been created successfully. Here are your login details:\n\n";
+        $message .= "Username: $username\n";
+        $message .= "Password: $password\n";
+        $message .= "Login URL: $login_url\n\n";
+        $message .= "Please log in and update your password as soon as possible.\n\n";
+        $message .= "Thank you for joining us!";
+        
+        wp_mail($email, $subject, $message);
+    }
+    
+    /**
+     * Handle payment intent creation for registration
+     */
+    public function handle_create_payment_intent() {
+        if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
+            $this->send_json_response(['message' => 'Invalid nonce'], false);
+            return;
+        }
+        
+        $data = $this->sanitize_input($_POST);
+        
+        // Validate required fields
+        if (empty($data['member_name']) || empty($data['member_email'])) {
+            $this->send_json_response(['message' => 'Name and email are required'], false);
+            return;
+        }
+        
+        // Check if email already exists
+        if (email_exists($data['member_email'])) {
+            $this->send_json_response(['message' => 'A user with this email already exists'], false);
+            return;
+        }
+        
+        // Get membership price
+        $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
+        $currency = $this->get_option('chamberboss_currency', 'USD');
+        
+        // Create payment intent via Stripe integration
+        $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
+        
+        try {
+            // Check if Stripe SDK is available
+            if (!class_exists('\\Stripe\\Stripe')) {
+                error_log('Stripe SDK not available for payment intent creation');
+                $this->send_json_response(['message' => 'Payment system not available'], false);
+                return;
+            }
+            
+            $stripe_config = new \Chamberboss\Payments\StripeConfig();
+            if (!$stripe_config->is_configured()) {
+                $this->send_json_response(['message' => 'Payment system not configured'], false);
+                return;
+            }
+            
+            \Stripe\Stripe::setApiKey($stripe_config->get_secret_key());
+            
+            $intent = \Stripe\PaymentIntent::create([
+                'amount' => intval($membership_price * 100), // Convert to cents
+                'currency' => strtolower($currency),
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => [
+                    'member_email' => $data['member_email'],
+                    'member_name' => $data['member_name'],
+                    'type' => 'membership_registration'
+                ]
+            ]);
+            
+            $this->send_json_response([
+                'client_secret' => $intent->client_secret,
+                'payment_intent_id' => $intent->id
+            ]);
+            
+        } catch (Exception $e) {
+            error_log('Payment intent creation error: ' . $e->getMessage());
+            $this->send_json_response(['message' => 'Failed to initialize payment'], false);
+        }
     }
 }
 

@@ -54,4 +54,53 @@
 - [x] Modify `includes/Admin/MembersPage.php`: Change `admin_init` hook to `admin_post_add_new_member` for member form processing, and rename `handle_member_actions()` to `process_add_member()`.
 - [x] Modify `includes/Admin/ListingsPage.php`: Change `admin_init` hook to `admin_post_add_new_listing` for listing form processing, and rename `handle_listing_actions()` to `process_add_listing()`.
 - [ ] Verify and correct the form `action` attribute in `render_add_member()` in `includes/Admin/MembersPage.php` to submit to `admin-post.php`.
-- [ ] Verify and correct the form `action` attribute in `render_add_listing()` in `includes/Admin/ListingsPage.php` to submit to `admin-post.php`. 
+- [ ] Verify and correct the form `action` attribute in `render_add_listing()` in `includes/Admin/ListingsPage.php` to submit to `admin-post.php`.
+
+## Fix Frontend Signup Form Issues
+
+- [x] Fix user account creation issue - member registration creates ChumberBoss member but not WordPress user
+- [x] Update `handle_member_registration()` in `Directory.php` to create WordPress user account so they can login to dashboard
+- [x] Integrate Stripe payment processing into signup form before creating member
+- [x] Add payment processing to registration flow using existing Stripe integration
+- [x] Update frontend JavaScript to handle Stripe payment elements
+- [x] Ensure payment is completed successfully before creating member account
+- [x] Add proper error handling for payment failures
+- [x] Update registration form to show payment section by default
+- [x] Test complete signup flow with payment and user creation
+
+## Implementation Summary
+
+### What Was Fixed:
+
+1. **User Account Creation**: 
+   - Modified `handle_member_registration()` to create WordPress user accounts
+   - Users now get username/password and can log in to `/members/` dashboard
+   - Added `chamberboss_member` role with appropriate capabilities
+
+2. **Stripe Payment Integration**:
+   - Added `handle_create_payment_intent()` method for payment processing
+   - Payment verification before member creation
+   - Only creates member account after successful payment
+
+3. **Frontend JavaScript Updates**:
+   - Complete rewrite of registration handling
+   - Added Stripe Elements integration
+   - Payment processing before registration submission
+   - Proper error handling and user feedback
+
+4. **Script Loading**:
+   - Added Stripe.js library loading when configured
+   - Added Stripe publishable key to JavaScript localization
+   - Enhanced error handling when Stripe SDK unavailable
+
+5. **Welcome Email**:
+   - Sends email with login credentials to new members
+   - Includes link to member dashboard
+
+### To Test:
+1. Ensure Stripe is properly configured in settings
+2. Visit member registration page
+3. Fill out form - should see payment section
+4. Submit with test card (4242 4242 4242 4242)
+5. Should create user account and send welcome email
+6. Member should be able to log in at `/members/` dashboard 

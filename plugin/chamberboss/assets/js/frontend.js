@@ -5,6 +5,10 @@
     'use strict';
     
     var Chamberboss = {
+        stripe: null,
+        elements: null,
+        paymentElement: null,
+        paymentIntentId: null,
         
         /**
          * Initialize frontend functionality
@@ -23,7 +27,42 @@
             var $form = $('#chamberboss-member-registration');
             if (!$form.length) return;
             
+            // Initialize Stripe if payment section exists
+            var $paymentSection = $form.find('#payment-element');
+            if ($paymentSection.length && chamberboss_frontend.stripe_publishable_key) {
+                this.initStripe();
+            }
+            
             $form.on('submit', this.handleMemberRegistration.bind(this));
+        },
+        
+        /**
+         * Initialize Stripe Elements
+         */
+        initStripe: function() {
+            var self = this;
+            
+            if (!window.Stripe) {
+                console.error('Stripe.js not loaded');
+                return;
+            }
+            
+            this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
+            this.elements = this.stripe.elements();
+            
+            // Create payment element
+            this.paymentElement = this.elements.create('payment');
+            this.paymentElement.mount('#payment-element');
+            
+            // Handle real-time validation errors
+            this.paymentElement.on('change', function(event) {
+                var $messages = $('#registration-messages');
+                if (event.error) {
+                    $messages.html('<div class="form-message error">' + event.error.message + '</div>');
+                } else {
+                    $messages.empty();
+                }
+            });
         },
         
         /**
@@ -95,16 +134,111 @@
             var $form = $(e.target);
             var $submitButton = $form.find('button[type="submit"]');
             var $messages = $('#registration-messages');
+            var self = this;
+            
+            // Validate required fields first
+            var memberName = $form.find('[name="member_name"]').val().trim();
+            var memberEmail = $form.find('[name="member_email"]').val().trim();
+            
+            if (!memberName || !memberEmail) {
+                $messages.html('<div class="form-message error">Name and email are required</div>');
+                return;
+            }
             
             // Disable form and show loading
             this.setFormLoading($form, true);
-            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>' + chamberboss_frontend.strings.processing);
+            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing Payment...');
             
-            // Prepare form data
+            // Check if payment is required
+            var hasPaymentElement = $form.find('#payment-element').length > 0;
+            
+            if (hasPaymentElement && this.stripe && this.paymentElement) {
+                // Payment flow
+                this.processPaymentAndRegistration($form, $submitButton, $messages);
+            } else {
+                // No payment required - direct registration (fallback)
+                this.submitRegistration($form, $submitButton, $messages);
+            }
+        },
+        
+        /**
+         * Process payment and registration
+         */
+        processPaymentAndRegistration: function($form, $submitButton, $messages) {
+            var self = this;
+            
+            // First, create payment intent
+            this.createPaymentIntent($form, function(clientSecret, paymentIntentId) {
+                if (!clientSecret) {
+                    $messages.html('<div class="form-message error">Failed to initialize payment</div>');
+                    self.resetForm($form, $submitButton);
+                    return;
+                }
+                
+                self.paymentIntentId = paymentIntentId;
+                
+                // Confirm payment
+                self.stripe.confirmPayment({
+                    elements: self.elements,
+                    confirmParams: {
+                        return_url: window.location.href
+                    },
+                    redirect: 'if_required'
+                }).then(function(result) {
+                    if (result.error) {
+                        $messages.html('<div class="form-message error">' + result.error.message + '</div>');
+                        self.resetForm($form, $submitButton);
+                    } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                        // Payment successful, now submit registration
+                        self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                    } else {
+                        $messages.html('<div class="form-message error">Payment processing failed</div>');
+                        self.resetForm($form, $submitButton);
+                    }
+                });
+            });
+        },
+        
+        /**
+         * Create payment intent
+         */
+        createPaymentIntent: function($form, callback) {
+            var formData = new FormData($form[0]);
+            formData.append('action', 'chamberboss_create_registration_payment_intent');
+            formData.append('nonce', $form.find('[name="registration_nonce"]').val());
+            
+            $.ajax({
+                url: chamberboss_frontend.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        callback(response.data.client_secret, response.data.payment_intent_id);
+                    } else {
+                        callback(null, null);
+                    }
+                },
+                error: function() {
+                    callback(null, null);
+                }
+            });
+        },
+        
+        /**
+         * Submit registration after payment
+         */
+        submitRegistration: function($form, $submitButton, $messages, paymentIntentId) {
             var formData = new FormData($form[0]);
             formData.append('action', 'chamberboss_register_member');
             
-            // Submit via AJAX
+            if (paymentIntentId) {
+                formData.append('payment_intent_id', paymentIntentId);
+            }
+            
+            var self = this;
+            
             $.ajax({
                 url: chamberboss_frontend.ajax_url,
                 type: 'POST',
@@ -116,26 +250,30 @@
                         $messages.html('<div class="form-message success">' + response.data.message + '</div>');
                         $form[0].reset();
                         
-                        // Redirect if specified
-                        var redirectUrl = $form.data('redirect-url');
-                        if (redirectUrl) {
+                        // Redirect to member dashboard
+                        if (response.data.redirect_url) {
                             setTimeout(function() {
-                                window.location.href = redirectUrl;
+                                window.location.href = response.data.redirect_url;
                             }, 2000);
                         }
                     } else {
                         $messages.html('<div class="form-message error">' + response.data.message + '</div>');
+                        self.resetForm($form, $submitButton);
                     }
                 },
                 error: function() {
                     $messages.html('<div class="form-message error">' + chamberboss_frontend.strings.error + '</div>');
-                },
-                complete: function() {
-                    // Re-enable form
-                    Chamberboss.setFormLoading($form, false);
-                    $submitButton.prop('disabled', false).text($submitButton.data('original-text') || 'Register');
+                    self.resetForm($form, $submitButton);
                 }
             });
+        },
+        
+        /**
+         * Reset form to normal state
+         */
+        resetForm: function($form, $submitButton) {
+            this.setFormLoading($form, false);
+            $submitButton.prop('disabled', false).html($submitButton.data('original-text') || 'Join & Pay Now');
         },
         
         /**

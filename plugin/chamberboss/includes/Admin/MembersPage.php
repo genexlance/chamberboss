@@ -813,12 +813,12 @@ class MembersPage extends BaseClass {
     private function send_welcome_email($user_id, $username, $password, $email, $name) {
         error_log('[Chamberboss Debug] Sending welcome email to: ' . $email);
         
-        $subject = __('Welcome to ChumberBoss - Your Login Credentials', 'chamberboss');
+        $subject = __('Welcome to ChamberBoss - Your Login Credentials', 'chamberboss');
         
         $message = sprintf(__('
 Hello %s,
 
-Welcome to ChumberBoss! Your membership account has been created successfully.
+Welcome to ChamberBoss! Your membership account has been created successfully.
 
 LOGIN CREDENTIALS:
 Username: %s
@@ -833,7 +833,7 @@ You can now:
 If you have any questions, please don\'t hesitate to contact us.
 
 Best regards,
-The ChumberBoss Team
+The ChamberBoss Team
         ', 'chamberboss'), 
             $name,
             $username, 

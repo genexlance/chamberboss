@@ -19,7 +19,7 @@ define('WP_DEBUG_LOG', true);
 
 echo "<!DOCTYPE html>";
 echo "<html><head>";
-echo "<title>ChumberBoss Registration Test</title>";
+echo "<title>ChamberBoss Registration Test</title>";
 echo "<style>";
 echo "body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }";
 echo ".test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }";
@@ -28,7 +28,7 @@ echo ".debug-box { background: #f0f0f0; padding: 10px; margin: 10px 0; font-fami
 echo "</style>";
 echo "</head><body>";
 
-echo "<h1>🔧 ChumberBoss Registration Test Suite</h1>";
+echo "<h1>🔧 ChamberBoss Registration Test Suite</h1>";
 
 // Test 1: Stripe Configuration
 echo "<div class='test-section'>";
@@ -53,7 +53,7 @@ try {
     } else {
         echo "<span class='fail'>❌ FAIL: Stripe not configured</span>";
         echo "<div style='margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7;'>";
-        echo "<strong>Solution:</strong> Add your Stripe test keys in WP Admin → ChumberBoss → Settings → Stripe:<br>";
+        echo "<strong>Solution:</strong> Add your Stripe test keys in WP Admin → ChamberBoss → Settings → Stripe:<br>";
         echo "Get test keys from: <a href='https://docs.stripe.com/keys' target='_blank'>Stripe Documentation</a><br>";
         echo "Or create a free account at: <a href='https://dashboard.stripe.com' target='_blank'>Stripe Dashboard</a>";
         echo "</div>";
@@ -189,7 +189,7 @@ if (!$stripe_config->is_configured()) {
     echo "<div style='background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px;'>";
     echo "<h3>Quick Fix Required:</h3>";
     echo "<ol>";
-    echo "<li>Go to <a href='/wp-admin/admin.php?page=chamberboss-settings&tab=stripe' target='_blank'>WP Admin → ChumberBoss → Settings → Stripe</a></li>";
+    echo "<li>Go to <a href='/wp-admin/admin.php?page=chamberboss-settings&tab=stripe' target='_blank'>WP Admin → ChamberBoss → Settings → Stripe</a></li>";
     echo "<li>Set Mode to 'Test Mode'</li>";
     echo "<li>Add your Stripe test keys (get from <a href='https://docs.stripe.com/keys' target='_blank'>Stripe docs</a>):</li>";
     echo "<ul>";
@@ -215,7 +215,7 @@ echo "</div>";
 
 echo "<div style='margin-top: 30px; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;'>";
 echo "<h3>📊 Test Summary</h3>";
-echo "<p><strong>Version:</strong> ChumberBoss v1.0.1</p>";
+echo "<p><strong>Version:</strong> ChamberBoss v1.0.1</p>";
 echo "<p><strong>Test Time:</strong> " . current_time('mysql') . "</p>";
 echo "<p><strong>WordPress User:</strong> " . (is_user_logged_in() ? wp_get_current_user()->user_login : 'Not logged in') . "</p>";
 echo "<p><strong>Plugin Active:</strong> " . (is_plugin_active('chamberboss/chamberboss.php') ? 'Yes' : 'No') . "</p>";

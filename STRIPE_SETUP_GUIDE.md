@@ -1,4 +1,4 @@
-# 🚀 ChumberBoss Stripe Setup Guide
+# 🚀 ChamberBoss Stripe Setup Guide
 
 ## Quick Fix for Registration Form Payment Fields
 
@@ -25,9 +25,9 @@ For quick testing, you can find official Stripe test keys in their documentation
 
 *Note: Example keys work for basic testing but won't process actual payments*
 
-## Step 2: Configure ChumberBoss
+## Step 2: Configure ChamberBoss
 
-1. **Open WordPress Admin** → **ChumberBoss** → **Settings** → **Stripe**
+1. **Open WordPress Admin** → **ChamberBoss** → **Settings** → **Stripe**
 2. **Set Mode**: Select "Test Mode"
 3. **Add Keys** (use your actual keys or the example keys above):
    - Test Publishable Key: `pk_test_...`

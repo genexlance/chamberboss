@@ -505,7 +505,7 @@ class Directory extends BaseClass {
      * Handle member registration AJAX
      */
     public function handle_member_registration() {
-        error_log('[ChumberBoss Registration] Starting registration process');
+        error_log('[ChamberBoss Registration] Starting registration process');
         
         // TEMPORARY DEBUG - Remove this after testing
         if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -526,13 +526,13 @@ class Directory extends BaseClass {
         }
         
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {
-            error_log('[ChumberBoss Registration] Nonce verification failed');
+            error_log('[ChamberBoss Registration] Nonce verification failed');
             $this->send_json_response(['message' => 'Invalid nonce'], false);
             return;
         }
         
         $data = $this->sanitize_input($_POST);
-        error_log('[ChumberBoss Registration] Form data: ' . print_r($data, true));
+        error_log('[ChamberBoss Registration] Form data: ' . print_r($data, true));
         
         // TEMPORARY DEBUG - Add debug info to response
         $debug_info = [
@@ -550,11 +550,11 @@ class Directory extends BaseClass {
         // Check if Stripe is configured and payment is required
         $stripe_config = new \Chamberboss\Payments\StripeConfig();
         $payment_required = $stripe_config->is_configured();
-        error_log('[ChumberBoss Registration] Payment required: ' . ($payment_required ? 'YES' : 'NO'));
+        error_log('[ChamberBoss Registration] Payment required: ' . ($payment_required ? 'YES' : 'NO'));
         
         // Validate payment intent ID if payment is required
         if ($payment_required && empty($data['payment_intent_id'])) {
-            error_log('[ChumberBoss Registration] Payment required but payment_intent_id missing');
+            error_log('[ChamberBoss Registration] Payment required but payment_intent_id missing');
             $this->send_json_response(['message' => 'Payment information is required'], false);
             return;
         }
@@ -608,19 +608,19 @@ class Directory extends BaseClass {
         $password = wp_generate_password(12, false);
         
         // Create WordPress user
-        error_log('[ChumberBoss Registration] Attempting to create user - Username: ' . $username . ', Email: ' . $data['member_email']);
+        error_log('[ChamberBoss Registration] Attempting to create user - Username: ' . $username . ', Email: ' . $data['member_email']);
         $user_id = wp_create_user($username, $password, $data['member_email']);
         
         if (is_wp_error($user_id)) {
-            error_log('[ChumberBoss Registration] User creation failed: ' . $user_id->get_error_message());
+            error_log('[ChamberBoss Registration] User creation failed: ' . $user_id->get_error_message());
             $this->send_json_response(['message' => 'Failed to create user account: ' . $user_id->get_error_message(), 'debug' => $debug_info], false);
             return;
         }
         
-        error_log('[ChumberBoss Registration] User created successfully - User ID: ' . $user_id);
+        error_log('[ChamberBoss Registration] User created successfully - User ID: ' . $user_id);
         
         // Update user data
-        error_log('[ChumberBoss Registration] Updating user data and role');
+        error_log('[ChamberBoss Registration] Updating user data and role');
         $user_update_result = wp_update_user([
             'ID' => $user_id,
             'first_name' => $first_name,
@@ -630,9 +630,9 @@ class Directory extends BaseClass {
         ]);
         
         if (is_wp_error($user_update_result)) {
-            error_log('[ChumberBoss Registration] User update failed: ' . $user_update_result->get_error_message());
+            error_log('[ChamberBoss Registration] User update failed: ' . $user_update_result->get_error_message());
         } else {
-            error_log('[ChumberBoss Registration] User data updated successfully');
+            error_log('[ChamberBoss Registration] User data updated successfully');
         }
         
         // Store additional member data in user meta
@@ -674,14 +674,14 @@ class Directory extends BaseClass {
         ]);
         
         if (is_wp_error($member_id)) {
-            error_log('[ChumberBoss Registration] Member post creation failed: ' . $member_id->get_error_message());
+            error_log('[ChamberBoss Registration] Member post creation failed: ' . $member_id->get_error_message());
             // If member post creation fails, clean up the user
             wp_delete_user($user_id);
             $this->send_json_response(['message' => 'Failed to create member profile: ' . $member_id->get_error_message(), 'debug' => $debug_info], false);
             return;
         }
         
-        error_log('[ChumberBoss Registration] Member post created successfully - Member ID: ' . $member_id);
+        error_log('[ChamberBoss Registration] Member post created successfully - Member ID: ' . $member_id);
         
         // Send welcome email with login credentials
         $this->send_welcome_email($user_id, $username, $password, $data['member_email']);
@@ -689,7 +689,7 @@ class Directory extends BaseClass {
         // Trigger member registration action
         do_action('chamberboss_member_registered', $member_id, $user_id);
         
-        error_log('[ChumberBoss Registration] Registration completed successfully - User ID: ' . $user_id . ', Member ID: ' . $member_id);
+        error_log('[ChamberBoss Registration] Registration completed successfully - User ID: ' . $user_id . ', Member ID: ' . $member_id);
         
         // Send appropriate success message
         $success_message = $payment_required 

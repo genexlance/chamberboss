@@ -58,7 +58,7 @@
 
 ## Fix Frontend Signup Form Issues
 
-- [x] Fix user account creation issue - member registration creates ChumberBoss member but not WordPress user
+- [x] Fix user account creation issue - member registration creates ChamberBoss member but not WordPress user
 - [x] Update `handle_member_registration()` in `Directory.php` to create WordPress user account so they can login to dashboard
 - [x] Integrate Stripe payment processing into signup form before creating member
 - [x] Add payment processing to registration flow using existing Stripe integration
@@ -101,14 +101,14 @@
 ### To Test:
 
 #### Case 1: With Stripe Configured
-1. Configure Stripe in ChumberBoss → Settings → Stripe (add test keys)
+1. Configure Stripe in ChamberBoss → Settings → Stripe (add test keys)
 2. Visit member registration page
 3. Should see payment section with Stripe Elements
 4. Fill out form and use test card (4242 4242 4242 4242) 
 5. Should process payment, create user account, and send welcome email
 
 #### Case 2: Without Stripe Configured  
-1. Leave Stripe settings empty in ChumberBoss → Settings → Stripe
+1. Leave Stripe settings empty in ChamberBoss → Settings → Stripe
 2. Visit member registration page
 3. Should see "Payment processing not configured. Registration is currently free."
 4. Fill out form and submit
@@ -155,7 +155,7 @@ All core functionality is **COMPLETE AND WORKING**:
 
 **IMMEDIATE NEXT STEP**: Configure Stripe to enable payment fields
 
-1. **Navigate to**: `WP Admin → ChumberBoss → Settings → Stripe`
+1. **Navigate to**: `WP Admin → ChamberBoss → Settings → Stripe`
 2. **Set Mode**: Test Mode  
 3. **Add Stripe Test Keys**:
    - Get from: https://docs.stripe.com/keys

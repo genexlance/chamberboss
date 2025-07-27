@@ -73,27 +73,50 @@
         initStripe: function() {
             var self = this;
             
+            console.log('Chamberboss: initStripe called');
+            console.log('Chamberboss: window.Stripe available:', !!window.Stripe);
+            console.log('Chamberboss: chamberboss_frontend object:', chamberboss_frontend);
+            console.log('Chamberboss: Stripe publishable key:', chamberboss_frontend.stripe_publishable_key);
+            
             if (!window.Stripe) {
-                console.error('Stripe.js not loaded');
+                console.error('Chamberboss: Stripe.js not loaded');
                 return;
             }
             
-            this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
-            this.elements = this.stripe.elements();
+            if (!chamberboss_frontend.stripe_publishable_key) {
+                console.error('Chamberboss: No Stripe publishable key found');
+                return;
+            }
             
-            // Create payment element
-            this.paymentElement = this.elements.create('payment');
-            this.paymentElement.mount('#payment-element');
-            
-            // Handle real-time validation errors
-            this.paymentElement.on('change', function(event) {
-                var $messages = $('#registration-messages');
-                if (event.error) {
-                    $messages.html('<div class="form-message error">' + event.error.message + '</div>');
-                } else {
-                    $messages.empty();
-                }
-            });
+            try {
+                this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
+                console.log('Chamberboss: Stripe instance created:', !!this.stripe);
+                
+                this.elements = this.stripe.elements();
+                console.log('Chamberboss: Stripe elements created:', !!this.elements);
+                
+                // Create payment element
+                this.paymentElement = this.elements.create('payment');
+                console.log('Chamberboss: Payment element created:', !!this.paymentElement);
+                
+                this.paymentElement.mount('#payment-element');
+                console.log('Chamberboss: Payment element mounted to #payment-element');
+                
+                // Handle real-time validation errors
+                this.paymentElement.on('change', function(event) {
+                    var $messages = $('#registration-messages');
+                    if (event.error) {
+                        console.log('Chamberboss: Payment element error:', event.error);
+                        $messages.html('<div class="form-message error">' + event.error.message + '</div>');
+                    } else {
+                        $messages.empty();
+                    }
+                });
+                
+                console.log('Chamberboss: Stripe initialization completed successfully');
+            } catch (error) {
+                console.error('Chamberboss: Error initializing Stripe:', error);
+            }
         },
         
         /**
@@ -185,11 +208,17 @@
             
             // Check if payment is required
             var hasPaymentElement = $form.find('#payment-element').length > 0;
+            console.log('Chamberboss: Payment element found:', hasPaymentElement);
+            console.log('Chamberboss: Stripe instance available:', !!this.stripe);
+            console.log('Chamberboss: Payment element instance:', !!this.paymentElement);
             
             if (hasPaymentElement && this.stripe && this.paymentElement) {
+                console.log('Chamberboss: Using payment flow');
                 // Payment flow
                 this.processPaymentAndRegistration($form, $submitButton, $messages);
             } else {
+                console.log('Chamberboss: Using direct registration (no payment)');
+                console.log('Chamberboss: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe, 'paymentElement:', !!this.paymentElement);
                 // No payment required - direct registration (fallback)
                 this.submitRegistration($form, $submitButton, $messages);
             }

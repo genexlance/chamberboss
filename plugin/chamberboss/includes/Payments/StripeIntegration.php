@@ -47,8 +47,7 @@ class StripeIntegration extends BaseClass {
         add_action('init', [$this, 'add_webhook_endpoint']);
         add_action('parse_request', [$this, 'handle_webhook_request']);
         
-        // Enqueue scripts
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_stripe_scripts']);
+        // NOTE: Removed duplicate Stripe script enqueuing - Directory.php handles this
     }
     
     /**
@@ -557,18 +556,7 @@ class StripeIntegration extends BaseClass {
     }
     
     /**
-     * Enqueue Stripe scripts
+     * Enqueue Stripe scripts - REMOVED: Directory.php handles this to avoid conflicts
      */
-    public function enqueue_stripe_scripts() {
-        if ($this->config->is_configured()) {
-            wp_enqueue_script('stripe-js', 'https://js.stripe.com/v3/', [], null, true);
-            
-            wp_localize_script('stripe-js', 'chamberboss_stripe', [
-                'publishable_key' => $this->config->get_publishable_key(),
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('chamberboss_payment')
-            ]);
-        }
-    }
 }
 

@@ -564,7 +564,12 @@ class Directory extends BaseClass {
         // Validate payment intent ID if payment is required
         if ($payment_required && empty($data['payment_intent_id'])) {
             error_log('[ChamberBoss Registration] Payment required but payment_intent_id missing');
-            $this->send_json_response(['message' => 'Payment information is required'], false);
+            error_log('[ChamberBoss Registration] This suggests the frontend payment flow was not triggered');
+            error_log('[ChamberBoss Registration] Check: 1) Stripe.js loaded? 2) Payment element rendered? 3) JavaScript errors?');
+            $this->send_json_response([
+                'message' => 'Payment is required for membership registration. Please ensure JavaScript is enabled and try again.',
+                'debug' => 'payment_intent_id_missing'
+            ], false);
             return;
         }
         

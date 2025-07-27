@@ -48,7 +48,25 @@ abstract class BaseClass {
      * @return bool
      */
     protected function update_option($option_name, $value) {
-        return update_option($option_name, $value);
+        error_log('[Chamberboss Debug] BaseClass::update_option called: option=' . $option_name . ', value=' . print_r($value, true));
+        
+        // Check if option already exists and has the same value
+        $existing_value = get_option($option_name, '__NOT_SET__');
+        error_log('[Chamberboss Debug] Existing value: ' . print_r($existing_value, true));
+        
+        $result = update_option($option_name, $value);
+        error_log('[Chamberboss Debug] WordPress update_option result: ' . ($result ? 'true' : 'false'));
+        
+        // Verify the save worked by checking if the value is now what we expect
+        $new_value = get_option($option_name, '__NOT_SET__');
+        error_log('[Chamberboss Debug] Value after save: ' . print_r($new_value, true));
+        
+        // WordPress update_option returns false if the value didn't change or if saving empty value to non-existent option
+        // Consider it successful if the current value matches what we wanted to save
+        $success = ($new_value === $value) || $result;
+        error_log('[Chamberboss Debug] Final success evaluation: ' . ($success ? 'true' : 'false'));
+        
+        return $success;
     }
     
     /**

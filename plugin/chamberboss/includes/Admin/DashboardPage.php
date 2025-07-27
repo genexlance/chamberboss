@@ -351,17 +351,11 @@ class DashboardPage extends BaseClass {
      */
     private function format_currency($amount, $currency = 'USD') {
         $symbols = [
-            'USD' => '
-
-,
+            'USD' => '$',
             'EUR' => '€',
             'GBP' => '£',
-            'CAD' => 'C
-
-,
-            'AUD' => 'A
-
-
+            'CAD' => 'CAD$',
+            'AUD' => 'AUD$'
         ];
         
         $symbol = $symbols[$currency] ?? $currency . ' ';
@@ -392,4 +386,4 @@ class DashboardPage extends BaseClass {
         wp_redirect(admin_url('admin.php?page=chamberboss&message=listing_approved'));
         exit;
     }
-
+}

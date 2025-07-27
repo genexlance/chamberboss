@@ -22,7 +22,6 @@ class SettingsPage extends BaseClass {
         $this->stripe_config = new StripeConfig();
         
         // Handle form submissions
-        add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_init', [$this, 'handle_settings_save']);
     }
     
@@ -462,8 +461,9 @@ class SettingsPage extends BaseClass {
         <div class="chamberboss-settings-section">
             <h3><?php _e('Email Settings', 'chamberboss'); ?></h3>
             
-            <form method="post" action="options.php">
-                <?php settings_fields('chamberboss_email_settings'); ?>
+            <form method="post" action="">
+                <?php wp_nonce_field('chamberboss_email_settings', 'chamberboss_email_nonce'); ?>
+                <input type="hidden" name="action" value="save_email_settings">
                 
                 <h4><?php _e('Email Sender', 'chamberboss'); ?></h4>
                 <table class="form-table">
@@ -580,18 +580,6 @@ class SettingsPage extends BaseClass {
     }
     
     /**
-     * Register settings
-     */
-    public function register_settings() {
-        register_setting('chamberboss_email_settings', 'chamberboss_email_from_name');
-        register_setting('chamberboss_email_settings', 'chamberboss_email_from_address');
-        register_setting('chamberboss_email_settings', 'chamberboss_email_renewal_subject');
-        register_setting('chamberboss_email_settings', 'chamberboss_email_renewal_message');
-        register_setting('chamberboss_email_settings', 'chamberboss_email_welcome_subject');
-        register_setting('chamberboss_email_settings', 'chamberboss_email_welcome_message');
-    }
-
-    /**
      * Handle settings save
      */
     public function handle_settings_save() {
@@ -610,6 +598,9 @@ class SettingsPage extends BaseClass {
                 break;
             case 'save_mailpoet_settings':
                 $this->save_mailpoet_settings();
+                break;
+            case 'save_email_settings':
+                $this->save_email_settings();
                 break;
             case 'save_categories_settings':
                 $this->save_categories_settings();
@@ -689,6 +680,36 @@ class SettingsPage extends BaseClass {
         $this->update_option('chamberboss_mailpoet_auto_add', $auto_add);
         
         wp_redirect(admin_url('admin.php?page=chamberboss-settings&tab=mailpoet&message=saved'));
+        exit;
+    }
+    
+    /**
+     * Save email settings
+     */
+    private function save_email_settings() {
+        if (!$this->verify_nonce($_POST['chamberboss_email_nonce'] ?? '', 'chamberboss_email_settings')) {
+            return;
+        }
+        
+        if (!$this->user_can('manage_options')) {
+            return;
+        }
+        
+        $from_name = sanitize_text_field($_POST['chamberboss_email_from_name'] ?? '');
+        $from_address = sanitize_email($_POST['chamberboss_email_from_address'] ?? '');
+        $renewal_subject = sanitize_text_field($_POST['chamberboss_email_renewal_subject'] ?? '');
+        $renewal_message = sanitize_textarea_field($_POST['chamberboss_email_renewal_message'] ?? '');
+        $welcome_subject = sanitize_text_field($_POST['chamberboss_email_welcome_subject'] ?? '');
+        $welcome_message = sanitize_textarea_field($_POST['chamberboss_email_welcome_message'] ?? '');
+        
+        $this->update_option('chamberboss_email_from_name', $from_name);
+        $this->update_option('chamberboss_email_from_address', $from_address);
+        $this->update_option('chamberboss_email_renewal_subject', $renewal_subject);
+        $this->update_option('chamberboss_email_renewal_message', $renewal_message);
+        $this->update_option('chamberboss_email_welcome_subject', $welcome_subject);
+        $this->update_option('chamberboss_email_welcome_message', $welcome_message);
+        
+        wp_redirect(admin_url('admin.php?page=chamberboss-settings&tab=email&message=saved'));
         exit;
     }
     

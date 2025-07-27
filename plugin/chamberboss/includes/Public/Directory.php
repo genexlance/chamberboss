@@ -476,6 +476,11 @@ class Directory extends BaseClass {
     public function handle_member_registration() {
         error_log('[ChumberBoss Registration] Starting registration process');
         
+        // TEMPORARY DEBUG - Remove this after testing
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            file_put_contents('/tmp/chamberboss_debug.log', date('Y-m-d H:i:s') . " - Registration handler called\n", FILE_APPEND);
+        }
+        
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {
             error_log('[ChumberBoss Registration] Nonce verification failed');
             $this->send_json_response(['message' => 'Invalid nonce'], false);
@@ -485,9 +490,16 @@ class Directory extends BaseClass {
         $data = $this->sanitize_input($_POST);
         error_log('[ChumberBoss Registration] Form data: ' . print_r($data, true));
         
+        // TEMPORARY DEBUG - Add debug info to response
+        $debug_info = [
+            'handler_called' => true,
+            'timestamp' => current_time('mysql'),
+            'data_received' => $data
+        ];
+        
         // Validate required fields
         if (empty($data['member_name']) || empty($data['member_email'])) {
-            $this->send_json_response(['message' => 'Name and email are required'], false);
+            $this->send_json_response(['message' => 'Name and email are required', 'debug' => $debug_info], false);
             return;
         }
         
@@ -551,21 +563,32 @@ class Directory extends BaseClass {
         $password = wp_generate_password(12, false);
         
         // Create WordPress user
+        error_log('[ChumberBoss Registration] Attempting to create user - Username: ' . $username . ', Email: ' . $data['member_email']);
         $user_id = wp_create_user($username, $password, $data['member_email']);
         
         if (is_wp_error($user_id)) {
-            $this->send_json_response(['message' => 'Failed to create user account: ' . $user_id->get_error_message()], false);
+            error_log('[ChumberBoss Registration] User creation failed: ' . $user_id->get_error_message());
+            $this->send_json_response(['message' => 'Failed to create user account: ' . $user_id->get_error_message(), 'debug' => $debug_info], false);
             return;
         }
         
+        error_log('[ChumberBoss Registration] User created successfully - User ID: ' . $user_id);
+        
         // Update user data
-        wp_update_user([
+        error_log('[ChumberBoss Registration] Updating user data and role');
+        $user_update_result = wp_update_user([
             'ID' => $user_id,
             'first_name' => $first_name,
             'last_name' => $last_name,
             'display_name' => $data['member_name'],
             'role' => 'chamberboss_member'
         ]);
+        
+        if (is_wp_error($user_update_result)) {
+            error_log('[ChumberBoss Registration] User update failed: ' . $user_update_result->get_error_message());
+        } else {
+            error_log('[ChumberBoss Registration] User data updated successfully');
+        }
         
         // Store additional member data in user meta
         update_user_meta($user_id, '_chamberboss_member_phone', $data['member_phone'] ?? '');
@@ -606,11 +629,14 @@ class Directory extends BaseClass {
         ]);
         
         if (is_wp_error($member_id)) {
+            error_log('[ChumberBoss Registration] Member post creation failed: ' . $member_id->get_error_message());
             // If member post creation fails, clean up the user
             wp_delete_user($user_id);
-            $this->send_json_response(['message' => 'Failed to create member profile'], false);
+            $this->send_json_response(['message' => 'Failed to create member profile: ' . $member_id->get_error_message(), 'debug' => $debug_info], false);
             return;
         }
+        
+        error_log('[ChumberBoss Registration] Member post created successfully - Member ID: ' . $member_id);
         
         // Send welcome email with login credentials
         $this->send_welcome_email($user_id, $username, $password, $data['member_email']);
@@ -630,7 +656,13 @@ class Directory extends BaseClass {
             'member_id' => $member_id,
             'user_id' => $user_id,
             'redirect_url' => home_url('/members/'),
-            'payment_required' => $payment_required
+            'payment_required' => $payment_required,
+            'debug' => array_merge($debug_info, [
+                'user_created' => $user_id,
+                'member_created' => $member_id,
+                'username' => $username,
+                'email_sent' => true
+            ])
         ]);
     }
     

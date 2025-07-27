@@ -247,17 +247,40 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        $messages.html('<div class="form-message success">' + response.data.message + '</div>');
+                        var successHtml = '<div class="form-message success">' + response.data.message + '</div>';
+                        
+                        // Add debug info if available
+                        if (response.data.debug) {
+                            successHtml += '<div class="debug-info" style="margin-top: 10px; padding: 10px; background: #f0f0f0; font-size: 12px;">';
+                            successHtml += '<strong>Debug Info:</strong><br>';
+                            successHtml += 'User ID: ' + response.data.debug.user_created + '<br>';
+                            successHtml += 'Member ID: ' + response.data.debug.member_created + '<br>';
+                            successHtml += 'Username: ' + response.data.debug.username + '<br>';
+                            successHtml += 'Timestamp: ' + response.data.debug.timestamp;
+                            successHtml += '</div>';
+                        }
+                        
+                        $messages.html(successHtml);
                         $form[0].reset();
                         
                         // Redirect to member dashboard
                         if (response.data.redirect_url) {
                             setTimeout(function() {
                                 window.location.href = response.data.redirect_url;
-                            }, 2000);
+                            }, 3000); // Give more time to see debug info
                         }
                     } else {
-                        $messages.html('<div class="form-message error">' + response.data.message + '</div>');
+                        var errorHtml = '<div class="form-message error">' + response.data.message + '</div>';
+                        
+                        // Add debug info if available
+                        if (response.data.debug) {
+                            errorHtml += '<div class="debug-info" style="margin-top: 10px; padding: 10px; background: #ffe6e6; font-size: 12px;">';
+                            errorHtml += '<strong>Debug Info:</strong><br>';
+                            errorHtml += JSON.stringify(response.data.debug, null, 2);
+                            errorHtml += '</div>';
+                        }
+                        
+                        $messages.html(errorHtml);
                         self.resetForm($form, $submitButton);
                     }
                 },

@@ -1,10 +1,11 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.1
+ * Version: 1.0.2
  */
 
 // DEBUGGING: Test if JavaScript is loading
-console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
+console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.2: JavaScript file is loading! 🚨🚨🚨');
+alert('🔧 CHAMBERBOSS DEBUG: JavaScript v1.0.2 is loading - check console!');
 
 (function($) {
     'use strict';

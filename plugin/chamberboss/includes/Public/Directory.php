@@ -957,18 +957,74 @@ class Directory extends BaseClass {
      * @param string $email
      */
     private function send_welcome_email($user_id, $username, $password, $email) {
-        $subject = 'Welcome to ' . get_bloginfo('name') . ' - Your Account Details';
+        $user = get_user_by('id', $user_id);
+        $display_name = $user ? $user->display_name : 'Member';
+        $site_name = get_bloginfo('name');
         $login_url = home_url('/members/');
         
-        $message = "Welcome to our chamber!\n\n";
-        $message .= "Your account has been created successfully. Here are your login details:\n\n";
-        $message .= "Username: $username\n";
-        $message .= "Password: $password\n";
-        $message .= "Login URL: $login_url\n\n";
-        $message .= "Please log in and update your password as soon as possible.\n\n";
-        $message .= "Thank you for joining us!";
+        $subject = sprintf(__('Welcome to %s - Your Membership Account Details', 'chamberboss'), $site_name);
         
-        wp_mail($email, $subject, $message);
+        $message = sprintf(__('
+Hello %s,
+
+Welcome to %s! Your membership account has been successfully created and activated.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOGIN CREDENTIALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Username: %s
+Password: %s
+Member Dashboard: %s
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT YOU CAN DO NOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Log in to your member dashboard at: %s
+✓ Complete and update your member profile
+✓ Submit your business listings to our directory
+✓ Manage your existing business listings
+✓ Connect with other chamber members
+✓ Access member-only resources and benefits
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT SECURITY NOTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For your security, please log in and change your password as soon as possible.
+You can do this from your member dashboard after logging in.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you have any questions or need assistance, please don\'t hesitate to contact us.
+
+Thank you for joining our chamber community!
+
+Best regards,
+The %s Team
+        ', 'chamberboss'), 
+            $display_name,
+            $site_name,
+            $username, 
+            $password,
+            $login_url,
+            $login_url,
+            $site_name
+        );
+        
+        $headers = [
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . $site_name . ' <' . get_option('admin_email') . '>'
+        ];
+        
+        $email_sent = wp_mail($email, $subject, $message, $headers);
+        
+        if (!$email_sent) {
+            error_log('ChamberBoss: Failed to send welcome email to: ' . $email);
+        }
+        
+        return $email_sent;
     }
     
     /**

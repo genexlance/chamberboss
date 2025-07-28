@@ -811,44 +811,69 @@ class MembersPage extends BaseClass {
      * Send welcome email to new member
      */
     private function send_welcome_email($user_id, $username, $password, $email, $name) {
-        error_log('[Chamberboss Debug] Sending welcome email to: ' . $email);
+        $site_name = get_bloginfo('name');
+        $login_url = home_url('/members/');
         
-        $subject = __('Welcome to ChamberBoss - Your Login Credentials', 'chamberboss');
+        $subject = sprintf(__('Welcome to %s - Your Membership Account Details', 'chamberboss'), $site_name);
         
         $message = sprintf(__('
 Hello %s,
 
-Welcome to ChamberBoss! Your membership account has been created successfully.
+Welcome to %s! Your membership account has been successfully created by our team.
 
-LOGIN CREDENTIALS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOGIN CREDENTIALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Username: %s
 Password: %s
-Login URL: %s
+Member Dashboard: %s
 
-You can now:
-- Access your member dashboard
-- Submit business listings to our directory
-- Connect with other local businesses
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT YOU CAN DO NOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-If you have any questions, please don\'t hesitate to contact us.
+✓ Log in to your member dashboard at: %s
+✓ Complete and update your member profile
+✓ Submit your business listings to our directory
+✓ Manage your existing business listings
+✓ Connect with other chamber members
+✓ Access member-only resources and benefits
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT SECURITY NOTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For your security, please log in and change your password as soon as possible.
+You can do this from your member dashboard after logging in.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you have any questions or need assistance, please don\'t hesitate to contact us.
+
+Thank you for joining our chamber community!
 
 Best regards,
-The ChamberBoss Team
+The %s Team
         ', 'chamberboss'), 
             $name,
+            $site_name,
             $username, 
             $password,
-            wp_login_url()
+            $login_url,
+            $login_url,
+            $site_name
         );
         
-        $headers = ['Content-Type: text/plain; charset=UTF-8'];
+        $headers = [
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . $site_name . ' <' . get_option('admin_email') . '>'
+        ];
         
         $email_sent = wp_mail($email, $subject, $message, $headers);
         
-        if ($email_sent) {
-            error_log('[Chamberboss Debug] Welcome email sent successfully to: ' . $email);
-        } else {
-            error_log('[Chamberboss Debug] Failed to send welcome email to: ' . $email);
+        if (!$email_sent) {
+            error_log('ChamberBoss: Failed to send welcome email to: ' . $email);
         }
         
         return $email_sent;

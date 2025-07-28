@@ -1,9 +1,15 @@
 /**
- * Chamberboss Frontend JavaScript
+ * ChamberBoss Frontend JavaScript
+ * Version: 1.0.1
  */
+
+// DEBUGGING: Test if JavaScript is loading
+console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
+alert('ChamberBoss Frontend JavaScript loaded - check console for details!');
+
 (function($) {
     'use strict';
-    
+
     var Chamberboss = {
         stripe: null,
         elements: null,
@@ -465,7 +471,7 @@
                 },
                 complete: function() {
                     // Re-enable form
-                    Chamberboss.setFormLoading($form, false);
+                    ChamberBoss.setFormLoading($form, false);
                     $submitButton.prop('disabled', false).text($submitButton.data('original-text') || 'Submit Listing');
                 }
             });
@@ -610,12 +616,12 @@
             console.log('Chamberboss: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
         console.log('🚨 CHAMBERBOSS UPDATED CODE IS LOADING!');
-        Chamberboss.init();
+        ChamberBoss.init();
         console.log('Chamberboss: Initialization complete');
     });
     
-    // Make Chamberboss object globally available
-    window.Chamberboss = Chamberboss;
+    // Make ChamberBoss object globally available
+    window.ChamberBoss = ChamberBoss;
     
 })(jQuery);
 
@@ -751,14 +757,14 @@ jQuery(document).ready(function($) {
         }
         
         // Validate email fields
-        if ($field.attr('type') === 'email' && value && !Chamberboss.isValidEmail(value)) {
+        if ($field.attr('type') === 'email' && value && !ChamberBoss.isValidEmail(value)) {
             $field.addClass('error');
             $field.after('<span class="field-error">Please enter a valid email address.</span>');
             return;
         }
         
         // Validate URL fields
-        if ($field.attr('type') === 'url' && value && !Chamberboss.isValidUrl(value)) {
+        if ($field.attr('type') === 'url' && value && !ChamberBoss.isValidUrl(value)) {
             $field.addClass('error');
             $field.after('<span class="field-error">Please enter a valid URL.</span>');
             return;

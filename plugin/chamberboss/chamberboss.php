@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.24
+ * Version: 1.0.25
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.24');
+define('CHAMBERBOSS_VERSION', '1.0.25');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -173,6 +173,9 @@ final class Chamberboss {
                 'read_chamberboss_member' => true,
                 'delete_chamberboss_member' => true,
                 'edit_chamberboss_members' => true,
+                'delete_chamberboss_members' => true,
+                'read_private_chamberboss_members' => true,
+                'edit_private_chamberboss_members' => true,
                 // Note: No publish capabilities - listings require admin approval
                 // Note: Blog posts and comments blocked via specific access control hooks
             ]
@@ -192,6 +195,9 @@ final class Chamberboss {
             $role->add_cap('read_chamberboss_member');
             $role->add_cap('delete_chamberboss_member');
             $role->add_cap('edit_chamberboss_members');
+            $role->add_cap('delete_chamberboss_members');
+            $role->add_cap('read_private_chamberboss_members');
+            $role->add_cap('edit_private_chamberboss_members');
             
             // Remove publish capabilities (listings require admin approval)
             $role->remove_cap('publish_chamberboss_members');
@@ -207,6 +213,9 @@ final class Chamberboss {
             $role->remove_cap('moderate_comments');
             $role->remove_cap('edit_comment');
             $role->remove_cap('edit_comments');
+            $role->remove_cap('edit_others_chamberboss_members');
+            $role->remove_cap('delete_others_chamberboss_members');
+            $role->remove_cap('delete_private_chamberboss_members');
         }
     }
     
@@ -229,7 +238,10 @@ final class Chamberboss {
             'edit_chamberboss_member',
             'read_chamberboss_member',
             'delete_chamberboss_member',
-            'edit_chamberboss_members'
+            'edit_chamberboss_members',
+            'delete_chamberboss_members',
+            'read_private_chamberboss_members',
+            'edit_private_chamberboss_members'
         ];
         
         // Capabilities to remove (publish permissions and advanced capabilities)
@@ -244,7 +256,10 @@ final class Chamberboss {
             'edit_comments',
             'publish_chamberboss_members',
             'edit_published_chamberboss_members',
-            'delete_published_chamberboss_members'
+            'delete_published_chamberboss_members',
+            'edit_others_chamberboss_members',
+            'delete_others_chamberboss_members',
+            'delete_private_chamberboss_members'
         ];
         
         foreach ($members as $user_id) {

@@ -215,6 +215,7 @@
     height: 0;
     padding-bottom: 56.25%; /* Creates perfect 16:9 aspect ratio */
     overflow: hidden;
+    background-color: #f8f9fa; /* Subtle background for non-16:9 images */
 }
 
 .listing-image img {
@@ -223,7 +224,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     transition: transform 0.3s ease;
 }

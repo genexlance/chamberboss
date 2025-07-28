@@ -349,52 +349,41 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             var self = this;
             
             console.log('Chamberboss: Starting payment and registration process');
+            console.log('Chamberboss: Using existing payment setup - PaymentIntentId:', this.paymentIntentId);
             
-            // First, create payment intent
-            this.createPaymentIntent($form, function(clientSecret, paymentIntentId) {
-                if (!clientSecret) {
-                    $messages.html('<div class="form-message error">Failed to initialize payment</div>');
+            // Use existing payment setup (elements are already mounted)
+            if (!this.paymentIntentId || !this.stripe || !this.elements) {
+                console.error('Chamberboss: Payment setup missing - PaymentIntentId:', this.paymentIntentId, 'Stripe:', !!this.stripe, 'Elements:', !!this.elements);
+                $messages.html('<div class="form-message error">Payment system not properly initialized</div>');
+                self.resetForm($form, $submitButton);
+                return;
+            }
+            
+            // Confirm payment with existing elements
+            console.log('Chamberboss: Confirming payment with Stripe...');
+            $messages.html('<div class="form-message info">Processing payment...</div>');
+            
+            this.stripe.confirmPayment({
+                elements: this.elements,
+                redirect: 'if_required'
+            }).then(function(result) {
+                if (result.error) {
+                    console.error('Chamberboss: Payment error:', result.error);
+                    $messages.html('<div class="form-message error">' + result.error.message + '</div>');
                     self.resetForm($form, $submitButton);
-                    return;
+                } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                    console.log('Chamberboss: Payment succeeded, submitting registration');
+                    // Payment successful, now submit registration
+                    self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                } else {
+                    console.log('Chamberboss: Unexpected payment result:', result);
+                    $messages.html('<div class="form-message error">Payment processing failed</div>');
+                    self.resetForm($form, $submitButton);
                 }
-                
-                console.log('Chamberboss: Payment intent created, initializing elements');
-                self.paymentIntentId = paymentIntentId;
-                
-                // Now create elements with the client secret
-                self.elements = self.stripe.elements({
-                    clientSecret: clientSecret
-                });
-                
-                // Create and mount payment element
-                self.paymentElement = self.elements.create('payment');
-                self.paymentElement.mount('#payment-element');
-                
-                console.log('Chamberboss: Payment element mounted, ready for payment');
-                
-                // Update button text
-                $submitButton.html('Complete Payment');
-                
-                // Handle payment element changes
-                self.paymentElement.on('change', function(event) {
-                    if (event.error) {
-                        console.log('Chamberboss: Payment element error:', event.error);
-                        $messages.html('<div class="form-message error">' + event.error.message + '</div>');
-                    } else {
-                        $messages.empty();
-                    }
-                });
-                
-                // Show payment UI and wait for user to complete payment
-                $messages.html('<div class="form-message info">Please complete your payment details above, then click "Complete Payment".</div>');
-                self.setFormLoading($form, false);
-                $submitButton.prop('disabled', false);
-                
-                // Add click handler for completing payment
-                $submitButton.off('click.payment').on('click.payment', function(e) {
-                    e.preventDefault();
-                    self.confirmPayment($form, $submitButton, $messages, clientSecret);
-                });
+            }).catch(function(error) {
+                console.error('Chamberboss: Payment confirmation error:', error);
+                $messages.html('<div class="form-message error">Payment processing failed</div>');
+                self.resetForm($form, $submitButton);
             });
         },
         

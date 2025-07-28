@@ -25,8 +25,9 @@
 
 ### ✅ COMPLETED (FINAL FIX)
 - [x] **FIXED: JavaScript method naming conflict** - Renamed `createPaymentIntent()` initialization method to `initializePaymentIntent()`
-- [x] **FIXED: Nonce verification mismatch** - Updated backend to use correct nonce context `chamberboss_frontend`
-- [x] **Updated plugin version to 1.0.10**
+- [x] **FIXED: Nonce verification mismatch** - Updated backend to use correct nonce context `chamberboss_frontend`  
+- [x] **FIXED: Duplicate payment intent creation** - Form submission now uses existing payment setup instead of creating new payment intent
+- [x] **Updated plugin version to 1.0.11**
 - [x] **Rebuilt plugin zip with final fix**
 
 ### 📋 PENDING (USER TESTING)

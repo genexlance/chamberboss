@@ -34,7 +34,7 @@ class MemberDashboard extends BaseClass {
 
     public function render_dashboard() {
         if (!is_user_logged_in()) {
-            return '<p>' . __('Please log in to view your dashboard.', 'chamberboss') . '</p>';
+            return $this->render_login_and_signup_forms();
         }
 
         $current_user = wp_get_current_user();
@@ -306,6 +306,232 @@ class MemberDashboard extends BaseClass {
             </p>
         </form>
         <?php
+    }
+
+    /**
+     * Render login and signup forms for non-logged-in users
+     */
+    private function render_login_and_signup_forms() {
+        ob_start();
+        ?>
+        <div class="chamberboss-member-access">
+            <!-- Login Form Section -->
+            <div class="chamberboss-login-section" id="login-section">
+                <h2><?php _e('Member Login', 'chamberboss'); ?></h2>
+                <p><?php _e('Please log in to access your member dashboard.', 'chamberboss'); ?></p>
+                
+                <?php 
+                // Show login error messages if any
+                if (isset($_GET['login']) && $_GET['login'] === 'failed') {
+                    echo '<div class="chamberboss-notice chamberboss-notice-error"><p>' . __('Invalid username or password. Please try again.', 'chamberboss') . '</p></div>';
+                }
+                ?>
+                
+                <form id="chamberboss-login-form" method="post" action="<?php echo esc_url(wp_login_url(get_permalink())); ?>">
+                    <div class="form-field">
+                        <label for="user_login"><?php _e('Username or Email', 'chamberboss'); ?></label>
+                        <input type="text" name="log" id="user_login" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="user_pass"><?php _e('Password', 'chamberboss'); ?></label>
+                        <input type="password" name="pwd" id="user_pass" required>
+                    </div>
+                    
+                    <div class="form-field checkbox-field">
+                        <label>
+                            <input type="checkbox" name="rememberme" value="forever">
+                            <?php _e('Remember Me', 'chamberboss'); ?>
+                        </label>
+                    </div>
+                    
+                    <div class="form-field">
+                        <input type="submit" name="wp-submit" value="<?php _e('Log In', 'chamberboss'); ?>" class="button button-primary">
+                        <input type="hidden" name="redirect_to" value="<?php echo esc_url(get_permalink()); ?>">
+                    </div>
+                </form>
+                
+                <div class="login-extras">
+                    <p>
+                        <a href="<?php echo esc_url(wp_lostpassword_url(get_permalink())); ?>"><?php _e('Forgot your password?', 'chamberboss'); ?></a>
+                    </p>
+                    <p class="signup-link">
+                        <?php _e('New member?', 'chamberboss'); ?> 
+                        <a href="#" id="show-signup-form"><?php _e('Sign up here', 'chamberboss'); ?></a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Registration Form Section (Hidden by default) -->
+            <div class="chamberboss-registration-section" id="registration-section" style="display: none;">
+                <div class="registration-header">
+                    <h2><?php _e('Member Registration', 'chamberboss'); ?></h2>
+                    <p><?php _e('Join our chamber community to access exclusive member benefits and manage your business listings.', 'chamberboss'); ?></p>
+                    <p class="back-to-login">
+                        <?php _e('Already have an account?', 'chamberboss'); ?> 
+                        <a href="#" id="show-login-form"><?php _e('Log in here', 'chamberboss'); ?></a>
+                    </p>
+                </div>
+                
+                <?php echo do_shortcode('[chamberboss_member_registration]'); ?>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginSection = document.getElementById('login-section');
+            var registrationSection = document.getElementById('registration-section');
+            var showSignupLink = document.getElementById('show-signup-form');
+            var showLoginLink = document.getElementById('show-login-form');
+            
+            if (showSignupLink) {
+                showSignupLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    loginSection.style.display = 'none';
+                    registrationSection.style.display = 'block';
+                    // Scroll to top of form
+                    registrationSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+            
+            if (showLoginLink) {
+                showLoginLink.addEventListener('click', function(e) {
+                    e.preventDefault(); 
+                    registrationSection.style.display = 'none';
+                    loginSection.style.display = 'block';
+                    // Scroll to top of form
+                    loginSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+        });
+        </script>
+
+        <style>
+        .chamberboss-member-access {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .chamberboss-login-section,
+        .chamberboss-registration-section {
+            background: #fff;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .chamberboss-login-section h2,
+        .chamberboss-registration-section h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+        
+        .form-field {
+            margin-bottom: 20px;
+        }
+        
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-field input[type="text"],
+        .form-field input[type="email"], 
+        .form-field input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .form-field input[type="text"]:focus,
+        .form-field input[type="email"]:focus,
+        .form-field input[type="password"]:focus {
+            border-color: #0073aa;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+        }
+        
+        .checkbox-field label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+        }
+        
+        .checkbox-field input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .button-primary {
+            background: #0073aa;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        .button-primary:hover {
+            background: #005a87;
+        }
+        
+        .login-extras {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .login-extras p {
+            margin: 10px 0;
+        }
+        
+        .signup-link {
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .registration-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-to-login {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .chamberboss-notice {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .chamberboss-notice-error {
+            background: #fef7f7;
+            border-left: 4px solid #dc3232;
+            color: #dc3232;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .chamberboss-login-section,
+            .chamberboss-registration-section {
+                padding: 20px;
+                margin: 0 10px 20px 10px;
+            }
+        }
+        </style>
+        <?php
+        return ob_get_clean();
     }
 
     public function handle_form_submissions() {

@@ -29,13 +29,14 @@
 - [x] **FIXED: Duplicate payment intent creation** - Form submission now uses existing payment setup instead of creating new payment intent
 - [x] **REMOVED ALL DEBUGGING CODE** - Cleaned up console.log, alert(), error_log statements for production
 - [x] **ENHANCED WELCOME EMAILS** - Professional email template with username, password, and /members/ login instructions
-- [x] **Updated plugin version to 1.0.13**
-- [x] **Rebuilt production plugin zip with email enhancements**
+- [x] **ENHANCED MEMBER DASHBOARD** - Login form and signup integration for [chamberboss_member_dashboard] shortcode
+- [x] **Updated plugin version to 1.0.14**
+- [x] **Rebuilt production plugin zip with dashboard enhancements**
 
 ### 🎉 **STRIPE PAYMENT INTEGRATION COMPLETE**
 
 **Status**: ✅ **PRODUCTION READY**  
-**Final Version**: **1.0.13**  
+**Final Version**: **1.0.14**  
 **Release Date**: January 28, 2025
 
 ### What Was Fixed
@@ -45,6 +46,7 @@
 4. **Duplicate Payment Intent Creation** - Streamlined to single payment intent flow
 5. **All Debugging Code Removed** - Clean production-ready code
 6. **Enhanced Welcome Emails** - Professional templates with proper login instructions
+7. **Enhanced Member Dashboard** - Added login form and integrated signup for non-logged-in users
 
 ### ✅ VERIFIED WORKING
 - Stripe Elements load correctly on registration forms
@@ -54,6 +56,8 @@
 - No console errors or debug popup messages
 - **Welcome emails sent with username, password, and /members/ login instructions**
 - **Professional email template includes profile and business listing management info**
+- **Member dashboard shows login form for non-logged-in users**
+- **Signup link reveals registration form with smooth toggle functionality**
 
 ## Fix Strategy
 **Option 1**: Update JavaScript to call correct action name `chamberboss_create_payment_intent`

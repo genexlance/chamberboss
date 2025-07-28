@@ -52,6 +52,7 @@
 - [x] **Enhanced image quality**: Updated from 'medium' to 'large' WordPress image size
 - [x] **Category button navigation**: Horizontal navigation buttons that stack responsively
 - [x] **Fixed "Read more" links**: Proper HTML rendering instead of escaped text
+- [x] **Fixed member permissions**: Members can now create business listings
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

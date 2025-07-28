@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.19
+ * Version: 1.0.20
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.19');
+define('CHAMBERBOSS_VERSION', '1.0.20');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -145,6 +145,9 @@ final class Chamberboss {
 
         // Add member role
         $this->add_member_role();
+        
+        // Update existing member capabilities
+        $this->update_existing_member_capabilities();
     }
 
     /**
@@ -160,14 +163,62 @@ final class Chamberboss {
                 'delete_posts' => true,
                 'edit_published_posts' => true,
                 'upload_files' => true,
-                'edit_chamberboss_listing' => true,
-                'read_chamberboss_listing' => true,
-                'delete_chamberboss_listing' => true,
+                // Listing capabilities (for creating/editing business listings)
+                'create_chamberboss_members' => true,
+                'edit_chamberboss_member' => true,
+                'read_chamberboss_member' => true,
+                'delete_chamberboss_member' => true,
+                'edit_chamberboss_members' => true,
+                'publish_chamberboss_members' => true,
+                'edit_published_chamberboss_members' => true,
+                'delete_published_chamberboss_members' => true,
             ]
         );
+        
+        // Also update existing member role if it exists
+        $role = get_role('chamberboss_member');
+        if ($role) {
+            $role->add_cap('create_chamberboss_members');
+            $role->add_cap('edit_chamberboss_member');
+            $role->add_cap('read_chamberboss_member');
+            $role->add_cap('delete_chamberboss_member');
+            $role->add_cap('edit_chamberboss_members');
+            $role->add_cap('publish_chamberboss_members');
+            $role->add_cap('edit_published_chamberboss_members');
+            $role->add_cap('delete_published_chamberboss_members');
+                 }
+     }
+     
+     /**
+     * Update existing member capabilities
+     */
+    private function update_existing_member_capabilities() {
+        // Get all users with chamberboss_member role
+        $members = get_users([
+            'role' => 'chamberboss_member',
+            'fields' => 'ID'
+        ]);
+        
+        $capabilities = [
+            'create_chamberboss_members',
+            'edit_chamberboss_member',
+            'read_chamberboss_member',
+            'delete_chamberboss_member',
+            'edit_chamberboss_members',
+            'publish_chamberboss_members',
+            'edit_published_chamberboss_members',
+            'delete_published_chamberboss_members'
+        ];
+        
+        foreach ($members as $user_id) {
+            $user = new WP_User($user_id);
+            foreach ($capabilities as $cap) {
+                $user->add_cap($cap);
+            }
+        }
     }
-    
-    /**
+     
+     /**
      * Plugin deactivation
      */
     public function deactivate() {

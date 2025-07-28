@@ -30,13 +30,14 @@
 - [x] **REMOVED ALL DEBUGGING CODE** - Cleaned up console.log, alert(), error_log statements for production
 - [x] **ENHANCED WELCOME EMAILS** - Professional email template with username, password, and /members/ login instructions
 - [x] **ENHANCED MEMBER DASHBOARD** - Login form and signup integration for [chamberboss_member_dashboard] shortcode
-- [x] **Updated plugin version to 1.0.14**
-- [x] **Rebuilt production plugin zip with dashboard enhancements**
+- [x] **ENHANCED BUSINESS DIRECTORY** - Horizontal category button navigation with responsive stacking
+- [x] **Updated plugin version to 1.0.15**
+- [x] **Rebuilt production plugin zip with directory enhancements**
 
 ### 🎉 **STRIPE PAYMENT INTEGRATION COMPLETE**
 
 **Status**: ✅ **PRODUCTION READY**  
-**Final Version**: **1.0.14**  
+**Final Version**: **1.0.15**  
 **Release Date**: January 28, 2025
 
 ### What Was Fixed
@@ -47,6 +48,7 @@
 5. **All Debugging Code Removed** - Clean production-ready code
 6. **Enhanced Welcome Emails** - Professional templates with proper login instructions
 7. **Enhanced Member Dashboard** - Added login form and integrated signup for non-logged-in users
+8. **Enhanced Business Directory** - Category navigation as horizontal buttons with responsive stacking
 
 ### ✅ VERIFIED WORKING
 - Stripe Elements load correctly on registration forms
@@ -58,6 +60,8 @@
 - **Professional email template includes profile and business listing management info**
 - **Member dashboard shows login form for non-logged-in users**
 - **Signup link reveals registration form with smooth toggle functionality**
+- **Business directory categories display as attractive horizontal buttons**
+- **Category buttons stack responsively on mobile devices**
 
 ## Fix Strategy
 **Option 1**: Update JavaScript to call correct action name `chamberboss_create_payment_intent`

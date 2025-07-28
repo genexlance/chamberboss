@@ -170,13 +170,19 @@ class Directory extends BaseClass {
                     <?php endif; ?>
                     
                     <?php if ($args['show_filters']): ?>
-                    <div class="filter-field">
-                        <select name="directory_category" class="directory-category-filter">
-                            <option value=""><?php _e('All Categories', 'chamberboss'); ?></option>
+                    <div class="category-navigation">
+                        <div class="category-buttons">
+                            <a href="<?php echo esc_url(remove_query_arg('directory_category')); ?>" 
+                               class="category-button <?php echo empty($category_filter) ? 'active' : ''; ?>">
+                                <?php _e('All Categories', 'chamberboss'); ?>
+                            </a>
                             <?php foreach ($categories as $category_obj): ?>
-                                <option value="<?php echo esc_attr($category_obj->slug); ?>" <?php selected($category_filter, $category_obj->slug); ?>><?php echo esc_html($category_obj->name); ?></option>
+                                <a href="<?php echo esc_url(add_query_arg('directory_category', $category_obj->slug)); ?>" 
+                                   class="category-button <?php echo ($category_filter === $category_obj->slug) ? 'active' : ''; ?>">
+                                    <?php echo esc_html($category_obj->name); ?>
+                                </a>
                             <?php endforeach; ?>
-                        </select>
+                        </div>
                     </div>
                     <?php endif; ?>
                 </form>

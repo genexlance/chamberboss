@@ -994,20 +994,24 @@ class Directory extends BaseClass {
      * Handle payment intent creation for registration
      */
     public function handle_create_payment_intent() {
-        // DEBUG: Log that handler is being called
-        error_log('🔧 CHAMBERBOSS DEBUG: handle_create_payment_intent method called at ' . current_time('mysql'));
-        
-        if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
-            error_log('🔧 CHAMBERBOSS DEBUG: Payment intent nonce verification failed');
-            $this->send_json_response(['message' => 'Invalid nonce'], false);
-            return;
-        }
-        
-        // Get membership price
-        $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
-        $currency = $this->get_option('chamberboss_currency', 'USD');
-        
-        error_log('🔧 CHAMBERBOSS DEBUG: Creating payment intent for $' . $membership_price . ' ' . $currency);
+        try {
+            // DEBUG: Log that handler is being called - FIRST THING
+            error_log('🔧 CHAMBERBOSS DEBUG: === PAYMENT INTENT HANDLER START === at ' . current_time('mysql'));
+            error_log('🔧 CHAMBERBOSS DEBUG: POST data received: ' . print_r($_POST, true));
+            
+            if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
+                error_log('🔧 CHAMBERBOSS DEBUG: Payment intent nonce verification failed');
+                $this->send_json_response(['message' => 'Invalid nonce'], false);
+                return;
+            }
+            
+            error_log('🔧 CHAMBERBOSS DEBUG: Nonce verification passed');
+            
+            // Get membership price
+            $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
+            $currency = $this->get_option('chamberboss_currency', 'USD');
+            
+            error_log('🔧 CHAMBERBOSS DEBUG: Creating payment intent for $' . $membership_price . ' ' . $currency);
         
         // Create payment intent via Stripe integration
         $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
@@ -1047,6 +1051,12 @@ class Directory extends BaseClass {
         } catch (Exception $e) {
             error_log('Payment intent creation error: ' . $e->getMessage());
             $this->send_json_response(['message' => 'Failed to initialize payment'], false);
+        }
+        
+        } catch (Exception $e) {
+            error_log('🔧 CHAMBERBOSS DEBUG: CRITICAL ERROR in payment intent handler: ' . $e->getMessage());
+            error_log('🔧 CHAMBERBOSS DEBUG: Stack trace: ' . $e->getTraceAsString());
+            $this->send_json_response(['message' => 'Payment system error'], false);
         }
     }
 

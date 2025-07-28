@@ -55,6 +55,7 @@
 - [x] **Fixed member permissions**: Members can now create business listings
 - [x] **Implemented approval workflow**: Member-created listings require admin approval (pending status)
 - [x] **Restricted member access**: Removed blog post and comment access from members
+- [x] **Fixed member listing access**: Restored ability for members to create/edit business listings while blocking blog posts
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

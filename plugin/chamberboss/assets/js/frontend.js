@@ -1,11 +1,13 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.2
+ * Version: 1.0.3 - CACHE BUSTER
  */
 
-// DEBUGGING: Test if JavaScript is loading
-console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.2: JavaScript file is loading! 🚨🚨🚨');
-alert('🔧 CHAMBERBOSS DEBUG: JavaScript v1.0.2 is loading - check console!');
+// MEGA DEBUGGING: FORCE CACHE REFRESH
+console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.3: JavaScript file is loading! 🚨🚨🚨');
+console.log('🚨🚨🚨 CACHE BUSTER: ' + new Date().getTime() + ' 🚨🚨🚨');
+alert('🔥🔥🔥 CHAMBERBOSS v1.0.3 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
+document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
 
 (function($) {
     'use strict';

@@ -1,13 +1,13 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.4 - STRIPE ELEMENTS FIX
+ * Version: 1.0.5 - PAYMENT INTENT FIX
  */
 
 // MEGA DEBUGGING: FORCE CACHE REFRESH
-console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.4: JavaScript file is loading! 🚨🚨🚨');
+console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.5: JavaScript file is loading! 🚨🚨🚨');
 console.log('🚨🚨🚨 CACHE BUSTER: ' + new Date().getTime() + ' 🚨🚨🚨');
-alert('🔥🔥🔥 CHAMBERBOSS v1.0.4 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
-document.title = 'CHAMBERBOSS v1.0.4 LOADED - ' + document.title;
+alert('🔥🔥🔥 CHAMBERBOSS v1.0.5 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
+document.title = 'CHAMBERBOSS v1.0.5 LOADED - ' + document.title;
 
 (function($) {
     'use strict';
@@ -139,34 +139,46 @@ document.title = 'CHAMBERBOSS v1.0.4 LOADED - ' + document.title;
             }
         },
 
-        /**
-         * Create Payment Intent and initialize Elements
-         */
-        createPaymentIntent: function() {
-            console.log('🔧 CHAMBERBOSS: Creating payment intent...');
-            
-            // Make AJAX call to create payment intent
-            $.post(chamberboss_frontend.ajax_url, {
-                action: 'chamberboss_create_payment_intent',
-                nonce: chamberboss_frontend.nonce
-            })
-            .done(function(response) {
-                console.log('🔧 CHAMBERBOSS: Payment intent response:', response);
-                
-                if (response.success && response.data.clientSecret) {
-                    console.log('🔧 CHAMBERBOSS: Payment intent created successfully');
-                    this.paymentIntentId = response.data.paymentIntentId;
-                    this.initializeElements(response.data.clientSecret);
-                } else {
-                    console.error('🔧 CHAMBERBOSS: Failed to create payment intent:', response);
-                    // Continue without payment elements for free memberships
-                }
-            }.bind(this))
-            .fail(function(xhr, status, error) {
-                console.error('🔧 CHAMBERBOSS: Payment intent AJAX failed:', xhr, status, error);
-                // Continue without payment elements for free memberships
-            });
-        },
+                        /**
+                 * Create Payment Intent and initialize Elements
+                 */
+                createPaymentIntent: function() {
+                    console.log('🔧 CHAMBERBOSS: Creating payment intent...');
+                    console.log('🔧 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url);
+                    console.log('🔧 CHAMBERBOSS: Nonce:', chamberboss_frontend.nonce);
+                    
+                    // Make AJAX call to create payment intent
+                    $.post(chamberboss_frontend.ajax_url, {
+                        action: 'chamberboss_create_payment_intent',
+                        nonce: chamberboss_frontend.nonce
+                    })
+                    .done(function(response) {
+                        console.log('🔧 CHAMBERBOSS: Payment intent response:', response);
+                        console.log('🔧 CHAMBERBOSS: Response type:', typeof response);
+                        console.log('🔧 CHAMBERBOSS: Response.success:', response.success);
+                        console.log('🔧 CHAMBERBOSS: Response.data:', response.data);
+                        
+                        if (response.success && response.data && response.data.clientSecret) {
+                            console.log('🔧 CHAMBERBOSS: Payment intent created successfully');
+                            console.log('🔧 CHAMBERBOSS: Client secret:', response.data.clientSecret);
+                            console.log('🔧 CHAMBERBOSS: Payment intent ID:', response.data.paymentIntentId);
+                            this.paymentIntentId = response.data.paymentIntentId;
+                            this.initializeElements(response.data.clientSecret);
+                        } else {
+                            console.error('🔧 CHAMBERBOSS: Failed to create payment intent:', response);
+                            console.error('🔧 CHAMBERBOSS: Response structure check - success:', !!response.success, 'data:', !!response.data, 'clientSecret:', !!(response.data && response.data.clientSecret));
+                            // Continue without payment elements for free memberships
+                        }
+                    }.bind(this))
+                    .fail(function(xhr, status, error) {
+                        console.error('🔧 CHAMBERBOSS: Payment intent AJAX failed:');
+                        console.error('🔧 CHAMBERBOSS: XHR:', xhr);
+                        console.error('🔧 CHAMBERBOSS: Status:', status);  
+                        console.error('🔧 CHAMBERBOSS: Error:', error);
+                        console.error('🔧 CHAMBERBOSS: Response text:', xhr.responseText);
+                        // Continue without payment elements for free memberships
+                    });
+                },
 
         /**
          * Initialize Stripe Elements with client secret
@@ -743,7 +755,7 @@ document.title = 'CHAMBERBOSS v1.0.4 LOADED - ' + document.title;
     
                 // Initialize when document is ready
             $(document).ready(function() {
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.5: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
         console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState);
         console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
         console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
@@ -753,9 +765,9 @@ document.title = 'CHAMBERBOSS v1.0.4 LOADED - ' + document.title;
             console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
         
-                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
+                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.5: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
                 Chamberboss.init();
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: DOCUMENT READY COMPLETE! 🔥🔥🔥');
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.5: DOCUMENT READY COMPLETE! 🔥🔥🔥');
     });
     
     // Make Chamberboss object globally available

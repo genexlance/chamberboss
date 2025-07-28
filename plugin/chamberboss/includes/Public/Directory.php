@@ -996,28 +996,18 @@ class Directory extends BaseClass {
     public function handle_create_payment_intent() {
         // DEBUG: Log that handler is being called
         error_log('🔧 CHAMBERBOSS DEBUG: handle_create_payment_intent method called at ' . current_time('mysql'));
+        
         if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
+            error_log('🔧 CHAMBERBOSS DEBUG: Payment intent nonce verification failed');
             $this->send_json_response(['message' => 'Invalid nonce'], false);
-            return;
-        }
-        
-        $data = $this->sanitize_input($_POST);
-        
-        // Validate required fields
-        if (empty($data['member_name']) || empty($data['member_email'])) {
-            $this->send_json_response(['message' => 'Name and email are required'], false);
-            return;
-        }
-        
-        // Check if email already exists
-        if (email_exists($data['member_email'])) {
-            $this->send_json_response(['message' => 'A user with this email already exists'], false);
             return;
         }
         
         // Get membership price
         $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
         $currency = $this->get_option('chamberboss_currency', 'USD');
+        
+        error_log('🔧 CHAMBERBOSS DEBUG: Creating payment intent for $' . $membership_price . ' ' . $currency);
         
         // Create payment intent via Stripe integration
         $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
@@ -1043,15 +1033,15 @@ class Directory extends BaseClass {
                 'currency' => strtolower($currency),
                 'automatic_payment_methods' => ['enabled' => true],
                 'metadata' => [
-                    'member_email' => $data['member_email'],
-                    'member_name' => $data['member_name'],
                     'type' => 'membership_registration'
                 ]
             ]);
             
+            error_log('🔧 CHAMBERBOSS DEBUG: Payment intent created successfully: ' . $intent->id);
+            
             $this->send_json_response([
-                'client_secret' => $intent->client_secret,
-                'payment_intent_id' => $intent->id
+                'clientSecret' => $intent->client_secret,
+                'paymentIntentId' => $intent->id
             ]);
             
         } catch (Exception $e) {

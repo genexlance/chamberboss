@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.11
+ * Version: 1.0.12
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.11');
+define('CHAMBERBOSS_VERSION', '1.0.12');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -101,18 +101,11 @@ final class Chamberboss {
      */
     public function init() {
         // DEBUG: Check if Stripe classes are available during main init
-        $stripe_available = class_exists('\\Stripe\\Stripe') ? 'YES' : 'NO';
-        error_log('🔧 CHAMBERBOSS DEBUG: Stripe classes available during main init: ' . $stripe_available);
-        
         // Try to manually load Stripe classes if not available
         if (!class_exists('\\Stripe\\Stripe')) {
             $vendor_autoload = CHAMBERBOSS_PLUGIN_DIR . 'vendor/autoload.php';
             if (file_exists($vendor_autoload)) {
                 require_once $vendor_autoload;
-                $stripe_available_after = class_exists('\\Stripe\\Stripe') ? 'YES' : 'NO';
-                error_log('🔧 CHAMBERBOSS DEBUG: Stripe classes available after manual require: ' . $stripe_available_after);
-            } else {
-                error_log('🔧 CHAMBERBOSS DEBUG: Vendor autoload file not found at: ' . $vendor_autoload);
             }
         }
         

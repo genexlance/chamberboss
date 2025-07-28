@@ -1,13 +1,7 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.7 - AJAX CONFLICT FIX
+ * Version: 1.0.12
  */
-
-// MEGA DEBUGGING: FORCE CACHE REFRESH
-console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.7: JavaScript file is loading! 🚨🚨🚨');
-console.log('🚨🚨🚨 CACHE BUSTER: ' + new Date().getTime() + ' 🚨🚨🚨');
-alert('🔥🔥🔥 CHAMBERBOSS v1.0.7 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
-document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
 
 (function($) {
     'use strict';
@@ -22,97 +16,36 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
          * Initialize frontend functionality
          */
         init: function() {
-            console.log('🔥 CHAMBERBOSS: MAIN INIT FUNCTION CALLED!');
-            console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
-            console.log('🔥 CHAMBERBOSS: $ available (inside closure):', !!$);
-            console.log('🔥 CHAMBERBOSS: $ same as jQuery:', $ === jQuery);
-            console.log('🔥 CHAMBERBOSS: chamberboss_frontend available:', !!window.chamberboss_frontend);
-            
             this.initMemberRegistration();
             this.initListingSubmission();
             this.initDirectoryFilters();
             this.initImagePreviews();
-            
-            console.log('🔥 CHAMBERBOSS: MAIN INIT COMPLETE!');
         },
         
         /**
          * Initialize member registration form
          */
         initMemberRegistration: function() {
-            console.log('🔥 CHAMBERBOSS: initMemberRegistration() CALLED!');
-            console.log('🔥 CHAMBERBOSS: DOM ready state:', document.readyState);
-            console.log('🔥 CHAMBERBOSS: Forms on page:', document.querySelectorAll('form').length);
-            
             var $form = $('#chamberboss-member-registration');
-            console.log('🔧 CHAMBERBOSS: Looking for registration form, found:', $form.length);
-            console.log('🔧 CHAMBERBOSS: All elements with chamberboss ID:', $('[id*="chamberboss"]').length);
             
-            if (!$form.length) {
-                console.log('🔧 CHAMBERBOSS: No registration form found');
+            if ($form.length === 0) {
                 return;
             }
-            
-            console.log('🔧 CHAMBERBOSS: Registration form found, setting up handlers');
-            
-            // Check for payment section
-            var $paymentSection = $form.find('#payment-element');
-            console.log('🔧 CHAMBERBOSS: Payment element search result:', $paymentSection.length);
-            console.log('🔧 CHAMBERBOSS: Payment element HTML:', $paymentSection.length > 0 ? $paymentSection[0].outerHTML : 'NOT FOUND');
-            
-            // Check Stripe key availability
-            console.log('🔧 CHAMBERBOSS: chamberboss_frontend object:', typeof chamberboss_frontend);
-            console.log('🔧 CHAMBERBOSS: Stripe publishable key exists:', !!chamberboss_frontend.stripe_publishable_key);
-            console.log('🔧 CHAMBERBOSS: Stripe publishable key value:', chamberboss_frontend.stripe_publishable_key);
-            
-            // Initialize Stripe if payment section exists
-            if ($paymentSection.length && chamberboss_frontend.stripe_publishable_key) {
-                console.log('🔧 CHAMBERBOSS: Conditions met - initializing Stripe');
+
+            // Check if Stripe payment is needed
+            var $paymentSection = $('#payment-element');
+            if ($paymentSection.length > 0 && chamberboss_frontend.stripe_publishable_key) {
                 this.initStripe();
-            } else {
-                console.log('🔧 CHAMBERBOSS: Stripe initialization skipped');
-                console.log('🔧 CHAMBERBOSS: - Payment section exists:', $paymentSection.length > 0);
-                console.log('🔧 CHAMBERBOSS: - Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
             }
-            
-            console.log('🔥 CHAMBERBOSS: Attempting to attach form submit handler...');
-            console.log('🔥 CHAMBERBOSS: Form jQuery object:', $form);
-            console.log('🔥 CHAMBERBOSS: Handler function:', this.handleMemberRegistration);
-            
+
+            // Attach form submit handler
             $form.on('submit', this.handleMemberRegistration.bind(this));
-            console.log('🔥 CHAMBERBOSS: Form submit handler attached successfully');
-            
-            // Test the handler attachment
-            console.log('🔥 CHAMBERBOSS: Testing form submit handler...');
-            $form.off('submit.test').on('submit.test', function(e) {
-                console.log('🔥 CHAMBERBOSS: TEST HANDLER TRIGGERED - Form submit is working!');
-            });
-            
-            // Add test button for debugging
-            if ($form.length) {
-                $form.append('<button type="button" id="test-ajax" style="margin: 10px; background: orange; color: white; padding: 5px;">🔧 TEST AJAX</button>');
-                $('#test-ajax').on('click', function() {
-                    console.log('🔧 CHAMBERBOSS: Test AJAX button clicked');
-                    $.post(chamberboss_frontend.ajax_url, {
-                        action: 'chamberboss_test_ajax'
-                    }, function(response) {
-                        console.log('🔧 CHAMBERBOSS: Test AJAX success:', response);
-                    }).fail(function(xhr, status, error) {
-                        console.log('🔧 CHAMBERBOSS: Test AJAX error:', xhr, status, error);
-                    });
-                });
-            }
         },
-        
+
         /**
          * Initialize Stripe
          */
         initStripe: function() {
-            console.log('Chamberboss: initStripe called');
-            console.log('Chamberboss: window.Stripe available:', !!window.Stripe);
-            console.log('Chamberboss: chamberboss_frontend object:', chamberboss_frontend);
-            console.log('Chamberboss: Stripe publishable key:', chamberboss_frontend.stripe_publishable_key);
-
             if (!window.Stripe) {
                 console.error('Chamberboss: Stripe.js not loaded');
                 return false;
@@ -126,12 +59,10 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             try {
                 // Initialize Stripe
                 this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
-                console.log('Chamberboss: Stripe instance created:', !!this.stripe);
 
                 // Create Payment Intent and Elements
                 this.initializePaymentIntent();
 
-                console.log('Chamberboss: Stripe initialization completed successfully');
                 return true;
             } catch (error) {
                 console.error('Chamberboss: Stripe initialization failed:', error);
@@ -139,95 +70,47 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             }
         },
 
-                        /**
-                 * Initialize Payment Intent and Elements for form setup
-                 */
-                initializePaymentIntent: function() {
-                    console.log('🔧 CHAMBERBOSS: Creating payment intent...');
-                    console.log('🔧 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url);
-                    console.log('🔧 CHAMBERBOSS: Nonce:', chamberboss_frontend.nonce);
-                    
-                    // Make AJAX call to create payment intent
-                    var ajaxData = {
-                        action: 'chamberboss_create_payment_intent',
-                        nonce: chamberboss_frontend.nonce
-                    };
-                    console.log('🔧 CHAMBERBOSS: AJAX data being sent:', ajaxData);
-                    
-                    $.post(chamberboss_frontend.ajax_url, ajaxData)
-                    .done(function(response) {
-                        console.log('🔧 CHAMBERBOSS: Payment intent response:', response);
-                        console.log('🔧 CHAMBERBOSS: Response type:', typeof response);
-                        console.log('🔧 CHAMBERBOSS: Response.success:', response.success);
-                        console.log('🔧 CHAMBERBOSS: Response.data:', response.data);
-                        
-                        if (response && response.success && response.data && response.data.clientSecret) {
-                            console.log('🔧 CHAMBERBOSS: Payment intent created successfully');
-                            console.log('🔧 CHAMBERBOSS: Client secret:', response.data.clientSecret);
-                            console.log('🔧 CHAMBERBOSS: Payment intent ID:', response.data.paymentIntentId);
-                            this.paymentIntentId = response.data.paymentIntentId;
-                            this.initializeElements(response.data.clientSecret);
-                        } else {
-                            console.error('🔧 CHAMBERBOSS: Failed to create payment intent - response analysis:');
-                            console.error('🔧 CHAMBERBOSS: - Raw response:', response);
-                            console.error('🔧 CHAMBERBOSS: - Response exists:', !!response);
-                            console.error('🔧 CHAMBERBOSS: - Response.success:', response ? response.success : 'N/A');
-                            console.error('🔧 CHAMBERBOSS: - Response.data:', response ? response.data : 'N/A');
-                            console.error('🔧 CHAMBERBOSS: - ClientSecret exists:', !!(response && response.data && response.data.clientSecret));
-                            if (response && response.data && response.data.message) {
-                                console.error('🔧 CHAMBERBOSS: - Error message:', response.data.message);
-                            }
-                            // Continue without payment elements for free memberships
-                        }
-                    }.bind(this))
-                    .fail(function(xhr, status, error) {
-                        console.error('🔧 CHAMBERBOSS: Payment intent AJAX failed:');
-                        console.error('🔧 CHAMBERBOSS: XHR:', xhr);
-                        console.error('🔧 CHAMBERBOSS: Status:', status);  
-                        console.error('🔧 CHAMBERBOSS: Error:', error);
-                        console.error('🔧 CHAMBERBOSS: Response text:', xhr.responseText);
-                        console.error('🔧 CHAMBERBOSS: HTTP Status:', xhr.status);
-                        console.error('🔧 CHAMBERBOSS: Ready State:', xhr.readyState);
-                        
-                        // Try to parse the response as JSON to see what we got
-                        try {
-                            var jsonResponse = JSON.parse(xhr.responseText);
-                            console.error('🔧 CHAMBERBOSS: Parsed JSON response:', jsonResponse);
-                        } catch (parseError) {
-                            console.error('🔧 CHAMBERBOSS: Response is not valid JSON:', parseError);
-                        }
-                        
-                        // Continue without payment elements for free memberships
-                    });
-                },
+        /**
+         * Initialize Payment Intent and Elements for form setup
+         */
+        initializePaymentIntent: function() {
+            // Make AJAX call to create payment intent
+            var ajaxData = {
+                action: 'chamberboss_create_payment_intent',
+                nonce: chamberboss_frontend.nonce
+            };
+            
+            $.post(chamberboss_frontend.ajax_url, ajaxData)
+            .done(function(response) {
+                if (response && response.success && response.data && response.data.clientSecret) {
+                    this.paymentIntentId = response.data.paymentIntentId;
+                    this.initializeElements(response.data.clientSecret);
+                } else {
+                    // Continue without payment elements for free memberships
+                }
+            }.bind(this))
+            .fail(function(xhr, status, error) {
+                console.error('Chamberboss: Payment intent creation failed');
+            });
+        },
 
         /**
-         * Initialize Stripe Elements with client secret
+         * Initialize Stripe Elements
          */
         initializeElements: function(clientSecret) {
-            console.log('🔧 CHAMBERBOSS: Initializing Stripe Elements with clientSecret:', clientSecret);
-            
             try {
-                // Create Elements instance
                 this.elements = this.stripe.elements({
                     clientSecret: clientSecret
                 });
-                console.log('🔧 CHAMBERBOSS: Elements instance created:', !!this.elements);
 
-                // Create Payment Element
                 this.paymentElement = this.elements.create('payment');
-                console.log('🔧 CHAMBERBOSS: Payment element created:', !!this.paymentElement);
 
-                // Mount Payment Element
-                const paymentElementDiv = document.getElementById('payment-element');
+                var paymentElementDiv = document.getElementById('payment-element');
                 if (paymentElementDiv) {
                     this.paymentElement.mount('#payment-element');
-                    console.log('🔧 CHAMBERBOSS: Payment element mounted successfully');
-                } else {
-                    console.error('🔧 CHAMBERBOSS: Payment element div not found');
                 }
             } catch (error) {
-                console.error('🔧 CHAMBERBOSS: Elements initialization failed:', error);
+                console.error('Chamberboss: Elements initialization failed:', error);
             }
         },
         
@@ -295,11 +178,6 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
          * Handle member registration form submission
          */
         handleMemberRegistration: function(e) {
-            console.log('🔥🔥🔥 CHAMBERBOSS: FORM SUBMISSION HANDLER TRIGGERED! 🔥🔥🔥');
-            console.log('🔥 CHAMBERBOSS: Event object:', e);
-            console.log('🔥 CHAMBERBOSS: Form element:', e.target);
-            console.log('🔥 CHAMBERBOSS: Preventing default submission...');
-            
             e.preventDefault();
             
             var $form = $(e.target);
@@ -307,16 +185,11 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             var $messages = $('#registration-messages');
             var self = this;
             
-            console.log('🔧 CHAMBERBOSS: Form elements found - Form:', $form.length, 'Button:', $submitButton.length, 'Messages:', $messages.length);
-            
             // Validate required fields first
             var memberName = $form.find('[name="member_name"]').val().trim();
             var memberEmail = $form.find('[name="member_email"]').val().trim();
             
-            console.log('🔧 CHAMBERBOSS: Form validation - Name:', memberName ? 'OK' : 'MISSING', 'Email:', memberEmail ? 'OK' : 'MISSING');
-            
             if (!memberName || !memberEmail) {
-                console.log('🔧 CHAMBERBOSS: Form validation failed - missing required fields');
                 $messages.html('<div class="form-message error">Please fill in all required fields.</div>');
                 return;
             }
@@ -325,19 +198,9 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             var hasPaymentElement = $form.find('#payment-element').length > 0;
             var requiresPayment = hasPaymentElement && this.stripe && this.paymentElement;
             
-            console.log('🔧 CHAMBERBOSS: === PAYMENT FLOW DECISION ===');
-            console.log('🔧 CHAMBERBOSS: hasPaymentElement (DOM check):', hasPaymentElement);
-            console.log('🔧 CHAMBERBOSS: this.stripe (instance exists):', !!this.stripe);
-            console.log('🔧 CHAMBERBOSS: this.paymentElement (element mounted):', !!this.paymentElement);
-            console.log('🔧 CHAMBERBOSS: requiresPayment (final decision):', requiresPayment);
-            console.log('🔧 CHAMBERBOSS: === END PAYMENT FLOW DECISION ===');
-            
             if (requiresPayment) {
-                console.log('🔧 CHAMBERBOSS: ✅ Using payment flow');
                 this.processPaymentAndRegistration($form, $submitButton, $messages);
             } else {
-                console.log('🔧 CHAMBERBOSS: ❌ Using direct registration (no payment)');
-                console.log('🔧 CHAMBERBOSS: This will cause payment_intent_id_missing error');
                 this.submitRegistration($form, $submitButton, $messages);
             }
         },
@@ -348,19 +211,14 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
         processPaymentAndRegistration: function($form, $submitButton, $messages) {
             var self = this;
             
-            console.log('Chamberboss: Starting payment and registration process');
-            console.log('Chamberboss: Using existing payment setup - PaymentIntentId:', this.paymentIntentId);
-            
             // Use existing payment setup (elements are already mounted)
             if (!this.paymentIntentId || !this.stripe || !this.elements) {
-                console.error('Chamberboss: Payment setup missing - PaymentIntentId:', this.paymentIntentId, 'Stripe:', !!this.stripe, 'Elements:', !!this.elements);
                 $messages.html('<div class="form-message error">Payment system not properly initialized</div>');
                 self.resetForm($form, $submitButton);
                 return;
             }
             
             // Confirm payment with existing elements
-            console.log('Chamberboss: Confirming payment with Stripe...');
             $messages.html('<div class="form-message info">Processing payment...</div>');
             
             this.stripe.confirmPayment({
@@ -368,15 +226,12 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                 redirect: 'if_required'
             }).then(function(result) {
                 if (result.error) {
-                    console.error('Chamberboss: Payment error:', result.error);
                     $messages.html('<div class="form-message error">' + result.error.message + '</div>');
                     self.resetForm($form, $submitButton);
                 } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                    console.log('Chamberboss: Payment succeeded, submitting registration');
                     // Payment successful, now submit registration
                     self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
                 } else {
-                    console.log('Chamberboss: Unexpected payment result:', result);
                     $messages.html('<div class="form-message error">Payment processing failed</div>');
                     self.resetForm($form, $submitButton);
                 }
@@ -393,8 +248,6 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
         confirmPayment: function($form, $submitButton, $messages, clientSecret) {
             var self = this;
             
-            console.log('Chamberboss: Confirming payment');
-            
             self.setFormLoading($form, true);
             $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
             
@@ -407,15 +260,12 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                 redirect: 'if_required'
             }).then(function(result) {
                 if (result.error) {
-                    console.log('Chamberboss: Payment error:', result.error);
                     $messages.html('<div class="form-message error">' + result.error.message + '</div>');
                     self.resetForm($form, $submitButton);
                 } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                    console.log('Chamberboss: Payment succeeded, submitting registration');
                     // Payment successful, now submit registration
                     self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
                 } else {
-                    console.log('Chamberboss: Unexpected payment result:', result);
                     $messages.html('<div class="form-message error">Payment processing failed</div>');
                     self.resetForm($form, $submitButton);
                 }
@@ -466,9 +316,6 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
             
             var self = this;
             
-            console.log('Chamberboss: Making registration AJAX call to:', chamberboss_frontend.ajax_url);
-            console.log('Chamberboss: FormData contents:', Array.from(formData.entries()));
-            
             $.ajax({
                 url: chamberboss_frontend.ajax_url,
                 type: 'POST',
@@ -476,21 +323,19 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                 processData: false,
                 contentType: false,
                 beforeSend: function() {
-                    console.log('🔧 CHAMBERBOSS: AJAX request starting');
+                    // console.log('🔧 CHAMBERBOSS: AJAX request starting'); // Removed verbose logging
                 },
                 success: function(response) {
-                    console.log('🔧 CHAMBERBOSS: AJAX SUCCESS callback triggered');
-                    console.log('🔧 CHAMBERBOSS: Raw response:', response);
-                    console.log('🔧 CHAMBERBOSS: Response type:', typeof response);
-                    console.log('🔧 CHAMBERBOSS: Response.success:', response.success);
-                    console.log('🔧 CHAMBERBOSS: Response.data:', response.data);
+                    // console.log('🔧 CHAMBERBOSS: AJAX SUCCESS callback triggered'); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Raw response:', response); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Response type:', typeof response); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Response.success:', response.success); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Response.data:', response.data); // Removed verbose logging
                     
                     // Try to parse response if it's a string
                     if (typeof response === 'string') {
-                        console.log('🔧 CHAMBERBOSS: Response is string, attempting to parse JSON');
                         try {
                             response = JSON.parse(response);
-                            console.log('🔧 CHAMBERBOSS: Parsed response:', response);
                         } catch (e) {
                             console.error('🔧 CHAMBERBOSS: Failed to parse JSON:', e);
                             console.log('🔧 CHAMBERBOSS: Raw string content:', response);
@@ -498,7 +343,6 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                     }
                     
                     if (response && response.success) {
-                        console.log('🔧 CHAMBERBOSS: Processing success response');
                         var successHtml = '<div class="form-message success">' + response.data.message + '</div>';
                         
                         // Add debug info if available
@@ -549,11 +393,11 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('🔧 CHAMBERBOSS: AJAX ERROR callback triggered');
-                    console.log('🔧 CHAMBERBOSS: XHR object:', xhr);
-                    console.log('🔧 CHAMBERBOSS: Status:', status);
-                    console.log('🔧 CHAMBERBOSS: Error:', error);
-                    console.log('🔧 CHAMBERBOSS: Response text:', xhr.responseText);
+                    // console.log('🔧 CHAMBERBOSS: AJAX ERROR callback triggered'); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: XHR object:', xhr); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Status:', status); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Error:', error); // Removed verbose logging
+                    // console.log('🔧 CHAMBERBOSS: Response text:', xhr.responseText); // Removed verbose logging
                     
                     var errorMessage = chamberboss_frontend.strings.error;
                     if (xhr.responseText && xhr.responseText.trim() !== '') {
@@ -765,19 +609,19 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
     
                 // Initialize when document is ready
             $(document).ready(function() {
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
-        console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState);
-        console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
-        console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
+                // console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥'); // Removed verbose logging
+        // console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState); // Removed verbose logging
+        // console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO'); // Removed verbose logging
+        // console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery); // Removed verbose logging
         
         if (typeof chamberboss_frontend !== 'undefined') {
-            console.log('🔥 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url);
-            console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
+            // console.log('🔥 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url); // Removed verbose logging
+            // console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key); // Removed verbose logging
         }
         
-                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
+                        // console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: CALLING MAIN INIT FUNCTION... 🔥🔥🔥'); // Removed verbose logging
                 Chamberboss.init();
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY COMPLETE! 🔥🔥🔥');
+                // console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY COMPLETE! 🔥🔥🔥'); // Removed verbose logging
     });
     
     // Make Chamberboss object globally available

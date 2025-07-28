@@ -1,13 +1,13 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.6 - AJAX DEBUG FIX
+ * Version: 1.0.7 - AJAX CONFLICT FIX
  */
 
 // MEGA DEBUGGING: FORCE CACHE REFRESH
-console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.6: JavaScript file is loading! 🚨🚨🚨');
+console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.7: JavaScript file is loading! 🚨🚨🚨');
 console.log('🚨🚨🚨 CACHE BUSTER: ' + new Date().getTime() + ' 🚨🚨🚨');
-alert('🔥🔥🔥 CHAMBERBOSS v1.0.6 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
-document.title = 'CHAMBERBOSS v1.0.6 LOADED - ' + document.title;
+alert('🔥🔥🔥 CHAMBERBOSS v1.0.7 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
+document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
 
 (function($) {
     'use strict';
@@ -776,7 +776,7 @@ document.title = 'CHAMBERBOSS v1.0.6 LOADED - ' + document.title;
     
                 // Initialize when document is ready
             $(document).ready(function() {
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.6: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
         console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState);
         console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
         console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
@@ -786,9 +786,9 @@ document.title = 'CHAMBERBOSS v1.0.6 LOADED - ' + document.title;
             console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
         
-                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.6: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
+                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
                 Chamberboss.init();
-                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.6: DOCUMENT READY COMPLETE! 🔥🔥🔥');
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.7: DOCUMENT READY COMPLETE! 🔥🔥🔥');
     });
     
     // Make Chamberboss object globally available

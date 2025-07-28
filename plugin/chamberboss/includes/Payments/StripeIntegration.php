@@ -33,9 +33,7 @@ class StripeIntegration extends BaseClass {
             $this->init_stripe_sdk();
         }
         
-        // Hook into WordPress actions
-        add_action('wp_ajax_chamberboss_create_payment_intent', [$this, 'ajax_create_payment_intent']);
-        add_action('wp_ajax_nopriv_chamberboss_create_payment_intent', [$this, 'ajax_create_payment_intent']);
+        // Hook into WordPress actions  
         add_action('wp_ajax_chamberboss_confirm_payment', [$this, 'ajax_confirm_payment']);
         add_action('wp_ajax_nopriv_chamberboss_confirm_payment', [$this, 'ajax_confirm_payment']);
         
@@ -265,7 +263,9 @@ class StripeIntegration extends BaseClass {
     
     /**
      * AJAX handler for creating payment intent
+     * NOTE: Disabled - using Directory::handle_create_payment_intent instead
      */
+    /*
     public function ajax_create_payment_intent() {
         if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_payment')) {
             $this->send_json_response(['message' => 'Invalid nonce'], false);
@@ -288,6 +288,7 @@ class StripeIntegration extends BaseClass {
             $this->send_json_response(['message' => 'Failed to create payment intent'], false);
         }
     }
+    */
     
     /**
      * AJAX handler for confirming payment

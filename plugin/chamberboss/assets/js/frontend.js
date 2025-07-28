@@ -352,7 +352,12 @@
                 contentType: false,
                 success: function(response) {
                     console.log('Chamberboss: Registration AJAX success response:', response);
+                    console.log('Chamberboss: Response type:', typeof response);
+                    console.log('Chamberboss: Response.success:', response.success);
+                    console.log('Chamberboss: Response.data:', response.data);
+                    
                     if (response.success) {
+                        console.log('Chamberboss: Processing success response');
                         var successHtml = '<div class="form-message success">' + response.data.message + '</div>';
                         
                         // Add debug info if available
@@ -376,10 +381,11 @@
                             }, 3000); // Give more time to see debug info
                         }
                     } else {
-                        var errorHtml = '<div class="form-message error">' + response.data.message + '</div>';
+                        console.log('Chamberboss: Processing error response');
+                        var errorHtml = '<div class="form-message error">' + (response.data ? response.data.message : 'Unknown error occurred') + '</div>';
                         
                         // Add debug info if available
-                        if (response.data.debug) {
+                        if (response.data && response.data.debug) {
                             errorHtml += '<div class="debug-info" style="margin-top: 10px; padding: 10px; background: #ffe6e6; font-size: 12px;">';
                             errorHtml += '<strong>Debug Info:</strong><br>';
                             errorHtml += JSON.stringify(response.data.debug, null, 2);

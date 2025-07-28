@@ -186,10 +186,10 @@ final class Chamberboss {
             $role->add_cap('publish_chamberboss_members');
             $role->add_cap('edit_published_chamberboss_members');
             $role->add_cap('delete_published_chamberboss_members');
-                 }
-     }
-     
-     /**
+        }
+    }
+    
+    /**
      * Update existing member capabilities
      */
     private function update_existing_member_capabilities() {
@@ -219,8 +219,8 @@ final class Chamberboss {
     }
      
      /**
-     * Plugin deactivation
-     */
+      * Plugin deactivation
+      */
     public function deactivate() {
         // Flush rewrite rules
         flush_rewrite_rules();

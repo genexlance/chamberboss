@@ -64,6 +64,8 @@
 - [x] **Frontend password change**: Members can change passwords from their profile section
 - [x] **Enhanced member dashboard**: Professional UI with AJAX forms, notifications, and responsive design
 - [x] **Fixed fatal error**: Corrected sanitize_input method access level compatibility with BaseClass
+- [x] **Fixed white screen with "0"**: Improved AJAX response handling and form submission flow
+- [x] **Better success messaging**: Professional success notifications instead of page redirects
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

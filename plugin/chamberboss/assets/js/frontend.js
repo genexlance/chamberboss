@@ -721,10 +721,22 @@
                     if (response.success) {
                         self.showMessage($form.find('.form-messages'), response.data.message, 'success');
                         
-                        // Reload page after short delay to show updated listings
+                        // Close the form and refresh the listings after a delay
                         setTimeout(function() {
-                            window.location.href = response.data.redirect || window.location.href;
-                        }, 1500);
+                            // Hide any open forms
+                            $('.listing-form-container').slideUp();
+                            
+                            // Reset the form if it's a create form
+                            if ($form.attr('id') === 'create-listing-form') {
+                                $form[0].reset();
+                            }
+                            
+                            // Show global success message
+                            self.showGlobalMessage(response.data.message, 'success');
+                            
+                            // Refresh the page to show updated listings
+                            window.location.reload();
+                        }, 2000);
                     } else {
                         self.showMessage($form.find('.form-messages'), response.data.message || 'An error occurred', 'error');
                     }
@@ -776,7 +788,7 @@
                         self.showGlobalMessage(response.data.message, 'success');
                         setTimeout(function() {
                             window.location.reload();
-                        }, 1000);
+                        }, 1500);
                     } else {
                         self.showGlobalMessage(response.data.message || 'Failed to delete listing', 'error');
                     }

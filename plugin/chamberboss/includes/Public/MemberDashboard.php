@@ -834,9 +834,9 @@ class MemberDashboard extends BaseClass {
         
         wp_send_json_success([
             'message' => __('Listing created successfully! It is pending admin approval.', 'chamberboss'),
-            'listing_id' => $listing_id,
-            'redirect' => add_query_arg('action', 'listings', get_permalink())
+            'listing_id' => $listing_id
         ]);
+        wp_die(); // Ensure clean termination
     }
     
     /**
@@ -897,9 +897,9 @@ class MemberDashboard extends BaseClass {
         
         wp_send_json_success([
             'message' => __('Listing updated successfully! Changes are pending admin approval.', 'chamberboss'),
-            'listing_id' => $listing_id,
-            'redirect' => add_query_arg('action', 'listings', get_permalink())
+            'listing_id' => $listing_id
         ]);
+        wp_die(); // Ensure clean termination
     }
     
     /**
@@ -935,6 +935,7 @@ class MemberDashboard extends BaseClass {
             'form_html' => $form_html,
             'listing_id' => $listing_id
         ]);
+        wp_die(); // Ensure clean termination
     }
     
     /**
@@ -970,9 +971,9 @@ class MemberDashboard extends BaseClass {
         }
         
         wp_send_json_success([
-            'message' => __('Listing deleted successfully.', 'chamberboss'),
-            'redirect' => add_query_arg('action', 'listings', get_permalink())
+            'message' => __('Listing deleted successfully.', 'chamberboss')
         ]);
+        wp_die(); // Ensure clean termination
     }
     
     /**
@@ -1044,6 +1045,7 @@ class MemberDashboard extends BaseClass {
         wp_send_json_success([
             'message' => __('Password changed successfully.', 'chamberboss')
         ]);
+        wp_die(); // Ensure clean termination
     }
     
     /**

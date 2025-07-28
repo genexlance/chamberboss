@@ -213,7 +213,7 @@
     position: relative;
     width: 100%;
     height: 0;
-    padding-bottom: 100%; /* Creates perfect 1:1 aspect ratio */
+    padding-bottom: 56.25%; /* Creates perfect 16:9 aspect ratio */
     overflow: hidden;
 }
 
@@ -339,7 +339,7 @@
 
 .directory-list .listing-image {
     width: 200px;
-    height: 200px; /* Perfect 1:1 square for list view */
+    height: 112px; /* Perfect 16:9 aspect ratio for list view (200 * 9/16) */
     padding-bottom: 0; /* Override the percentage padding */
     flex-shrink: 0;
 }

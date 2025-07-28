@@ -66,6 +66,8 @@
 - [x] **Fixed fatal error**: Corrected sanitize_input method access level compatibility with BaseClass
 - [x] **Fixed white screen with "0"**: Improved AJAX response handling and form submission flow
 - [x] **Better success messaging**: Professional success notifications instead of page redirects
+- [x] **Fixed member edits going to pending**: Only new listings require approval, edits preserve published status
+- [x] **Fixed admin approval white screen**: Added manage_chamberboss_listings capability to administrators
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

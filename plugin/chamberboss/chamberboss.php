@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.28
+ * Version: 1.0.29
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.28');
+define('CHAMBERBOSS_VERSION', '1.0.29');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -148,6 +148,9 @@ final class Chamberboss {
         
         // Update existing member capabilities
         $this->update_existing_member_capabilities();
+        
+        // Add admin capabilities
+        $this->add_admin_capabilities();
         
         // Block member access to blog posts and comments (but allow business listings)
         $this->restrict_member_access();
@@ -274,6 +277,16 @@ final class Chamberboss {
             foreach ($remove_capabilities as $cap) {
                 $user->remove_cap($cap);
             }
+        }
+    }
+    
+    /**
+     * Add admin capabilities for managing business listings
+     */
+    private function add_admin_capabilities() {
+        $admin_role = get_role('administrator');
+        if ($admin_role) {
+            $admin_role->add_cap('manage_chamberboss_listings');
         }
     }
     

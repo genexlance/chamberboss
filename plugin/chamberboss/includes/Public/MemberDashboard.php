@@ -871,12 +871,12 @@ class MemberDashboard extends BaseClass {
             return;
         }
         
-        // Update the listing
+        // Update the listing (preserve existing status - don't reset published listings to pending)
         $result = wp_update_post([
             'ID' => $listing_id,
             'post_title' => $data['listing_title'],
-            'post_content' => $data['listing_description'],
-            'post_status' => 'pending' // Reset to pending after edits
+            'post_content' => $data['listing_description']
+            // Don't change post_status - preserve existing status
         ]);
         
         if (is_wp_error($result)) {
@@ -896,7 +896,7 @@ class MemberDashboard extends BaseClass {
         }
         
         wp_send_json_success([
-            'message' => __('Listing updated successfully! Changes are pending admin approval.', 'chamberboss'),
+            'message' => __('Listing updated successfully!', 'chamberboss'),
             'listing_id' => $listing_id
         ]);
         wp_die(); // Ensure clean termination

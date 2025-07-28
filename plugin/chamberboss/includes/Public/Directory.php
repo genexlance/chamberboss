@@ -305,8 +305,7 @@ class Directory extends BaseClass {
         error_log('=== CHAMBERBOSS REGISTRATION FORM CALLED ===');
         
         if (is_user_logged_in()) {
-            echo '<p>' . __('You are already logged in.', 'chamberboss') . '</p>';
-            echo '<p><em>Log out to see the registration form with payment fields.</em></p>';
+            echo '<p>' . __('Welcome.', 'chamberboss') . '</p>';
             return;
         }
         

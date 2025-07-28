@@ -57,6 +57,7 @@
 - [x] **Restricted member access**: Removed blog post and comment access from members
 - [x] **Fixed member listing access**: Restored ability for members to create/edit business listings while blocking blog posts
 - [x] **Perfect member isolation**: Members have ONLY business listing capabilities, zero WordPress post/comment access
+- [x] **Balanced member access**: Members can access WordPress admin for business listings but blocked from blog posts/comments
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

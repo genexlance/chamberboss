@@ -333,7 +333,7 @@ class ListingsPage extends BaseClass {
         $category = get_post_meta($listing_id, '_chamberboss_listing_category', true);
         $featured = get_post_meta($listing_id, '_chamberboss_listing_featured', true);
         $author = get_user_by('id', $listing->post_author);
-        $thumbnail = get_the_post_thumbnail($listing_id, 'medium');
+        $thumbnail = get_the_post_thumbnail($listing_id, 'large');
         
         ?>
         <div class="wrap">

@@ -48,6 +48,9 @@
 
 #### Business Directory
 - [x] Public business directory with shortcode `[chamberboss_directory]`
+- [x] **Fixed listing image display**: Perfect 1:1 square containers with proper centering
+- [x] **Enhanced image quality**: Updated from 'medium' to 'large' WordPress image size
+- [x] **Category button navigation**: Horizontal navigation buttons that stack responsively
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

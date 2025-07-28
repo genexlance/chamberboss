@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.1');
+define('CHAMBERBOSS_VERSION', '1.0.8');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));

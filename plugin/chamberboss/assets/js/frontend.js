@@ -442,7 +442,7 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
          */
         createPaymentIntent: function($form, callback) {
             var formData = new FormData($form[0]);
-            formData.append('action', 'chamberboss_create_registration_payment_intent');
+            formData.append('action', 'chamberboss_create_payment_intent');
             formData.append('nonce', $form.find('[name="registration_nonce"]').val());
             
             $.ajax({

@@ -22,18 +22,30 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
          * Initialize frontend functionality
          */
         init: function() {
+            console.log('🔥 CHAMBERBOSS: MAIN INIT FUNCTION CALLED!');
+            console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
+            console.log('🔥 CHAMBERBOSS: $ available:', !!window.$);
+            console.log('🔥 CHAMBERBOSS: chamberboss_frontend available:', !!window.chamberboss_frontend);
+            
             this.initMemberRegistration();
             this.initListingSubmission();
             this.initDirectoryFilters();
             this.initImagePreviews();
+            
+            console.log('🔥 CHAMBERBOSS: MAIN INIT COMPLETE!');
         },
         
         /**
          * Initialize member registration form
          */
         initMemberRegistration: function() {
+            console.log('🔥 CHAMBERBOSS: initMemberRegistration() CALLED!');
+            console.log('🔥 CHAMBERBOSS: DOM ready state:', document.readyState);
+            console.log('🔥 CHAMBERBOSS: Forms on page:', document.querySelectorAll('form').length);
+            
             var $form = $('#chamberboss-member-registration');
             console.log('🔧 CHAMBERBOSS: Looking for registration form, found:', $form.length);
+            console.log('🔧 CHAMBERBOSS: All elements with chamberboss ID:', $('[id*="chamberboss"]').length);
             
             if (!$form.length) {
                 console.log('🔧 CHAMBERBOSS: No registration form found');

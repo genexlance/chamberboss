@@ -92,28 +92,10 @@
                 this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
                 console.log('Chamberboss: Stripe instance created:', !!this.stripe);
                 
-                this.elements = this.stripe.elements();
-                console.log('Chamberboss: Stripe elements created:', !!this.elements);
+                // We'll initialize elements when we get a payment intent
+                // For now, just create a placeholder
+                console.log('Chamberboss: Stripe initialization completed successfully - will create elements with payment intent');
                 
-                // Create payment element
-                this.paymentElement = this.elements.create('payment');
-                console.log('Chamberboss: Payment element created:', !!this.paymentElement);
-                
-                this.paymentElement.mount('#payment-element');
-                console.log('Chamberboss: Payment element mounted to #payment-element');
-                
-                // Handle real-time validation errors
-                this.paymentElement.on('change', function(event) {
-                    var $messages = $('#registration-messages');
-                    if (event.error) {
-                        console.log('Chamberboss: Payment element error:', event.error);
-                        $messages.html('<div class="form-message error">' + event.error.message + '</div>');
-                    } else {
-                        $messages.empty();
-                    }
-                });
-                
-                console.log('Chamberboss: Stripe initialization completed successfully');
             } catch (error) {
                 console.error('Chamberboss: Error initializing Stripe:', error);
             }
@@ -204,21 +186,21 @@
             
             // Disable form and show loading
             this.setFormLoading($form, true);
-            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing Payment...');
+            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
             
-            // Check if payment is required
+            // Check if payment is required - look for payment-element div
             var hasPaymentElement = $form.find('#payment-element').length > 0;
             console.log('Chamberboss: Payment element found:', hasPaymentElement);
             console.log('Chamberboss: Stripe instance available:', !!this.stripe);
             console.log('Chamberboss: Payment element instance:', !!this.paymentElement);
             
-            if (hasPaymentElement && this.stripe && this.paymentElement) {
+            if (hasPaymentElement && this.stripe) {
                 console.log('Chamberboss: Using payment flow');
-                // Payment flow
+                // Payment flow - this will create payment intent and show payment UI
                 this.processPaymentAndRegistration($form, $submitButton, $messages);
             } else {
                 console.log('Chamberboss: Using direct registration (no payment)');
-                console.log('Chamberboss: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe, 'paymentElement:', !!this.paymentElement);
+                console.log('Chamberboss: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe);
                 // No payment required - direct registration (fallback)
                 this.submitRegistration($form, $submitButton, $messages);
             }
@@ -230,6 +212,8 @@
         processPaymentAndRegistration: function($form, $submitButton, $messages) {
             var self = this;
             
+            console.log('Chamberboss: Starting payment and registration process');
+            
             // First, create payment intent
             this.createPaymentIntent($form, function(clientSecret, paymentIntentId) {
                 if (!clientSecret) {
@@ -238,27 +222,82 @@
                     return;
                 }
                 
+                console.log('Chamberboss: Payment intent created, initializing elements');
                 self.paymentIntentId = paymentIntentId;
                 
-                // Confirm payment
-                self.stripe.confirmPayment({
-                    elements: self.elements,
-                    confirmParams: {
-                        return_url: window.location.href
-                    },
-                    redirect: 'if_required'
-                }).then(function(result) {
-                    if (result.error) {
-                        $messages.html('<div class="form-message error">' + result.error.message + '</div>');
-                        self.resetForm($form, $submitButton);
-                    } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                        // Payment successful, now submit registration
-                        self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                // Now create elements with the client secret
+                self.elements = self.stripe.elements({
+                    clientSecret: clientSecret
+                });
+                
+                // Create and mount payment element
+                self.paymentElement = self.elements.create('payment');
+                self.paymentElement.mount('#payment-element');
+                
+                console.log('Chamberboss: Payment element mounted, ready for payment');
+                
+                // Update button text
+                $submitButton.html('Complete Payment');
+                
+                // Handle payment element changes
+                self.paymentElement.on('change', function(event) {
+                    if (event.error) {
+                        console.log('Chamberboss: Payment element error:', event.error);
+                        $messages.html('<div class="form-message error">' + event.error.message + '</div>');
                     } else {
-                        $messages.html('<div class="form-message error">Payment processing failed</div>');
-                        self.resetForm($form, $submitButton);
+                        $messages.empty();
                     }
                 });
+                
+                // Show payment UI and wait for user to complete payment
+                $messages.html('<div class="form-message info">Please complete your payment details above, then click "Complete Payment".</div>');
+                self.setFormLoading($form, false);
+                $submitButton.prop('disabled', false);
+                
+                // Add click handler for completing payment
+                $submitButton.off('click.payment').on('click.payment', function(e) {
+                    e.preventDefault();
+                    self.confirmPayment($form, $submitButton, $messages, clientSecret);
+                });
+            });
+        },
+        
+        /**
+         * Confirm payment after user completes details
+         */
+        confirmPayment: function($form, $submitButton, $messages, clientSecret) {
+            var self = this;
+            
+            console.log('Chamberboss: Confirming payment');
+            
+            self.setFormLoading($form, true);
+            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
+            
+            // Confirm payment
+            self.stripe.confirmPayment({
+                elements: self.elements,
+                confirmParams: {
+                    return_url: window.location.href,
+                },
+                redirect: 'if_required'
+            }).then(function(result) {
+                if (result.error) {
+                    console.log('Chamberboss: Payment error:', result.error);
+                    $messages.html('<div class="form-message error">' + result.error.message + '</div>');
+                    self.resetForm($form, $submitButton);
+                } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                    console.log('Chamberboss: Payment succeeded, submitting registration');
+                    // Payment successful, now submit registration
+                    self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                } else {
+                    console.log('Chamberboss: Unexpected payment result:', result);
+                    $messages.html('<div class="form-message error">Payment processing failed</div>');
+                    self.resetForm($form, $submitButton);
+                }
+            }).catch(function(error) {
+                console.error('Chamberboss: Payment confirmation error:', error);
+                $messages.html('<div class="form-message error">Payment processing failed</div>');
+                self.resetForm($form, $submitButton);
             });
         },
         

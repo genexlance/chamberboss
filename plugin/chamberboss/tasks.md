@@ -51,6 +51,7 @@
 - [x] **Fixed listing image display**: Perfect 16:9 aspect ratio containers with proper centering and full image visibility
 - [x] **Enhanced image quality**: Updated from 'medium' to 'large' WordPress image size
 - [x] **Category button navigation**: Horizontal navigation buttons that stack responsively
+- [x] **Fixed "Read more" links**: Proper HTML rendering instead of escaped text
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

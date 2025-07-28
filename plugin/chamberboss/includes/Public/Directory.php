@@ -269,7 +269,7 @@ class Directory extends BaseClass {
                 
                 <?php if ($description): ?>
                     <div class="listing-description">
-                        <p><?php echo esc_html($description); ?></p>
+                        <?php echo wp_kses_post($description); ?>
                     </div>
                 <?php endif; ?>
                 

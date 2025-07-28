@@ -1049,7 +1049,7 @@ class MemberDashboard extends BaseClass {
     /**
      * Sanitize input data
      */
-    private function sanitize_input($data) {
+    protected function sanitize_input($data) {
         $sanitized = [];
         foreach ($data as $key => $value) {
             if (is_string($value)) {

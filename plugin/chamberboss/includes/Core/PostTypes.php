@@ -15,6 +15,9 @@ class PostTypes extends BaseClass {
         add_action('init', [$this, 'register_post_types']);
         add_action('add_meta_boxes', [$this, 'add_meta_boxes']);
         add_action('save_post', [$this, 'save_meta_boxes']);
+        
+        // Force listings created by members to pending status
+        add_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10, 2);
     }
     
     /**
@@ -369,6 +372,35 @@ class PostTypes extends BaseClass {
             } else {
                 delete_post_meta($post_id, $meta_key);
             }
+        }
+    }
+    
+    /**
+     * Force member-created listings to pending status
+     */
+    public function force_member_listing_pending($post_id, $post) {
+        // Only apply to business listings
+        if ($post->post_type !== 'chamberboss_listing') {
+            return;
+        }
+        
+        // Only apply to non-admin users
+        if (current_user_can('administrator')) {
+            return;
+        }
+        
+        // If the post status is publish and user is a member, change to pending
+        if ($post->post_status === 'publish' && current_user_can('create_chamberboss_members')) {
+            // Remove this hook temporarily to avoid infinite loop
+            remove_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10);
+            
+            wp_update_post([
+                'ID' => $post_id,
+                'post_status' => 'pending'
+            ]);
+            
+            // Re-add the hook
+            add_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10, 2);
         }
     }
     

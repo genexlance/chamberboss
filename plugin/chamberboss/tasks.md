@@ -53,6 +53,8 @@
 - [x] **Category button navigation**: Horizontal navigation buttons that stack responsively
 - [x] **Fixed "Read more" links**: Proper HTML rendering instead of escaped text
 - [x] **Fixed member permissions**: Members can now create business listings
+- [x] **Implemented approval workflow**: Member-created listings require admin approval (pending status)
+- [x] **Restricted member access**: Removed blog post and comment access from members
 - [x] Business listing submission form
 - [x] Category filtering and search
 - [x] Responsive directory layout

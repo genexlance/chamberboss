@@ -27,6 +27,9 @@ class Directory extends BaseClass {
         add_action('wp_ajax_chamberboss_create_payment_intent', array($this, 'handle_create_payment_intent'));
         add_action('wp_ajax_nopriv_chamberboss_create_payment_intent', array($this, 'handle_create_payment_intent'));
         
+        // Listing submission handler
+        add_action('wp_ajax_chamberboss_listing_submission', array($this, 'handle_listing_submission'));
+        
         // TEMPORARY - Test AJAX handler
         add_action('wp_ajax_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
         add_action('wp_ajax_nopriv_chamberboss_test_ajax', [$this, 'handle_test_ajax']);

@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.20
+ * Version: 1.0.21
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.20');
+define('CHAMBERBOSS_VERSION', '1.0.21');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -159,33 +159,34 @@ final class Chamberboss {
             __('Member', 'chamberboss'),
             [
                 'read' => true,
-                'edit_posts' => true,
-                'delete_posts' => true,
-                'edit_published_posts' => true,
                 'upload_files' => true,
-                // Listing capabilities (for creating/editing business listings)
+                // Listing capabilities (for creating/editing business listings - pending approval)
                 'create_chamberboss_members' => true,
                 'edit_chamberboss_member' => true,
                 'read_chamberboss_member' => true,
                 'delete_chamberboss_member' => true,
                 'edit_chamberboss_members' => true,
-                'publish_chamberboss_members' => true,
-                'edit_published_chamberboss_members' => true,
-                'delete_published_chamberboss_members' => true,
+                // Note: No publish capabilities - listings require admin approval
             ]
         );
         
         // Also update existing member role if it exists
         $role = get_role('chamberboss_member');
         if ($role) {
+            // Add listing capabilities
             $role->add_cap('create_chamberboss_members');
             $role->add_cap('edit_chamberboss_member');
             $role->add_cap('read_chamberboss_member');
             $role->add_cap('delete_chamberboss_member');
             $role->add_cap('edit_chamberboss_members');
-            $role->add_cap('publish_chamberboss_members');
-            $role->add_cap('edit_published_chamberboss_members');
-            $role->add_cap('delete_published_chamberboss_members');
+            
+            // Remove blog post and publish capabilities
+            $role->remove_cap('edit_posts');
+            $role->remove_cap('delete_posts');
+            $role->remove_cap('edit_published_posts');
+            $role->remove_cap('publish_chamberboss_members');
+            $role->remove_cap('edit_published_chamberboss_members');
+            $role->remove_cap('delete_published_chamberboss_members');
         }
     }
     
@@ -199,12 +200,20 @@ final class Chamberboss {
             'fields' => 'ID'
         ]);
         
-        $capabilities = [
+        // Capabilities to add
+        $add_capabilities = [
             'create_chamberboss_members',
             'edit_chamberboss_member',
             'read_chamberboss_member',
             'delete_chamberboss_member',
-            'edit_chamberboss_members',
+            'edit_chamberboss_members'
+        ];
+        
+        // Capabilities to remove (blog posts and publish permissions)
+        $remove_capabilities = [
+            'edit_posts',
+            'delete_posts',
+            'edit_published_posts',
             'publish_chamberboss_members',
             'edit_published_chamberboss_members',
             'delete_published_chamberboss_members'
@@ -212,8 +221,15 @@ final class Chamberboss {
         
         foreach ($members as $user_id) {
             $user = new WP_User($user_id);
-            foreach ($capabilities as $cap) {
+            
+            // Add necessary capabilities
+            foreach ($add_capabilities as $cap) {
                 $user->add_cap($cap);
+            }
+            
+            // Remove unwanted capabilities
+            foreach ($remove_capabilities as $cap) {
+                $user->remove_cap($cap);
             }
         }
     }

@@ -24,7 +24,8 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
         init: function() {
             console.log('🔥 CHAMBERBOSS: MAIN INIT FUNCTION CALLED!');
             console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
-            console.log('🔥 CHAMBERBOSS: $ available:', !!window.$);
+            console.log('🔥 CHAMBERBOSS: $ available (inside closure):', !!$);
+            console.log('🔥 CHAMBERBOSS: $ same as jQuery:', $ === jQuery);
             console.log('🔥 CHAMBERBOSS: chamberboss_frontend available:', !!window.chamberboss_frontend);
             
             this.initMemberRegistration();
@@ -74,8 +75,18 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
                 console.log('🔧 CHAMBERBOSS: - Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
             }
             
+            console.log('🔥 CHAMBERBOSS: Attempting to attach form submit handler...');
+            console.log('🔥 CHAMBERBOSS: Form jQuery object:', $form);
+            console.log('🔥 CHAMBERBOSS: Handler function:', this.handleMemberRegistration);
+            
             $form.on('submit', this.handleMemberRegistration.bind(this));
-            console.log('🔧 CHAMBERBOSS: Form submit handler attached');
+            console.log('🔥 CHAMBERBOSS: Form submit handler attached successfully');
+            
+            // Test the handler attachment
+            console.log('🔥 CHAMBERBOSS: Testing form submit handler...');
+            $form.off('submit.test').on('submit.test', function(e) {
+                console.log('🔥 CHAMBERBOSS: TEST HANDLER TRIGGERED - Form submit is working!');
+            });
             
             // Add test button for debugging
             if ($form.length) {
@@ -191,7 +202,11 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
          * Handle member registration form submission
          */
         handleMemberRegistration: function(e) {
-            console.log('🔧 CHAMBERBOSS: Form submission handler called');
+            console.log('🔥🔥🔥 CHAMBERBOSS: FORM SUBMISSION HANDLER TRIGGERED! 🔥🔥🔥');
+            console.log('🔥 CHAMBERBOSS: Event object:', e);
+            console.log('🔥 CHAMBERBOSS: Form element:', e.target);
+            console.log('🔥 CHAMBERBOSS: Preventing default submission...');
+            
             e.preventDefault();
             
             var $form = $(e.target);
@@ -668,15 +683,19 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
     
     // Initialize when document is ready
     $(document).ready(function() {
-        console.log('🔧 Chamberboss v1.0.1: Document ready, initializing...');
-        console.log('Chamberboss: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
+        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.3: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
+        console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState);
+        console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
+        console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
+        
         if (typeof chamberboss_frontend !== 'undefined') {
-            console.log('Chamberboss: AJAX URL:', chamberboss_frontend.ajax_url);
-            console.log('Chamberboss: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
+            console.log('🔥 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url);
+            console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
-        console.log('🚨 CHAMBERBOSS UPDATED CODE IS LOADING!');
+        
+        console.log('🔥🔥🔥 CHAMBERBOSS: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
         Chamberboss.init();
-        console.log('Chamberboss: Initialization complete');
+        console.log('🔥🔥🔥 CHAMBERBOSS: DOCUMENT READY COMPLETE! 🔥🔥🔥');
     });
     
     // Make Chamberboss object globally available

@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.22
+ * Version: 1.0.23
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.22');
+define('CHAMBERBOSS_VERSION', '1.0.23');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -148,9 +148,6 @@ final class Chamberboss {
         
         // Update existing member capabilities
         $this->update_existing_member_capabilities();
-        
-        // Block member access to blog posts and comments
-        $this->restrict_member_access();
     }
 
     /**
@@ -163,40 +160,45 @@ final class Chamberboss {
             [
                 'read' => true,
                 'upload_files' => true,
-                // Basic post capabilities needed for custom post types
-                'edit_posts' => true,
-                'delete_posts' => true,
-                'edit_published_posts' => true,
-                // Listing capabilities (for creating/editing business listings - pending approval)
+                // ONLY business listing capabilities - NO WordPress post/comment access
                 'create_chamberboss_members' => true,
                 'edit_chamberboss_member' => true,
                 'read_chamberboss_member' => true,
                 'delete_chamberboss_member' => true,
                 'edit_chamberboss_members' => true,
                 // Note: No publish capabilities - listings require admin approval
-                // Note: Blog post and comment access blocked via hooks
             ]
         );
         
         // Also update existing member role if it exists
         $role = get_role('chamberboss_member');
         if ($role) {
-            // Add basic post capabilities needed for custom post types
-            $role->add_cap('edit_posts');
-            $role->add_cap('delete_posts');
-            $role->add_cap('edit_published_posts');
-            
-            // Add listing capabilities
+            // Add ONLY business listing capabilities
             $role->add_cap('create_chamberboss_members');
             $role->add_cap('edit_chamberboss_member');
             $role->add_cap('read_chamberboss_member');
             $role->add_cap('delete_chamberboss_member');
             $role->add_cap('edit_chamberboss_members');
             
-            // Remove publish capabilities (listings require admin approval)
+            // Remove ALL WordPress post and comment capabilities
+            $role->remove_cap('edit_posts');
+            $role->remove_cap('delete_posts');
+            $role->remove_cap('edit_published_posts');
+            $role->remove_cap('publish_posts');
+            $role->remove_cap('edit_others_posts');
+            $role->remove_cap('delete_others_posts');
+            $role->remove_cap('read_private_posts');
+            $role->remove_cap('edit_private_posts');
+            
+            // Remove business listing publish capabilities (listings require admin approval)
             $role->remove_cap('publish_chamberboss_members');
             $role->remove_cap('edit_published_chamberboss_members');
             $role->remove_cap('delete_published_chamberboss_members');
+            
+            // Remove comment capabilities
+            $role->remove_cap('moderate_comments');
+            $role->remove_cap('edit_comment');
+            $role->remove_cap('edit_comments');
         }
     }
     
@@ -210,11 +212,8 @@ final class Chamberboss {
             'fields' => 'ID'
         ]);
         
-        // Capabilities to add
+        // Capabilities to add (ONLY business listing capabilities)
         $add_capabilities = [
-            'edit_posts',
-            'delete_posts',
-            'edit_published_posts',
             'create_chamberboss_members',
             'edit_chamberboss_member',
             'read_chamberboss_member',
@@ -222,8 +221,19 @@ final class Chamberboss {
             'edit_chamberboss_members'
         ];
         
-        // Capabilities to remove (publish permissions only)
+        // Capabilities to remove (WordPress posts, comments, and publish permissions)
         $remove_capabilities = [
+            'edit_posts',
+            'delete_posts',
+            'edit_published_posts',
+            'publish_posts',
+            'edit_others_posts',
+            'delete_others_posts',
+            'read_private_posts',
+            'edit_private_posts',
+            'moderate_comments',
+            'edit_comment',
+            'edit_comments',
             'publish_chamberboss_members',
             'edit_published_chamberboss_members',
             'delete_published_chamberboss_members'
@@ -240,81 +250,6 @@ final class Chamberboss {
             // Remove unwanted capabilities
             foreach ($remove_capabilities as $cap) {
                 $user->remove_cap($cap);
-            }
-        }
-    }
-    
-    /**
-     * Restrict member access to blog posts and comments
-     */
-    private function restrict_member_access() {
-        // Block access to blog posts for members
-        add_action('admin_init', [$this, 'block_member_blog_post_access']);
-        add_action('wp_ajax_inline-save', [$this, 'block_member_blog_post_ajax'], 0);
-        
-        // Block comment access for members
-        add_action('admin_menu', [$this, 'remove_comment_menu_for_members'], 999);
-        add_action('admin_init', [$this, 'block_member_comment_access']);
-    }
-    
-    /**
-     * Block member access to blog posts
-     */
-    public function block_member_blog_post_access() {
-        if (!current_user_can('administrator') && current_user_can('chamberboss_member')) {
-            // Block access to regular blog posts
-            if (isset($_GET['post_type']) && $_GET['post_type'] === 'post') {
-                wp_die(__('You do not have permission to access blog posts.', 'chamberboss'));
-            }
-            
-            if (isset($_GET['post']) && get_post_type($_GET['post']) === 'post') {
-                wp_die(__('You do not have permission to edit blog posts.', 'chamberboss'));
-            }
-            
-            // Block access to posts.php (blog post list)
-            global $pagenow;
-            if ($pagenow === 'edit.php' && (!isset($_GET['post_type']) || $_GET['post_type'] === 'post')) {
-                wp_die(__('You do not have permission to access blog posts.', 'chamberboss'));
-            }
-            
-            if ($pagenow === 'post-new.php' && (!isset($_GET['post_type']) || $_GET['post_type'] === 'post')) {
-                wp_die(__('You do not have permission to create blog posts.', 'chamberboss'));
-            }
-            
-            if ($pagenow === 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) === 'post') {
-                wp_die(__('You do not have permission to edit blog posts.', 'chamberboss'));
-            }
-        }
-    }
-    
-    /**
-     * Block member AJAX access to blog posts
-     */
-    public function block_member_blog_post_ajax() {
-        if (!current_user_can('administrator') && current_user_can('chamberboss_member')) {
-            if (isset($_POST['post_ID']) && get_post_type($_POST['post_ID']) === 'post') {
-                wp_die(__('You do not have permission to edit blog posts.', 'chamberboss'));
-            }
-        }
-    }
-    
-    /**
-     * Remove comment menu for members
-     */
-    public function remove_comment_menu_for_members() {
-        if (!current_user_can('administrator') && current_user_can('chamberboss_member')) {
-            remove_menu_page('edit-comments.php');
-        }
-    }
-    
-    /**
-     * Block member access to comments
-     */
-    public function block_member_comment_access() {
-        if (!current_user_can('administrator') && current_user_can('chamberboss_member')) {
-            global $pagenow;
-            if ($pagenow === 'edit-comments.php' || $pagenow === 'comment.php') {
-                wp_die(__('You do not have permission to access comments.', 'chamberboss'));
             }
         }
     }

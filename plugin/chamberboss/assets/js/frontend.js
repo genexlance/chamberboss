@@ -129,7 +129,7 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
                 console.log('Chamberboss: Stripe instance created:', !!this.stripe);
 
                 // Create Payment Intent and Elements
-                this.createPaymentIntent();
+                this.initializePaymentIntent();
 
                 console.log('Chamberboss: Stripe initialization completed successfully');
                 return true;
@@ -140,9 +140,9 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
         },
 
                         /**
-                 * Create Payment Intent and initialize Elements
+                 * Initialize Payment Intent and Elements for form setup
                  */
-                createPaymentIntent: function() {
+                initializePaymentIntent: function() {
                     console.log('🔧 CHAMBERBOSS: Creating payment intent...');
                     console.log('🔧 CHAMBERBOSS: AJAX URL:', chamberboss_frontend.ajax_url);
                     console.log('🔧 CHAMBERBOSS: Nonce:', chamberboss_frontend.nonce);
@@ -438,7 +438,7 @@ document.title = 'CHAMBERBOSS v1.0.7 LOADED - ' + document.title;
         },
         
         /**
-         * Create payment intent
+         * Create payment intent for form submission
          */
         createPaymentIntent: function($form, callback) {
             var formData = new FormData($form[0]);

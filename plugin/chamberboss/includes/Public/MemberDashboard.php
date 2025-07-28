@@ -12,6 +12,13 @@ class MemberDashboard extends BaseClass {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_shortcode('chamberboss_member_dashboard', [$this, 'render_dashboard']);
         add_action('template_redirect', [$this, 'handle_form_submissions']);
+        
+        // AJAX handlers for frontend listing management
+        add_action('wp_ajax_chamberboss_create_listing', [$this, 'handle_create_listing']);
+        add_action('wp_ajax_chamberboss_update_listing', [$this, 'handle_update_listing']);
+        add_action('wp_ajax_chamberboss_delete_listing', [$this, 'handle_delete_listing']);
+        add_action('wp_ajax_chamberboss_get_listing_data', [$this, 'handle_get_listing_data']);
+        add_action('wp_ajax_chamberboss_change_password', [$this, 'handle_change_password']);
     }
 
     public function enqueue_scripts() {
@@ -149,6 +156,31 @@ class MemberDashboard extends BaseClass {
                     <a href="<?php echo esc_url(remove_query_arg('edit')); ?>" class="button"><?php _e('Cancel', 'chamberboss'); ?></a>
                 </p>
             </form>
+            
+            <hr style="margin: 30px 0;">
+            
+            <h3><?php _e('Change Password', 'chamberboss'); ?></h3>
+            <form id="change-password-form" class="password-form">
+                <?php wp_nonce_field('chamberboss_change_password', 'password_nonce'); ?>
+                <div class="form-messages"></div>
+                <table class="form-table">
+                    <tr>
+                        <th><label for="current_password"><?php _e('Current Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="current_password" id="current_password" class="regular-text" required /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="new_password"><?php _e('New Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="new_password" id="new_password" class="regular-text" required minlength="8" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="confirm_password"><?php _e('Confirm New Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="confirm_password" id="confirm_password" class="regular-text" required /></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" class="button button-primary" value="<?php _e('Change Password', 'chamberboss'); ?>">
+                </p>
+            </form>
             <?php
         } else {
             // VIEWING VIEW (read-only)
@@ -190,6 +222,31 @@ class MemberDashboard extends BaseClass {
                     <td><?php echo $website ? '<a href="' . esc_url($website) . '" target="_blank" rel="noopener noreferrer">' . esc_html($website) . '</a>' : '<em>Not provided</em>'; ?></td>
                 </tr>
             </table>
+            
+            <hr style="margin: 30px 0;">
+            
+            <h3><?php _e('Change Password', 'chamberboss'); ?></h3>
+            <form id="change-password-form" class="password-form">
+                <?php wp_nonce_field('chamberboss_change_password', 'password_nonce'); ?>
+                <div class="form-messages"></div>
+                <table class="form-table">
+                    <tr>
+                        <th><label for="current_password"><?php _e('Current Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="current_password" id="current_password" class="regular-text" required /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="new_password"><?php _e('New Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="new_password" id="new_password" class="regular-text" required minlength="8" /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="confirm_password"><?php _e('Confirm New Password', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                        <td><input type="password" name="confirm_password" id="confirm_password" class="regular-text" required /></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" class="button button-primary" value="<?php _e('Change Password', 'chamberboss'); ?>">
+                </p>
+            </form>
             <?php
         }
     }
@@ -207,7 +264,12 @@ class MemberDashboard extends BaseClass {
 
         ?>
         <h2><?php _e('My Business Listings', 'chamberboss'); ?></h2>
-        <a href="<?php echo esc_url(admin_url('post-new.php?post_type=chamberboss_listing')); ?>" class="button button-primary"><?php _e('Add New Listing', 'chamberboss'); ?></a>
+        <button id="add-new-listing-btn" class="button button-primary"><?php _e('Add New Listing', 'chamberboss'); ?></button>
+        
+        <div id="add-listing-form" class="listing-form-container" style="display: none;">
+            <h3><?php _e('Add New Business Listing', 'chamberboss'); ?></h3>
+            <?php $this->render_listing_form(); ?>
+        </div>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
@@ -223,7 +285,8 @@ class MemberDashboard extends BaseClass {
                             <td><?php echo esc_html($listing->post_title); ?></td>
                             <td><?php echo $this->get_status_badge($listing->post_status); ?></td>
                             <td>
-                                <a href="<?php echo esc_url(add_query_arg(['action' => 'edit_listing', 'listing_id' => $listing->ID], get_permalink())); ?>" class="button button-small"><?php _e('Edit', 'chamberboss'); ?></a>
+                                <button class="button button-small edit-listing-btn" data-listing-id="<?php echo $listing->ID; ?>"><?php _e('Edit', 'chamberboss'); ?></button>
+                                <button class="button button-small delete-listing-btn" data-listing-id="<?php echo $listing->ID; ?>"><?php _e('Delete', 'chamberboss'); ?></button>
                                 <a href="<?php echo esc_url(get_permalink($listing->ID)); ?>" class="button button-small" target="_blank"><?php _e('View', 'chamberboss'); ?></a>
                             </td>
                         </tr>
@@ -235,6 +298,11 @@ class MemberDashboard extends BaseClass {
                 <?php endif; ?>
             </tbody>
         </table>
+        
+        <div id="edit-listing-form" class="listing-form-container" style="display: none;">
+            <h3><?php _e('Edit Business Listing', 'chamberboss'); ?></h3>
+            <div id="edit-listing-content"></div>
+        </div>
         <?php
     }
 
@@ -619,5 +687,379 @@ class MemberDashboard extends BaseClass {
                 wp_redirect(add_query_arg(['action' => 'listings', 'listing_updated' => 'true'], get_permalink()));
                 exit;
         }
+    }
+    
+    /**
+     * Render listing form for creating/editing listings
+     */
+    private function render_listing_form($listing_id = 0) {
+        $listing = null;
+        $listing_title = '';
+        $listing_description = '';
+        $listing_phone = '';
+        $listing_address = '';
+        $listing_website = '';
+        $listing_category = '';
+        
+        if ($listing_id) {
+            $listing = get_post($listing_id);
+            if ($listing && $listing->post_author == get_current_user_id()) {
+                $listing_title = $listing->post_title;
+                $listing_description = $listing->post_content;
+                $listing_phone = get_post_meta($listing_id, '_chamberboss_listing_phone', true);
+                $listing_address = get_post_meta($listing_id, '_chamberboss_listing_address', true);
+                $listing_website = get_post_meta($listing_id, '_chamberboss_listing_website', true);
+                $listing_category = get_post_meta($listing_id, '_chamberboss_listing_category', true);
+            }
+        }
+        
+        $categories = $this->database->get_listing_categories();
+        $form_id = $listing_id ? 'edit-listing-form' : 'create-listing-form';
+        $action = $listing_id ? 'chamberboss_update_listing' : 'chamberboss_create_listing';
+        ?>
+        <form id="<?php echo $form_id; ?>" class="listing-form" enctype="multipart/form-data">
+            <?php wp_nonce_field('chamberboss_listing_form', 'listing_nonce'); ?>
+            <?php if ($listing_id): ?>
+                <input type="hidden" name="listing_id" value="<?php echo esc_attr($listing_id); ?>">
+            <?php endif; ?>
+            
+            <div class="form-messages"></div>
+            
+            <table class="form-table">
+                <tr>
+                    <th><label for="listing_title"><?php _e('Business Name', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                    <td><input type="text" name="listing_title" id="listing_title" value="<?php echo esc_attr($listing_title); ?>" class="regular-text" required /></td>
+                </tr>
+                <tr>
+                    <th><label for="listing_description"><?php _e('Description', 'chamberboss'); ?> <span class="required">*</span></label></th>
+                    <td><textarea name="listing_description" id="listing_description" class="large-text" rows="5" required><?php echo esc_textarea($listing_description); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="listing_phone"><?php _e('Phone', 'chamberboss'); ?></label></th>
+                    <td><input type="text" name="listing_phone" id="listing_phone" value="<?php echo esc_attr($listing_phone); ?>" class="regular-text" /></td>
+                </tr>
+                <tr>
+                    <th><label for="listing_address"><?php _e('Address', 'chamberboss'); ?></label></th>
+                    <td><textarea name="listing_address" id="listing_address" class="regular-text" rows="3"><?php echo esc_textarea($listing_address); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="listing_website"><?php _e('Website', 'chamberboss'); ?></label></th>
+                    <td><input type="url" name="listing_website" id="listing_website" value="<?php echo esc_attr($listing_website); ?>" class="regular-text" placeholder="https://" /></td>
+                </tr>
+                <tr>
+                    <th><label for="listing_category"><?php _e('Category', 'chamberboss'); ?></label></th>
+                    <td>
+                        <select name="listing_category" id="listing_category" class="regular-text">
+                            <option value=""><?php _e('Select a category', 'chamberboss'); ?></option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?php echo esc_attr($category->slug); ?>" <?php selected($listing_category, $category->slug); ?>>
+                                    <?php echo esc_html($category->name); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="listing_image"><?php _e('Featured Image', 'chamberboss'); ?></label></th>
+                    <td>
+                        <?php if ($listing_id && has_post_thumbnail($listing_id)): ?>
+                            <div class="current-image">
+                                <p><?php _e('Current Image:', 'chamberboss'); ?></p>
+                                <?php echo get_the_post_thumbnail($listing_id, 'medium'); ?>
+                                <button type="button" class="button remove-image" data-listing-id="<?php echo $listing_id; ?>"><?php _e('Remove Image', 'chamberboss'); ?></button>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="listing_image" id="listing_image" accept="image/*" />
+                        <p class="description"><?php _e('Upload a featured image for your business listing (JPG, PNG, GIF). Recommended size: 600x600 pixels.', 'chamberboss'); ?></p>
+                    </td>
+                </tr>
+            </table>
+            
+            <p class="submit">
+                <input type="submit" class="button button-primary" value="<?php echo $listing_id ? __('Update Listing', 'chamberboss') : __('Create Listing', 'chamberboss'); ?>" />
+                <button type="button" class="button cancel-form"><?php _e('Cancel', 'chamberboss'); ?></button>
+            </p>
+        </form>
+        <?php
+    }
+    
+    /**
+     * Handle AJAX listing creation
+     */
+    public function handle_create_listing() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to create a listing.', 'chamberboss')]);
+            return;
+        }
+        
+        if (!wp_verify_nonce($_POST['listing_nonce'] ?? '', 'chamberboss_listing_form')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'chamberboss')]);
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $data = $this->sanitize_input($_POST);
+        
+        // Validate required fields
+        if (empty($data['listing_title']) || empty($data['listing_description'])) {
+            wp_send_json_error(['message' => __('Business name and description are required.', 'chamberboss')]);
+            return;
+        }
+        
+        // Create the listing
+        $listing_id = wp_insert_post([
+            'post_type' => 'chamberboss_listing',
+            'post_title' => $data['listing_title'],
+            'post_content' => $data['listing_description'],
+            'post_status' => 'pending', // Require admin approval
+            'post_author' => $user_id,
+            'meta_input' => [
+                '_chamberboss_listing_phone' => $data['listing_phone'] ?? '',
+                '_chamberboss_listing_address' => $data['listing_address'] ?? '',
+                '_chamberboss_listing_website' => $data['listing_website'] ?? '',
+                '_chamberboss_listing_category' => $data['listing_category'] ?? '',
+                '_chamberboss_listing_featured' => '0'
+            ]
+        ]);
+        
+        if (is_wp_error($listing_id)) {
+            wp_send_json_error(['message' => __('Failed to create listing. Please try again.', 'chamberboss')]);
+            return;
+        }
+        
+        // Handle image upload
+        if (!empty($_FILES['listing_image']['name'])) {
+            $this->handle_image_upload($listing_id);
+        }
+        
+        wp_send_json_success([
+            'message' => __('Listing created successfully! It is pending admin approval.', 'chamberboss'),
+            'listing_id' => $listing_id,
+            'redirect' => add_query_arg('action', 'listings', get_permalink())
+        ]);
+    }
+    
+    /**
+     * Handle AJAX listing update
+     */
+    public function handle_update_listing() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to update a listing.', 'chamberboss')]);
+            return;
+        }
+        
+        if (!wp_verify_nonce($_POST['listing_nonce'] ?? '', 'chamberboss_listing_form')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'chamberboss')]);
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $listing_id = intval($_POST['listing_id'] ?? 0);
+        $listing = get_post($listing_id);
+        
+        // Verify ownership
+        if (!$listing || $listing->post_type !== 'chamberboss_listing' || $listing->post_author != $user_id) {
+            wp_send_json_error(['message' => __('Listing not found or you do not have permission to edit it.', 'chamberboss')]);
+            return;
+        }
+        
+        $data = $this->sanitize_input($_POST);
+        
+        // Validate required fields
+        if (empty($data['listing_title']) || empty($data['listing_description'])) {
+            wp_send_json_error(['message' => __('Business name and description are required.', 'chamberboss')]);
+            return;
+        }
+        
+        // Update the listing
+        $result = wp_update_post([
+            'ID' => $listing_id,
+            'post_title' => $data['listing_title'],
+            'post_content' => $data['listing_description'],
+            'post_status' => 'pending' // Reset to pending after edits
+        ]);
+        
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => __('Failed to update listing. Please try again.', 'chamberboss')]);
+            return;
+        }
+        
+        // Update meta fields
+        update_post_meta($listing_id, '_chamberboss_listing_phone', $data['listing_phone'] ?? '');
+        update_post_meta($listing_id, '_chamberboss_listing_address', $data['listing_address'] ?? '');
+        update_post_meta($listing_id, '_chamberboss_listing_website', $data['listing_website'] ?? '');
+        update_post_meta($listing_id, '_chamberboss_listing_category', $data['listing_category'] ?? '');
+        
+        // Handle image upload
+        if (!empty($_FILES['listing_image']['name'])) {
+            $this->handle_image_upload($listing_id);
+        }
+        
+        wp_send_json_success([
+            'message' => __('Listing updated successfully! Changes are pending admin approval.', 'chamberboss'),
+            'listing_id' => $listing_id,
+            'redirect' => add_query_arg('action', 'listings', get_permalink())
+        ]);
+    }
+    
+    /**
+     * Handle AJAX request to get listing data for editing
+     */
+    public function handle_get_listing_data() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to edit a listing.', 'chamberboss')]);
+            return;
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'chamberboss_frontend')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'chamberboss')]);
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $listing_id = intval($_POST['listing_id'] ?? 0);
+        $listing = get_post($listing_id);
+        
+        // Verify ownership
+        if (!$listing || $listing->post_type !== 'chamberboss_listing' || $listing->post_author != $user_id) {
+            wp_send_json_error(['message' => __('Listing not found or you do not have permission to edit it.', 'chamberboss')]);
+            return;
+        }
+        
+        // Generate form HTML
+        ob_start();
+        $this->render_listing_form($listing_id);
+        $form_html = ob_get_clean();
+        
+        wp_send_json_success([
+            'form_html' => $form_html,
+            'listing_id' => $listing_id
+        ]);
+    }
+    
+    /**
+     * Handle AJAX listing deletion
+     */
+    public function handle_delete_listing() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to delete a listing.', 'chamberboss')]);
+            return;
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'chamberboss_delete_listing')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'chamberboss')]);
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $listing_id = intval($_POST['listing_id'] ?? 0);
+        $listing = get_post($listing_id);
+        
+        // Verify ownership
+        if (!$listing || $listing->post_type !== 'chamberboss_listing' || $listing->post_author != $user_id) {
+            wp_send_json_error(['message' => __('Listing not found or you do not have permission to delete it.', 'chamberboss')]);
+            return;
+        }
+        
+        // Delete the listing
+        $result = wp_delete_post($listing_id, true);
+        
+        if (!$result) {
+            wp_send_json_error(['message' => __('Failed to delete listing. Please try again.', 'chamberboss')]);
+            return;
+        }
+        
+        wp_send_json_success([
+            'message' => __('Listing deleted successfully.', 'chamberboss'),
+            'redirect' => add_query_arg('action', 'listings', get_permalink())
+        ]);
+    }
+    
+    /**
+     * Handle image upload for listings
+     */
+    private function handle_image_upload($listing_id) {
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+        
+        $upload = wp_handle_upload($_FILES['listing_image'], ['test_form' => false]);
+        
+        if (!isset($upload['error']) && isset($upload['file'])) {
+            $attachment_id = wp_insert_attachment([
+                'post_mime_type' => $upload['type'],
+                'post_title' => sanitize_file_name(basename($upload['file'])),
+                'post_content' => '',
+                'post_status' => 'inherit'
+            ], $upload['file'], $listing_id);
+            
+            if (!is_wp_error($attachment_id)) {
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $upload['file']));
+                set_post_thumbnail($listing_id, $attachment_id);
+            }
+        }
+    }
+    
+    /**
+     * Handle AJAX password change
+     */
+    public function handle_change_password() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to change your password.', 'chamberboss')]);
+            return;
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'chamberboss_change_password')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'chamberboss')]);
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $current_password = $_POST['current_password'] ?? '';
+        $new_password = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        
+        // Validate current password
+        $user = get_user_by('id', $user_id);
+        if (!wp_check_password($current_password, $user->user_pass, $user_id)) {
+            wp_send_json_error(['message' => __('Current password is incorrect.', 'chamberboss')]);
+            return;
+        }
+        
+        // Validate new password
+        if (strlen($new_password) < 8) {
+            wp_send_json_error(['message' => __('New password must be at least 8 characters long.', 'chamberboss')]);
+            return;
+        }
+        
+        if ($new_password !== $confirm_password) {
+            wp_send_json_error(['message' => __('New password and confirmation do not match.', 'chamberboss')]);
+            return;
+        }
+        
+        // Update password
+        wp_set_password($new_password, $user_id);
+        
+        wp_send_json_success([
+            'message' => __('Password changed successfully.', 'chamberboss')
+        ]);
+    }
+    
+    /**
+     * Sanitize input data
+     */
+    private function sanitize_input($data) {
+        $sanitized = [];
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $sanitized[$key] = sanitize_text_field($value);
+            } elseif (is_array($value)) {
+                $sanitized[$key] = array_map('sanitize_text_field', $value);
+            } else {
+                $sanitized[$key] = $value;
+            }
+        }
+        return $sanitized;
     }
 }

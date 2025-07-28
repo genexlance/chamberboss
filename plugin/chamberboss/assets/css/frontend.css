@@ -767,3 +767,348 @@
     transform: translateY(-2px);
   } 
 
+/* Member Dashboard Frontend Listing Management */
+.listing-form-container {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.listing-form-container h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #1abc9c;
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+/* Enhanced Form Table Styling for Dashboard */
+.listing-form .form-table {
+    width: 100%;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.listing-form .form-table th {
+    width: 180px;
+    padding: 20px 15px;
+    text-align: left;
+    font-weight: 600;
+    vertical-align: top;
+    background: #f8f9fa;
+    color: #495057;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.listing-form .form-table td {
+    padding: 20px 15px;
+    border-bottom: 1px solid #e9ecef;
+    background: white;
+}
+
+.listing-form .regular-text,
+.listing-form .large-text {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px 16px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.listing-form .regular-text:focus,
+.listing-form .large-text:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+    outline: none;
+}
+
+.listing-form .large-text {
+    min-height: 120px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.listing-form .required {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.listing-form .description {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* Current Image Display Enhancement */
+.current-image {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.current-image p {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.current-image img {
+    max-width: 200px;
+    height: auto;
+    border-radius: 6px;
+    margin: 10px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.remove-image {
+    background: #e74c3c !important;
+    color: white !important;
+    border: 1px solid #e74c3c !important;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+}
+
+.remove-image:hover {
+    background: #c0392b !important;
+    border-color: #c0392b !important;
+    transform: translateY(-1px);
+}
+
+/* Enhanced Message Notifications */
+.chamberboss-notice {
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chamberboss-notice-success {
+    background-color: #d4edda;
+    border-color: #27ae60;
+    color: #155724;
+}
+
+.chamberboss-notice-error {
+    background-color: #f8d7da;
+    border-color: #e74c3c;
+    color: #721c24;
+}
+
+.chamberboss-notice p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Password Form Specific Styling */
+.password-form .form-table th {
+    width: 220px;
+    background: #f8f9fa;
+}
+
+.password-form input[type="password"] {
+    max-width: 350px;
+}
+
+/* Enhanced Button Styling for Dashboard */
+#add-new-listing-btn {
+    background: #1abc9c !important;
+    color: white !important;
+    border: 1px solid #1abc9c !important;
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#add-new-listing-btn:hover {
+    background: #16a085 !important;
+    border-color: #16a085 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(26, 188, 156, 0.3);
+}
+
+.edit-listing-btn,
+.delete-listing-btn {
+    margin-right: 8px;
+    margin-bottom: 5px;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.edit-listing-btn {
+    background: #3498db !important;
+    color: white !important;
+    border: 1px solid #3498db !important;
+}
+
+.edit-listing-btn:hover {
+    background: #2980b9 !important;
+    border-color: #2980b9 !important;
+    transform: translateY(-1px);
+}
+
+.delete-listing-btn {
+    background: #e74c3c !important;
+    color: white !important;
+    border: 1px solid #e74c3c !important;
+}
+
+.delete-listing-btn:hover {
+    background: #c0392b !important;
+    border-color: #c0392b !important;
+    transform: translateY(-1px);
+}
+
+.cancel-form {
+    background: #95a5a6 !important;
+    color: white !important;
+    border: 1px solid #95a5a6 !important;
+    margin-left: 10px;
+}
+
+.cancel-form:hover {
+    background: #7f8c8d !important;
+    border-color: #7f8c8d !important;
+}
+
+/* Dashboard Navigation Enhancement */
+.dashboard-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 30px;
+    background: white;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.dashboard-nav li {
+    margin: 0;
+}
+
+.dashboard-nav a {
+    display: block;
+    padding: 15px 25px;
+    text-decoration: none;
+    color: #6c757d;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+}
+
+.dashboard-nav a:hover {
+    color: #1abc9c;
+    background: #f8f9fa;
+}
+
+.dashboard-nav a.active {
+    color: #1abc9c;
+    border-bottom-color: #1abc9c;
+    background: #f8f9fa;
+}
+
+/* Mobile Responsiveness for Dashboard */
+@media (max-width: 768px) {
+    .dashboard-nav ul {
+        flex-direction: column;
+    }
+    
+    .dashboard-nav a {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        text-align: left;
+    }
+    
+    .dashboard-nav a:hover,
+    .dashboard-nav a.active {
+        border-left-color: #1abc9c;
+        border-bottom-color: transparent;
+    }
+    
+    .listing-form .form-table,
+    .listing-form .form-table th,
+    .listing-form .form-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .listing-form .form-table th {
+        padding: 15px 0 5px 0;
+        background: transparent;
+        border-bottom: none;
+        font-weight: 600;
+    }
+    
+    .listing-form .form-table td {
+        padding: 0 0 20px 0;
+        border-bottom: 1px solid #e9ecef;
+        background: transparent;
+    }
+    
+    .listing-form .regular-text,
+    .listing-form .large-text {
+        max-width: 100%;
+    }
+    
+    .password-form .form-table th {
+        width: 100%;
+        padding: 15px 0 5px 0;
+    }
+    
+    #add-new-listing-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* File Upload Styling */
+input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    background: #f8f9fa;
+    width: 100%;
+    max-width: 400px;
+    transition: border-color 0.2s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #1abc9c;
+    background: #f0fdfa;
+}
+
+/* Loading States */
+.listing-form input[type="submit"]:disabled,
+.password-form input[type="submit"]:disabled {
+    background: #95a5a6 !important;
+    border-color: #95a5a6 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+

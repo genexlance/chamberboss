@@ -20,6 +20,7 @@
             this.initListingSubmission();
             this.initDirectoryFilters();
             this.initImagePreviews();
+            this.initMemberDashboard();
         },
         
         /**
@@ -604,6 +605,296 @@
                     scrollTop: $target.offset().top - offset
                 }, 500);
             }
+        },
+        
+        /**
+         * Initialize member dashboard functionality
+         */
+        initMemberDashboard: function() {
+            this.initAddListingForm();
+            this.initEditListingForm();
+            this.initDeleteListing();
+            this.initPasswordChange();
+        },
+        
+        /**
+         * Initialize add listing form
+         */
+        initAddListingForm: function() {
+            var self = this;
+            
+            // Show/hide add listing form
+            $(document).on('click', '#add-new-listing-btn', function(e) {
+                e.preventDefault();
+                $('#add-listing-form').slideToggle();
+            });
+            
+            // Cancel form
+            $(document).on('click', '.cancel-form', function(e) {
+                e.preventDefault();
+                $(this).closest('.listing-form-container').slideUp();
+                $(this).closest('form')[0].reset();
+            });
+            
+            // Handle form submission
+            $(document).on('submit', '#create-listing-form', function(e) {
+                e.preventDefault();
+                self.handleListingSubmission(this, 'chamberboss_create_listing');
+            });
+        },
+        
+        /**
+         * Initialize edit listing form
+         */
+        initEditListingForm: function() {
+            var self = this;
+            
+            // Handle edit button clicks
+            $(document).on('click', '.edit-listing-btn', function(e) {
+                e.preventDefault();
+                var listingId = $(this).data('listing-id');
+                self.loadEditListingForm(listingId);
+            });
+            
+            // Handle edit form submission
+            $(document).on('submit', '#edit-listing-form form', function(e) {
+                e.preventDefault();
+                self.handleListingSubmission(this, 'chamberboss_update_listing');
+            });
+        },
+        
+        /**
+         * Load edit listing form
+         */
+        loadEditListingForm: function(listingId) {
+            var self = this;
+            
+            $.ajax({
+                url: chamberboss_frontend.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'chamberboss_get_listing_data',
+                    listing_id: listingId,
+                    nonce: chamberboss_frontend.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#edit-listing-content').html(response.data.form_html);
+                        $('#edit-listing-form').slideDown();
+                        self.scrollTo('#edit-listing-form');
+                    } else {
+                        self.showMessage($('#edit-listing-form'), response.data.message || 'Failed to load listing', 'error');
+                    }
+                },
+                error: function() {
+                    self.showMessage($('#edit-listing-form'), 'Connection error. Please try again.', 'error');
+                }
+            });
+        },
+        
+        /**
+         * Handle listing form submissions (create/update)
+         */
+        handleListingSubmission: function(form, action) {
+            var self = this;
+            var $form = $(form);
+            var $submitBtn = $form.find('input[type="submit"]');
+            var originalText = $submitBtn.val();
+            var formData = new FormData(form);
+            
+            // Add action to form data
+            formData.append('action', action);
+            
+            // Disable submit button
+            $submitBtn.prop('disabled', true).val('Processing...');
+            
+            // Clear previous messages
+            $form.find('.form-messages').empty();
+            
+            $.ajax({
+                url: chamberboss_frontend.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        self.showMessage($form.find('.form-messages'), response.data.message, 'success');
+                        
+                        // Reload page after short delay to show updated listings
+                        setTimeout(function() {
+                            window.location.href = response.data.redirect || window.location.href;
+                        }, 1500);
+                    } else {
+                        self.showMessage($form.find('.form-messages'), response.data.message || 'An error occurred', 'error');
+                    }
+                },
+                error: function() {
+                    self.showMessage($form.find('.form-messages'), 'Connection error. Please try again.', 'error');
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    $submitBtn.prop('disabled', false).val(originalText);
+                }
+            });
+        },
+        
+        /**
+         * Initialize delete listing functionality
+         */
+        initDeleteListing: function() {
+            var self = this;
+            
+            $(document).on('click', '.delete-listing-btn', function(e) {
+                e.preventDefault();
+                var listingId = $(this).data('listing-id');
+                var businessName = $(this).closest('tr').find('td:first').text();
+                
+                if (confirm('Are you sure you want to delete "' + businessName + '"? This action cannot be undone.')) {
+                    self.deleteListing(listingId);
+                }
+            });
+        },
+        
+        /**
+         * Delete listing
+         */
+        deleteListing: function(listingId) {
+            var self = this;
+            
+            $.ajax({
+                url: chamberboss_frontend.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'chamberboss_delete_listing',
+                    listing_id: listingId,
+                    nonce: chamberboss_frontend.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message and reload
+                        self.showGlobalMessage(response.data.message, 'success');
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        self.showGlobalMessage(response.data.message || 'Failed to delete listing', 'error');
+                    }
+                },
+                error: function() {
+                    self.showGlobalMessage('Connection error. Please try again.', 'error');
+                }
+            });
+        },
+        
+        /**
+         * Initialize password change functionality
+         */
+        initPasswordChange: function() {
+            var self = this;
+            
+            $(document).on('submit', '#change-password-form', function(e) {
+                e.preventDefault();
+                self.handlePasswordChange(this);
+            });
+            
+            // Real-time password confirmation validation
+            $(document).on('input', '#confirm_password', function() {
+                var newPassword = $('#new_password').val();
+                var confirmPassword = $(this).val();
+                var $field = $(this);
+                
+                if (confirmPassword && newPassword !== confirmPassword) {
+                    $field.css('border-color', '#dc3545');
+                } else {
+                    $field.css('border-color', '');
+                }
+            });
+        },
+        
+        /**
+         * Handle password change
+         */
+        handlePasswordChange: function(form) {
+            var self = this;
+            var $form = $(form);
+            var $submitBtn = $form.find('input[type="submit"]');
+            var originalText = $submitBtn.val();
+            
+            // Validate passwords match
+            var newPassword = $form.find('#new_password').val();
+            var confirmPassword = $form.find('#confirm_password').val();
+            
+            if (newPassword !== confirmPassword) {
+                self.showMessage($form.find('.form-messages'), 'New password and confirmation do not match.', 'error');
+                return;
+            }
+            
+            // Disable submit button
+            $submitBtn.prop('disabled', true).val('Changing...');
+            
+            // Clear previous messages
+            $form.find('.form-messages').empty();
+            
+            $.ajax({
+                url: chamberboss_frontend.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'chamberboss_change_password',
+                    current_password: $form.find('#current_password').val(),
+                    new_password: newPassword,
+                    confirm_password: confirmPassword,
+                    nonce: $form.find('#password_nonce').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        self.showMessage($form.find('.form-messages'), response.data.message, 'success');
+                        form.reset(); // Clear the form
+                    } else {
+                        self.showMessage($form.find('.form-messages'), response.data.message || 'Failed to change password', 'error');
+                    }
+                },
+                error: function() {
+                    self.showMessage($form.find('.form-messages'), 'Connection error. Please try again.', 'error');
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    $submitBtn.prop('disabled', false).val(originalText);
+                }
+            });
+        },
+        
+        /**
+         * Show message in a container
+         */
+        showMessage: function($container, message, type) {
+            var cssClass = type === 'success' ? 'chamberboss-notice-success' : 'chamberboss-notice-error';
+            var html = '<div class="chamberboss-notice ' + cssClass + '"><p>' + message + '</p></div>';
+            $container.html(html);
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(function() {
+                    $container.find('.chamberboss-notice').fadeOut();
+                }, 3000);
+            }
+        },
+        
+        /**
+         * Show global message (for page-level notifications)
+         */
+        showGlobalMessage: function(message, type) {
+            var cssClass = type === 'success' ? 'chamberboss-notice-success' : 'chamberboss-notice-error';
+            var html = '<div class="chamberboss-notice ' + cssClass + '" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;"><p>' + message + '</p></div>';
+            
+            $('body').append(html);
+            
+            // Auto-hide after 3 seconds
+            setTimeout(function() {
+                $('.chamberboss-notice').fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 3000);
         }
     };
     

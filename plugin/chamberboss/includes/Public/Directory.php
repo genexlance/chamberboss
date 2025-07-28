@@ -999,7 +999,7 @@ class Directory extends BaseClass {
             error_log('🔧 CHAMBERBOSS DEBUG: === PAYMENT INTENT HANDLER START === at ' . current_time('mysql'));
             error_log('🔧 CHAMBERBOSS DEBUG: POST data received: ' . print_r($_POST, true));
             
-            if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_member_registration')) {
+            if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_frontend')) {
                 error_log('🔧 CHAMBERBOSS DEBUG: Payment intent nonce verification failed');
                 $this->send_json_response(['message' => 'Invalid nonce'], false);
                 return;

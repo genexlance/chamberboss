@@ -1,13 +1,13 @@
 /**
  * ChamberBoss Frontend JavaScript
- * Version: 1.0.3 - CACHE BUSTER
+ * Version: 1.0.4 - STRIPE ELEMENTS FIX
  */
 
 // MEGA DEBUGGING: FORCE CACHE REFRESH
-console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.3: JavaScript file is loading! 🚨🚨🚨');
+console.log('🚨🚨🚨 CHAMBERBOSS FRONTEND v1.0.4: JavaScript file is loading! 🚨🚨🚨');
 console.log('🚨🚨🚨 CACHE BUSTER: ' + new Date().getTime() + ' 🚨🚨🚨');
-alert('🔥🔥🔥 CHAMBERBOSS v1.0.3 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
-document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
+alert('🔥🔥🔥 CHAMBERBOSS v1.0.4 LOADED: ' + new Date().getTime() + ' 🔥🔥🔥');
+document.title = 'CHAMBERBOSS v1.0.4 LOADED - ' + document.title;
 
 (function($) {
     'use strict';
@@ -105,36 +105,96 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
         },
         
         /**
-         * Initialize Stripe Elements
+         * Initialize Stripe
          */
         initStripe: function() {
-            var self = this;
-            
             console.log('Chamberboss: initStripe called');
             console.log('Chamberboss: window.Stripe available:', !!window.Stripe);
             console.log('Chamberboss: chamberboss_frontend object:', chamberboss_frontend);
             console.log('Chamberboss: Stripe publishable key:', chamberboss_frontend.stripe_publishable_key);
-            
+
             if (!window.Stripe) {
                 console.error('Chamberboss: Stripe.js not loaded');
-                return;
+                return false;
             }
-            
+
             if (!chamberboss_frontend.stripe_publishable_key) {
                 console.error('Chamberboss: No Stripe publishable key found');
-                return;
+                return false;
             }
-            
+
             try {
+                // Initialize Stripe
                 this.stripe = Stripe(chamberboss_frontend.stripe_publishable_key);
                 console.log('Chamberboss: Stripe instance created:', !!this.stripe);
-                
-                // We'll initialize elements when we get a payment intent
-                // For now, just create a placeholder
-                console.log('Chamberboss: Stripe initialization completed successfully - will create elements with payment intent');
-                
+
+                // Create Payment Intent and Elements
+                this.createPaymentIntent();
+
+                console.log('Chamberboss: Stripe initialization completed successfully');
+                return true;
             } catch (error) {
-                console.error('Chamberboss: Error initializing Stripe:', error);
+                console.error('Chamberboss: Stripe initialization failed:', error);
+                return false;
+            }
+        },
+
+        /**
+         * Create Payment Intent and initialize Elements
+         */
+        createPaymentIntent: function() {
+            console.log('🔧 CHAMBERBOSS: Creating payment intent...');
+            
+            // Make AJAX call to create payment intent
+            $.post(chamberboss_frontend.ajax_url, {
+                action: 'chamberboss_create_payment_intent',
+                nonce: chamberboss_frontend.nonce
+            })
+            .done(function(response) {
+                console.log('🔧 CHAMBERBOSS: Payment intent response:', response);
+                
+                if (response.success && response.data.clientSecret) {
+                    console.log('🔧 CHAMBERBOSS: Payment intent created successfully');
+                    this.paymentIntentId = response.data.paymentIntentId;
+                    this.initializeElements(response.data.clientSecret);
+                } else {
+                    console.error('🔧 CHAMBERBOSS: Failed to create payment intent:', response);
+                    // Continue without payment elements for free memberships
+                }
+            }.bind(this))
+            .fail(function(xhr, status, error) {
+                console.error('🔧 CHAMBERBOSS: Payment intent AJAX failed:', xhr, status, error);
+                // Continue without payment elements for free memberships
+            });
+        },
+
+        /**
+         * Initialize Stripe Elements with client secret
+         */
+        initializeElements: function(clientSecret) {
+            console.log('🔧 CHAMBERBOSS: Initializing Stripe Elements with clientSecret:', clientSecret);
+            
+            try {
+                // Create Elements instance
+                this.elements = this.stripe.elements({
+                    clientSecret: clientSecret
+                });
+                console.log('🔧 CHAMBERBOSS: Elements instance created:', !!this.elements);
+
+                // Create Payment Element
+                this.paymentElement = this.elements.create('payment');
+                console.log('🔧 CHAMBERBOSS: Payment element created:', !!this.paymentElement);
+
+                // Mount Payment Element
+                const paymentElementDiv = document.getElementById('payment-element');
+                if (paymentElementDiv) {
+                    this.paymentElement.mount('#payment-element');
+                    console.log('🔧 CHAMBERBOSS: Payment element mounted successfully');
+                } else {
+                    console.error('🔧 CHAMBERBOSS: Payment element div not found');
+                }
+            } catch (error) {
+                console.error('🔧 CHAMBERBOSS: Elements initialization failed:', error);
             }
         },
         
@@ -681,9 +741,9 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
         }
     };
     
-    // Initialize when document is ready
-    $(document).ready(function() {
-        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.3: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
+                // Initialize when document is ready
+            $(document).ready(function() {
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: DOCUMENT READY HANDLER CALLED! 🔥🔥🔥');
         console.log('🔥 CHAMBERBOSS: Document ready state:', document.readyState);
         console.log('🔥 CHAMBERBOSS: Frontend data available:', typeof chamberboss_frontend !== 'undefined' ? 'YES' : 'NO');
         console.log('🔥 CHAMBERBOSS: jQuery available:', !!window.jQuery);
@@ -693,9 +753,9 @@ document.title = 'CHAMBERBOSS v1.0.3 LOADED - ' + document.title;
             console.log('🔥 CHAMBERBOSS: Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
         }
         
-        console.log('🔥🔥🔥 CHAMBERBOSS: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
-        Chamberboss.init();
-        console.log('🔥🔥🔥 CHAMBERBOSS: DOCUMENT READY COMPLETE! 🔥🔥🔥');
+                        console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: CALLING MAIN INIT FUNCTION... 🔥🔥🔥');
+                Chamberboss.init();
+                console.log('🔥🔥🔥 CHAMBERBOSS v1.0.4: DOCUMENT READY COMPLETE! 🔥🔥🔥');
     });
     
     // Make Chamberboss object globally available

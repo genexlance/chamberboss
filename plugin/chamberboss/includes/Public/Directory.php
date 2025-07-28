@@ -24,14 +24,12 @@ class Directory extends BaseClass {
         add_shortcode('chamberboss_member_registration', [$this, 'member_registration_shortcode']);
         add_shortcode('chamberboss_listing_form', [$this, 'listing_form_shortcode']);
         
-        // Handle form submissions
-        add_action('wp_ajax_chamberboss_register_member', [$this, 'handle_member_registration']);
-        add_action('wp_ajax_nopriv_chamberboss_register_member', [$this, 'handle_member_registration']);
-        add_action('wp_ajax_chamberboss_submit_listing', [$this, 'handle_listing_submission']);
-        add_action('wp_ajax_nopriv_chamberboss_submit_listing', [$this, 'handle_listing_submission']);
+        // Register AJAX handlers
+        add_action('wp_ajax_chamberboss_register_member', array($this, 'handle_member_registration'));
+        add_action('wp_ajax_nopriv_chamberboss_register_member', array($this, 'handle_member_registration'));
         
-        add_action('wp_ajax_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
-        add_action('wp_ajax_nopriv_chamberboss_create_registration_payment_intent', [$this, 'handle_create_payment_intent']);
+        add_action('wp_ajax_chamberboss_create_payment_intent', array($this, 'handle_create_payment_intent'));
+        add_action('wp_ajax_nopriv_chamberboss_create_payment_intent', array($this, 'handle_create_payment_intent'));
         
         // TEMPORARY - Test AJAX handler
         add_action('wp_ajax_chamberboss_test_ajax', [$this, 'handle_test_ajax']);
@@ -310,12 +308,7 @@ class Directory extends BaseClass {
      */
     private function render_member_registration_form($args) {
         // FORCE VISIBLE DEBUG - This MUST show up
-        echo '<div style="background:red;color:white;padding:20px;font-size:20px;text-align:center;margin:20px 0;">
-        🔧 CHAMBERBOSS v1.0.1 UPDATED CODE IS RUNNING! 
-        <br>Time: ' . current_time('mysql') . '
-        <br>If you see this, my code is working!
-        <br>User logged in: ' . (is_user_logged_in() ? 'YES' : 'NO') . '
-        </div>';
+        error_log('=== CHAMBERBOSS REGISTRATION FORM CALLED ===');
         
         if (is_user_logged_in()) {
             echo '<p>' . __('You are already logged in.', 'chamberboss') . '</p>';
@@ -528,11 +521,6 @@ class Directory extends BaseClass {
         
         // FORCE DEBUG OUTPUT - This should appear in your debug log
         error_log('=== CHAMBERBOSS REGISTRATION HANDLER DEFINITELY CALLED ===');
-        
-        // FORCE VISUAL DEBUG - This will show as a PHP error on screen
-        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY) {
-            echo "<div style='background:red;color:white;padding:10px;'>CHAMBERBOSS DEBUG: Registration handler called!</div>";
-        }
         
         if (!$this->verify_nonce($_POST['registration_nonce'] ?? '', 'chamberboss_member_registration')) {
             error_log('[ChamberBoss Registration] Nonce verification failed');

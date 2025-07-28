@@ -30,46 +30,52 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
          */
         initMemberRegistration: function() {
             var $form = $('#chamberboss-member-registration');
-            console.log('Chamberboss: Looking for registration form, found:', $form.length);
+            console.log('🔧 CHAMBERBOSS: Looking for registration form, found:', $form.length);
             
             if (!$form.length) {
-                console.log('Chamberboss: No registration form found');
+                console.log('🔧 CHAMBERBOSS: No registration form found');
                 return;
             }
             
-            console.log('Chamberboss: Registration form found, setting up handlers');
+            console.log('🔧 CHAMBERBOSS: Registration form found, setting up handlers');
+            
+            // Check for payment section
+            var $paymentSection = $form.find('#payment-element');
+            console.log('🔧 CHAMBERBOSS: Payment element search result:', $paymentSection.length);
+            console.log('🔧 CHAMBERBOSS: Payment element HTML:', $paymentSection.length > 0 ? $paymentSection[0].outerHTML : 'NOT FOUND');
+            
+            // Check Stripe key availability
+            console.log('🔧 CHAMBERBOSS: chamberboss_frontend object:', typeof chamberboss_frontend);
+            console.log('🔧 CHAMBERBOSS: Stripe publishable key exists:', !!chamberboss_frontend.stripe_publishable_key);
+            console.log('🔧 CHAMBERBOSS: Stripe publishable key value:', chamberboss_frontend.stripe_publishable_key);
             
             // Initialize Stripe if payment section exists
-            var $paymentSection = $form.find('#payment-element');
             if ($paymentSection.length && chamberboss_frontend.stripe_publishable_key) {
-                console.log('Chamberboss: Initializing Stripe');
+                console.log('🔧 CHAMBERBOSS: Conditions met - initializing Stripe');
                 this.initStripe();
             } else {
-                console.log('Chamberboss: No payment section or Stripe key, payment disabled');
+                console.log('🔧 CHAMBERBOSS: Stripe initialization skipped');
+                console.log('🔧 CHAMBERBOSS: - Payment section exists:', $paymentSection.length > 0);
+                console.log('🔧 CHAMBERBOSS: - Stripe key available:', !!chamberboss_frontend.stripe_publishable_key);
             }
             
             $form.on('submit', this.handleMemberRegistration.bind(this));
-            console.log('Chamberboss: Form submit handler attached');
+            console.log('🔧 CHAMBERBOSS: Form submit handler attached');
             
-            // TEMPORARY - Add test AJAX button handler
-            $('#test-ajax-button').on('click', function() {
-                console.log('Chamberboss: Test AJAX button clicked');
-                $.ajax({
-                    url: chamberboss_frontend.ajax_url,
-                    type: 'POST',
-                    data: {
+            // Add test button for debugging
+            if ($form.length) {
+                $form.append('<button type="button" id="test-ajax" style="margin: 10px; background: orange; color: white; padding: 5px;">🔧 TEST AJAX</button>');
+                $('#test-ajax').on('click', function() {
+                    console.log('🔧 CHAMBERBOSS: Test AJAX button clicked');
+                    $.post(chamberboss_frontend.ajax_url, {
                         action: 'chamberboss_test_ajax'
-                    },
-                    success: function(response) {
-                        console.log('Chamberboss: Test AJAX success:', response);
-                        alert('AJAX Test: ' + (response.success ? response.data.message : 'Failed'));
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('Chamberboss: Test AJAX error:', xhr, status, error);
-                        alert('AJAX Test Failed: ' + error);
-                    }
+                    }, function(response) {
+                        console.log('🔧 CHAMBERBOSS: Test AJAX success:', response);
+                    }).fail(function(xhr, status, error) {
+                        console.log('🔧 CHAMBERBOSS: Test AJAX error:', xhr, status, error);
+                    });
                 });
-            });
+            }
         },
         
         /**
@@ -196,15 +202,19 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
             var hasPaymentElement = $form.find('#payment-element').length > 0;
             var requiresPayment = hasPaymentElement && this.stripe && this.paymentElement;
             
-            console.log('🔧 CHAMBERBOSS: Payment check - Element exists:', hasPaymentElement, 'Stripe ready:', !!this.stripe, 'Payment element ready:', !!this.paymentElement);
-            console.log('🔧 CHAMBERBOSS: Requires payment:', requiresPayment);
+            console.log('🔧 CHAMBERBOSS: === PAYMENT FLOW DECISION ===');
+            console.log('🔧 CHAMBERBOSS: hasPaymentElement (DOM check):', hasPaymentElement);
+            console.log('🔧 CHAMBERBOSS: this.stripe (instance exists):', !!this.stripe);
+            console.log('🔧 CHAMBERBOSS: this.paymentElement (element mounted):', !!this.paymentElement);
+            console.log('🔧 CHAMBERBOSS: requiresPayment (final decision):', requiresPayment);
+            console.log('🔧 CHAMBERBOSS: === END PAYMENT FLOW DECISION ===');
             
             if (requiresPayment) {
-                console.log('🔧 CHAMBERBOSS: Using payment flow');
+                console.log('🔧 CHAMBERBOSS: ✅ Using payment flow');
                 this.processPaymentAndRegistration($form, $submitButton, $messages);
             } else {
-                console.log('🔧 CHAMBERBOSS: Using direct registration (no payment)');
-                console.log('🔧 CHAMBERBOSS: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe);
+                console.log('🔧 CHAMBERBOSS: ❌ Using direct registration (no payment)');
+                console.log('🔧 CHAMBERBOSS: This will cause payment_intent_id_missing error');
                 this.submitRegistration($form, $submitButton, $messages);
             }
         },

@@ -170,7 +170,7 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
          * Handle member registration form submission
          */
         handleMemberRegistration: function(e) {
-            console.log('Chamberboss: Form submission handler called');
+            console.log('🔧 CHAMBERBOSS: Form submission handler called');
             e.preventDefault();
             
             var $form = $(e.target);
@@ -178,35 +178,33 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
             var $messages = $('#registration-messages');
             var self = this;
             
-            console.log('Chamberboss: Form elements found - Form:', $form.length, 'Button:', $submitButton.length, 'Messages:', $messages.length);
+            console.log('🔧 CHAMBERBOSS: Form elements found - Form:', $form.length, 'Button:', $submitButton.length, 'Messages:', $messages.length);
             
             // Validate required fields first
             var memberName = $form.find('[name="member_name"]').val().trim();
             var memberEmail = $form.find('[name="member_email"]').val().trim();
             
+            console.log('🔧 CHAMBERBOSS: Form validation - Name:', memberName ? 'OK' : 'MISSING', 'Email:', memberEmail ? 'OK' : 'MISSING');
+            
             if (!memberName || !memberEmail) {
-                $messages.html('<div class="form-message error">Name and email are required</div>');
+                console.log('🔧 CHAMBERBOSS: Form validation failed - missing required fields');
+                $messages.html('<div class="form-message error">Please fill in all required fields.</div>');
                 return;
             }
             
-            // Disable form and show loading
-            this.setFormLoading($form, true);
-            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
-            
-            // Check if payment is required - look for payment-element div
+            // Check if payment is required
             var hasPaymentElement = $form.find('#payment-element').length > 0;
-            console.log('Chamberboss: Payment element found:', hasPaymentElement);
-            console.log('Chamberboss: Stripe instance available:', !!this.stripe);
-            console.log('Chamberboss: Payment element instance:', !!this.paymentElement);
+            var requiresPayment = hasPaymentElement && this.stripe && this.paymentElement;
             
-            if (hasPaymentElement && this.stripe) {
-                console.log('Chamberboss: Using payment flow');
-                // Payment flow - this will create payment intent and show payment UI
+            console.log('🔧 CHAMBERBOSS: Payment check - Element exists:', hasPaymentElement, 'Stripe ready:', !!this.stripe, 'Payment element ready:', !!this.paymentElement);
+            console.log('🔧 CHAMBERBOSS: Requires payment:', requiresPayment);
+            
+            if (requiresPayment) {
+                console.log('🔧 CHAMBERBOSS: Using payment flow');
                 this.processPaymentAndRegistration($form, $submitButton, $messages);
             } else {
-                console.log('Chamberboss: Using direct registration (no payment)');
-                console.log('Chamberboss: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe);
-                // No payment required - direct registration (fallback)
+                console.log('🔧 CHAMBERBOSS: Using direct registration (no payment)');
+                console.log('🔧 CHAMBERBOSS: Reasons - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe);
                 this.submitRegistration($form, $submitButton, $messages);
             }
         },
@@ -355,14 +353,30 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
                 data: formData,
                 processData: false,
                 contentType: false,
+                beforeSend: function() {
+                    console.log('🔧 CHAMBERBOSS: AJAX request starting');
+                },
                 success: function(response) {
-                    console.log('Chamberboss: Registration AJAX success response:', response);
-                    console.log('Chamberboss: Response type:', typeof response);
-                    console.log('Chamberboss: Response.success:', response.success);
-                    console.log('Chamberboss: Response.data:', response.data);
+                    console.log('🔧 CHAMBERBOSS: AJAX SUCCESS callback triggered');
+                    console.log('🔧 CHAMBERBOSS: Raw response:', response);
+                    console.log('🔧 CHAMBERBOSS: Response type:', typeof response);
+                    console.log('🔧 CHAMBERBOSS: Response.success:', response.success);
+                    console.log('🔧 CHAMBERBOSS: Response.data:', response.data);
                     
-                    if (response.success) {
-                        console.log('Chamberboss: Processing success response');
+                    // Try to parse response if it's a string
+                    if (typeof response === 'string') {
+                        console.log('🔧 CHAMBERBOSS: Response is string, attempting to parse JSON');
+                        try {
+                            response = JSON.parse(response);
+                            console.log('🔧 CHAMBERBOSS: Parsed response:', response);
+                        } catch (e) {
+                            console.error('🔧 CHAMBERBOSS: Failed to parse JSON:', e);
+                            console.log('🔧 CHAMBERBOSS: Raw string content:', response);
+                        }
+                    }
+                    
+                    if (response && response.success) {
+                        console.log('🔧 CHAMBERBOSS: Processing success response');
                         var successHtml = '<div class="form-message success">' + response.data.message + '</div>';
                         
                         // Add debug info if available
@@ -386,11 +400,22 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
                             }, 3000); // Give more time to see debug info
                         }
                     } else {
-                        console.log('Chamberboss: Processing error response');
-                        var errorHtml = '<div class="form-message error">' + (response.data ? response.data.message : 'Unknown error occurred') + '</div>';
+                        console.log('🔧 CHAMBERBOSS: Processing error response');
+                        console.log('🔧 CHAMBERBOSS: Response success value:', response ? response.success : 'no response object');
+                        var errorMessage = 'Registration failed';
+                        
+                        if (response && response.data && response.data.message) {
+                            errorMessage = response.data.message;
+                        } else if (response && response.message) {
+                            errorMessage = response.message;
+                        } else if (typeof response === 'string' && response.trim() !== '') {
+                            errorMessage = 'Server response: ' + response;
+                        }
+                        
+                        var errorHtml = '<div class="form-message error">' + errorMessage + '</div>';
                         
                         // Add debug info if available
-                        if (response.data && response.data.debug) {
+                        if (response && response.data && response.data.debug) {
                             errorHtml += '<div class="debug-info" style="margin-top: 10px; padding: 10px; background: #ffe6e6; font-size: 12px;">';
                             errorHtml += '<strong>Debug Info:</strong><br>';
                             errorHtml += JSON.stringify(response.data.debug, null, 2);
@@ -402,8 +427,18 @@ console.log('🔧 CHAMBERBOSS FRONTEND: JavaScript file is loading!');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Chamberboss: Registration AJAX error:', xhr, status, error);
-                    $messages.html('<div class="form-message error">' + chamberboss_frontend.strings.error + '</div>');
+                    console.log('🔧 CHAMBERBOSS: AJAX ERROR callback triggered');
+                    console.log('🔧 CHAMBERBOSS: XHR object:', xhr);
+                    console.log('🔧 CHAMBERBOSS: Status:', status);
+                    console.log('🔧 CHAMBERBOSS: Error:', error);
+                    console.log('🔧 CHAMBERBOSS: Response text:', xhr.responseText);
+                    
+                    var errorMessage = chamberboss_frontend.strings.error;
+                    if (xhr.responseText && xhr.responseText.trim() !== '') {
+                        errorMessage += ' Response: ' + xhr.responseText;
+                    }
+                    
+                    $messages.html('<div class="form-message error">' + errorMessage + '</div>');
                     self.resetForm($form, $submitButton);
                 }
             });

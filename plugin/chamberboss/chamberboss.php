@@ -3,7 +3,7 @@
  * Plugin Name: Chamberboss
  * Plugin URI: https://genexmarketing.com/chamberboss
  * Description: A comprehensive chamber of commerce management plugin with member management, business listings, Stripe payments, and MailPoet integration.
- * Version: 1.0.29
+ * Version: 1.0.31
  * Author: Genex Marketing Agency Ltd
  * Author URI: https://genexmarketing.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('CHAMBERBOSS_VERSION', '1.0.29');
+define('CHAMBERBOSS_VERSION', '1.0.31');
 define('CHAMBERBOSS_PLUGIN_FILE', __FILE__);
 define('CHAMBERBOSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CHAMBERBOSS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -94,6 +94,8 @@ final class Chamberboss {
         
         add_action('plugins_loaded', [$this, 'init']);
         add_action('init', [$this, 'load_textdomain']);
+        add_action('init', [$this, 'ensure_admin_capabilities']);
+        add_action('wp_loaded', [$this, 'ensure_admin_capabilities']); // Extra safety - run after everything is loaded
     }
     
     /**
@@ -287,6 +289,34 @@ final class Chamberboss {
         $admin_role = get_role('administrator');
         if ($admin_role) {
             $admin_role->add_cap('manage_chamberboss_listings');
+        }
+    }
+    
+    /**
+     * Ensure admin capabilities are always present (called on init)
+     */
+    public function ensure_admin_capabilities() {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: ensure_admin_capabilities called");
+        }
+        
+        $admin_role = get_role('administrator');
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Admin role exists: " . ($admin_role ? 'true' : 'false'));
+        }
+        
+        if ($admin_role) {
+            $has_cap = $admin_role->has_cap('manage_chamberboss_listings');
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Admin has manage_chamberboss_listings: " . ($has_cap ? 'true' : 'false'));
+            }
+            
+            if (!$has_cap) {
+                $admin_role->add_cap('manage_chamberboss_listings');
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("CHAMBERBOSS DEBUG: Added manage_chamberboss_listings capability to administrator");
+                }
+            }
         }
     }
     

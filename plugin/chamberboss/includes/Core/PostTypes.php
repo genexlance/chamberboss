@@ -17,7 +17,7 @@ class PostTypes extends BaseClass {
         add_action('save_post', [$this, 'save_meta_boxes']);
         
         // Force listings created by members to pending status
-        add_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10, 2);
+        add_action('save_post', [$this, 'force_member_listing_pending'], 10, 3);
     }
     
     /**
@@ -376,23 +376,76 @@ class PostTypes extends BaseClass {
     }
     
     /**
-     * Force member-created listings to pending status
+     * Force member-created listings to pending status (only for NEW posts, not edits)
      */
-    public function force_member_listing_pending($post_id, $post) {
+    public function force_member_listing_pending($post_id, $post, $update = false) {
+        // Get the post object if not provided
+        if (!is_object($post)) {
+            $post = get_post($post_id);
+        }
+        
+        if (!$post) {
+            return;
+        }
+        
+        // DEBUG: Log all calls to this method
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: force_member_listing_pending called - Post ID: $post_id, Post Type: {$post->post_type}, Update: " . ($update ? 'true' : 'false') . ", Status: {$post->post_status}");
+        }
+        
         // Only apply to business listings
         if ($post->post_type !== 'chamberboss_listing') {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Skipping - not a business listing");
+            }
+            return;
+        }
+        
+        // Skip autosaves and revisions
+        if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Skipping - autosave or revision");
+            }
             return;
         }
         
         // Only apply to non-admin users
         if (current_user_can('administrator')) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Skipping - user is administrator");
+            }
             return;
         }
         
+        // IMPORTANT: Only apply to NEW posts, not updates/edits
+        // Check if this is a new post by looking at the post_date vs post_modified
+        $is_new_post = ($post->post_date === $post->post_modified) && !$update;
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Is new post: " . ($is_new_post ? 'true' : 'false') . " (post_date: {$post->post_date}, post_modified: {$post->post_modified}, update param: " . ($update ? 'true' : 'false') . ")");
+        }
+        
+        if (!$is_new_post) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Skipping - this is an edit/update");
+            }
+            return; // This is an edit, don't force to pending
+        }
+        
+        // Check user capability
+        $can_create = current_user_can('create_chamberboss_members');
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: User can create members: " . ($can_create ? 'true' : 'false'));
+        }
+        
         // If the post status is publish and user is a member, change to pending
-        if ($post->post_status === 'publish' && current_user_can('create_chamberboss_members')) {
+        if ($post->post_status === 'publish' && $can_create) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Changing post status from publish to pending");
+            }
+            
             // Remove this hook temporarily to avoid infinite loop
-            remove_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10);
+            remove_action('save_post', [$this, 'force_member_listing_pending'], 10);
             
             wp_update_post([
                 'ID' => $post_id,
@@ -400,7 +453,15 @@ class PostTypes extends BaseClass {
             ]);
             
             // Re-add the hook
-            add_action('wp_insert_post', [$this, 'force_member_listing_pending'], 10, 2);
+            add_action('save_post', [$this, 'force_member_listing_pending'], 10, 3);
+            
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Post status changed to pending");
+            }
+        } else {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Not changing status - Post status: {$post->post_status}, Can create: " . ($can_create ? 'true' : 'false'));
+            }
         }
     }
     

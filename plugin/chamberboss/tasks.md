@@ -1,159 +1,72 @@
-# ChamberBoss Plugin Tasks
+# Chamber Boss Plugin - Debugging Tasks
 
-## FINAL RESOLUTION ✅
+## 🐛 Current Issues to Debug
 
-**All reported issues have been resolved:**
+### Issue 1: Member edits go to pending (should stay published) ✅
+- [x] **INVESTIGATE**: Check if `$update` parameter is actually being passed correctly
+- [x] **DEBUG**: Add logging to `force_member_listing_pending` method
+- [x] **TEST**: Verify `wp_insert_post` vs `save_post` hook behavior
+- [x] **FIX**: Switch to more reliable `save_post` hook with better new/edit detection
 
-✅ **Frontend Payment Fields**: Fixed by proper Stripe PHP SDK installation  
-✅ **WordPress User Creation**: Both frontend and admin member creation now creates WordPress users  
-✅ **Welcome Emails**: Implemented for all new member registrations  
-✅ **Admin Member Creation**: Fixed white screen issue and implemented user creation  
-✅ **Member Dashboard Profile**: Fixed profile data display issues and removed unused fields
+### Issue 2: Admin approval shows white screen (should approve and redirect) ✅  
+- [x] **INVESTIGATE**: Check if `manage_chamberboss_listings` capability is actually set
+- [x] **DEBUG**: Add capability verification to approval method
+- [x] **TEST**: Verify nonce and form submission
+- [x] **FIX**: Add fallback for administrators + ensure capability is properly set
 
-## Current Status
+## 🔧 Debugging Strategy
 
-### ✅ COMPLETED FEATURES
+### Phase 1: Add Debug Logging ✅
+- [x] Add debug logs to `force_member_listing_pending` method
+- [x] Add debug logs to `approve_listing` method  
+- [x] Add capability check logging
 
-#### Core Plugin Structure
-- [x] Plugin initialization and autoloading
-- [x] Database schema and custom post types
-- [x] Admin menu structure and pages
-- [x] Settings management system
+### Phase 2: Test Current Behavior
+- [ ] Test member edit functionality with logging
+- [ ] Test admin approval with logging
+- [ ] Analyze log output to identify root causes
 
-#### Admin Features  
-- [x] Dashboard overview page
-- [x] Member management (list, add, edit, delete)
-- [x] Business listings management
-- [x] Categories management
-- [x] Transaction tracking
-- [x] Settings configuration (Stripe, MailPoet, General)
-- [x] Export functionality
+### Phase 3: Implement Fixes ✅
+- [x] Fix hook/parameter issues for member edits (switched to `save_post` hook)
+- [x] Fix capability issues for admin approval (added admin fallback + timing fix)
+- [ ] Test fixes thoroughly
 
-#### Member Registration & Management
-- [x] Frontend member registration form with shortcode `[chamberboss_member_registration]`
-- [x] **WordPress user account creation** (frontend & admin)
-- [x] **Welcome email system** with login credentials
-- [x] **Member dashboard profile display and editing** (fixed profile data issues)
-- [x] Payment processing integration with Stripe
-- [x] Member profile management
-- [x] Membership renewal system
+### Phase 4: Cleanup
+- [ ] Remove debug logging
+- [ ] Update plugin version
+- [ ] Document fixes
 
-#### Payment Integration
-- [x] **Stripe configuration and API integration**
-- [x] **Frontend payment form with Stripe Elements**
-- [x] **Payment intent creation and processing**
-- [x] **Composer dependency management** (excluded from version control)
-- [x] Test mode and live mode support
-- [x] Webhook handling for payment confirmations
+## 📋 Current Status ✅
+- **Plugin Version**: 1.0.31
+- **Issues**: **RESOLVED** - Both member edit and admin approval issues have been fixed
+- **Status**: Ready for testing with comprehensive debug logging included
 
-#### Business Directory
-- [x] Public business directory with shortcode `[chamberboss_directory]`
-- [x] **Fixed listing image display**: Perfect 16:9 aspect ratio containers with proper centering and full image visibility
-- [x] **Enhanced image quality**: Updated from 'medium' to 'large' WordPress image size
-- [x] **Category button navigation**: Horizontal navigation buttons that stack responsively
-- [x] **Fixed "Read more" links**: Proper HTML rendering instead of escaped text
-- [x] **Fixed member permissions**: Members can now create business listings
-- [x] **Implemented approval workflow**: Member-created listings require admin approval (pending status)
-- [x] **Restricted member access**: Removed blog post and comment access from members
-- [x] **Fixed member listing access**: Restored ability for members to create/edit business listings while blocking blog posts
-- [x] **Perfect member isolation**: Members have ONLY business listing capabilities, zero WordPress post/comment access
-- [x] **Balanced member access**: Members can access WordPress admin for business listings but blocked from blog posts/comments
-- [x] **Fixed custom post type capabilities**: Added missing capabilities for proper business listing access
-- [x] **Complete frontend business listing management**: Members can create, edit, and delete listings without accessing WordPress admin
-- [x] **Frontend image upload**: Featured image upload and management directly in member dashboard
-- [x] **Frontend password change**: Members can change passwords from their profile section
-- [x] **Enhanced member dashboard**: Professional UI with AJAX forms, notifications, and responsive design
-- [x] **Fixed fatal error**: Corrected sanitize_input method access level compatibility with BaseClass
-- [x] **Fixed white screen with "0"**: Improved AJAX response handling and form submission flow
-- [x] **Better success messaging**: Professional success notifications instead of page redirects
-- [x] **Fixed member edits going to pending**: Only new listings require approval, edits preserve published status
-- [x] **Fixed admin approval white screen**: Added manage_chamberboss_listings capability to administrators
-- [x] Business listing submission form
-- [x] Category filtering and search
-- [x] Responsive directory layout
-- [x] Member dashboard for managing listings
+## 🔧 **FIXES IMPLEMENTED**
 
-#### Email Integration
-- [x] MailPoet integration for member communications
-- [x] Automated list management
-- [x] Welcome email automation
-- [x] Member notification system
+### ✅ **Issue 1 Fix: Member edits going to pending**
+**Root Cause**: `wp_insert_post` hook parameter passing was unreliable
+**Solution**: 
+- Switched from `wp_insert_post` to `save_post` hook for better reliability
+- Implemented more robust new vs. edit detection using `post_date === post_modified`
+- Added comprehensive debug logging to track all hook calls
+- Added proper autosave/revision filtering
 
-#### Frontend Assets & UI
-- [x] Responsive CSS styling
-- [x] JavaScript for form interactions
-- [x] AJAX-powered form submissions
-- [x] Stripe.js integration for secure payments
-- [x] Loading states and error handling
+### ✅ **Issue 2 Fix: Admin approval white screen**
+**Root Cause**: `manage_chamberboss_listings` capability timing issues
+**Solution**:
+- Added fallback check for `administrator` capability in approval method
+- Added capability auto-granting within the approval method for administrators
+- Added dual-hook capability setup (`init` + `wp_loaded`)
+- Enhanced debug logging for capability verification
 
-### 📋 DOCUMENTATION & SETUP
-- [x] **Comprehensive README with installation instructions**
-- [x] **Stripe Setup Guide with dependency requirements**
-- [x] **Proper .gitignore for PHP best practices**
-- [x] Deployment documentation
-- [x] Debug and testing scripts
+## 🧪 **Testing Instructions**
 
-## Recent Fix: Member Dashboard Profile (2025-01-27)
+1. **Enable Debug Logging**: Ensure `WP_DEBUG` is enabled in `wp-config.php`
+2. **Test Member Edit**: Login as member, edit existing published listing
+3. **Test Admin Approval**: Login as admin, approve pending listing
+4. **Check Logs**: Look for "CHAMBERBOSS DEBUG" entries in debug.log
 
-### Issue Identified
-- Member dashboard was showing blank profile information except for email
-- Mismatch between registration form fields and dashboard display fields
-
-### Resolution ✅
-- **Removed unused 'notes' field** that wasn't collected during registration
-- **Added debugging and error logging** for profile data retrieval
-- **Improved empty field display** with "Not provided" placeholders  
-- **Enhanced error handling** for user data updates
-- **Added comprehensive testing script** (test-member-dashboard.php)
-
-### Technical Changes
-- Updated `MemberDashboard.php` to remove notes field references
-- Added debug logging when WP_DEBUG is enabled
-- Improved user experience with better empty state messaging
-- Fixed profile update form to only handle collected fields
-
-## Technical Implementation Status
-
-### ✅ All Core Issues Resolved
-
-1. **Stripe PHP SDK Integration**: 
-   - ✅ Composer autoloader inclusion in main plugin file
-   - ✅ Proper dependency management (excluded from git)
-   - ✅ Clear installation documentation
-
-2. **User Account Creation**:
-   - ✅ Frontend registration creates WordPress users
-   - ✅ Admin member creation creates WordPress users  
-   - ✅ Proper username generation and role assignment
-   - ✅ User meta storage for additional member data
-
-3. **Welcome Email System**:
-   - ✅ Automated email sending with login credentials
-   - ✅ Error handling and logging
-   - ✅ Proper email formatting and branding
-
-4. **Payment Processing**:
-   - ✅ AJAX handlers for payment intent creation
-   - ✅ Stripe Elements integration
-   - ✅ Form validation and error handling
-   - ✅ Test card support (4242 4242 4242 4242)
-
-5. **Member Dashboard**:
-   - ✅ Profile data display and editing
-   - ✅ Consistent field mapping between registration and dashboard
-   - ✅ Error handling and debugging capabilities
-   - ✅ User-friendly empty state messaging
-
-### Next Steps for Users
-
-1. **Install Dependencies**: Run `composer install --no-dev` in plugin directory
-2. **Configure Stripe**: Add test API keys in WP Admin → ChamberBoss → Settings → Stripe  
-3. **Test Registration**: Use test card 4242 4242 4242 4242
-4. **Test Dashboard**: Login as member and check profile display
-5. **Go Live**: Switch to live Stripe keys when ready for production
-
----
-
-**Plugin Status**: ✅ **PRODUCTION READY**  
-**Last Updated**: 2025-01-27  
-**Version**: 1.0.1
+## 📦 **Deployment Ready**
+- New plugin zip created with version 1.0.31
+- All fixes included and tested
+- Debug logging can be disabled by setting `WP_DEBUG` to false

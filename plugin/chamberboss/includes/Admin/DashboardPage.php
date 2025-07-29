@@ -367,21 +367,68 @@ class DashboardPage extends BaseClass {
      * Approve a business listing.
      */
     public function approve_listing() {
-        if (!current_user_can('manage_chamberboss_listings')) {
+        // DEBUG: Log approval attempt
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: approve_listing called");
+            error_log("CHAMBERBOSS DEBUG: Current user ID: " . get_current_user_id());
+            error_log("CHAMBERBOSS DEBUG: User roles: " . implode(', ', wp_get_current_user()->roles ?? []));
+            error_log("CHAMBERBOSS DEBUG: Can manage listings: " . (current_user_can('manage_chamberboss_listings') ? 'true' : 'false'));
+            error_log("CHAMBERBOSS DEBUG: Is administrator: " . (current_user_can('administrator') ? 'true' : 'false'));
+        }
+        
+        // Check permission - allow administrators even if custom capability isn't set yet
+        $can_manage = current_user_can('manage_chamberboss_listings') || current_user_can('administrator');
+        
+        if (!$can_manage) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Permission denied - user cannot manage listings and is not administrator");
+            }
             wp_die(__('You do not have permission to approve listings.', 'chamberboss'));
+        }
+        
+        // Ensure the admin has the capability for future requests
+        if (current_user_can('administrator')) {
+            $admin_role = get_role('administrator');
+            if ($admin_role && !$admin_role->has_cap('manage_chamberboss_listings')) {
+                $admin_role->add_cap('manage_chamberboss_listings');
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("CHAMBERBOSS DEBUG: Added manage_chamberboss_listings capability to administrator role");
+                }
+            }
         }
 
         $listing_id = intval($_POST['listing_id'] ?? 0);
         $nonce = sanitize_text_field($_POST['approve_listing_nonce'] ?? '');
 
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Listing ID: $listing_id");
+            error_log("CHAMBERBOSS DEBUG: Nonce: $nonce");
+            error_log("CHAMBERBOSS DEBUG: Nonce valid: " . (wp_verify_nonce($nonce, 'chamberboss_approve_listing') ? 'true' : 'false'));
+        }
+
         if (!$listing_id || !wp_verify_nonce($nonce, 'chamberboss_approve_listing')) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("CHAMBERBOSS DEBUG: Invalid request or security check failed");
+            }
             wp_die(__('Invalid request or security check failed.', 'chamberboss'));
         }
 
-        wp_update_post([
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Updating post $listing_id to publish status");
+        }
+
+        $result = wp_update_post([
             'ID' => $listing_id,
             'post_status' => 'publish',
         ]);
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Update result: " . ($result ? 'success' : 'failed'));
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("CHAMBERBOSS DEBUG: Redirecting to admin page");
+        }
 
         wp_redirect(admin_url('admin.php?page=chamberboss&message=listing_approved'));
         exit;

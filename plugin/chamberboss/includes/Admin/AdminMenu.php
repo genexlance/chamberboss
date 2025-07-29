@@ -26,6 +26,7 @@ class AdminMenu extends BaseClass {
         add_action('admin_init', [$this, 'add_custom_capabilities']);
 
         // Instantiate pages to ensure hooks are registered
+        new DashboardPage(); // CRITICAL: This was missing - needed for admin-post actions
         new MembersPage();
         new CategoriesPage();
         new ListingsPage();

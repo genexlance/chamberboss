@@ -22,7 +22,7 @@
 - `plugin/chamberboss/includes/Public/Directory.php` - Enhanced payment intent creation
 - `plugin/chamberboss/chamberboss.php` - Updated to version 1.0.33
 
-**Version**: Updated to 1.0.33 (January 2025)
+**Version**: Updated to 1.0.34 (January 2025) - Added payment element initialization fixes
 
 ## 🐛 Previously Resolved Issues
 

@@ -75,9 +75,25 @@
          * Initialize Payment Intent and Elements for form setup
          */
         initializePaymentIntent: function() {
-            // Skip pre-creating payment intent - we'll create it when form is submitted
-            // This prevents 400 errors from payment intents without proper member data
-            console.log('Chamberboss: Payment system initialized, payment intent will be created on form submission');
+            // Create a generic payment intent for element setup - will be replaced on form submission
+            var ajaxData = {
+                action: 'chamberboss_create_payment_intent',
+                nonce: chamberboss_frontend.nonce,
+                setup_only: true // Flag to indicate this is just for UI setup
+            };
+            
+            $.post(chamberboss_frontend.ajax_url, ajaxData)
+            .done(function(response) {
+                if (response && response.success && response.data && response.data.clientSecret) {
+                    console.log('Chamberboss: Payment elements initialized for UI');
+                    this.initializeElements(response.data.clientSecret);
+                } else {
+                    console.log('Chamberboss: Payment setup failed, will show free registration');
+                }
+            }.bind(this))
+            .fail(function(xhr, status, error) {
+                console.error('Chamberboss: Payment setup failed:', error);
+            });
         },
 
         /**
@@ -180,13 +196,30 @@
                 return;
             }
             
-            // Check if payment is required
-            var hasPaymentElement = $form.find('#payment-element').length > 0;
-            var requiresPayment = hasPaymentElement && this.stripe && this.paymentElement;
+            // Check if payment is required based on presence of payment element div
+            var $paymentElement = $form.find('#payment-element');
+            var hasPaymentElement = $paymentElement.length > 0;
             
-            if (requiresPayment) {
-                this.processPaymentAndRegistration($form, $submitButton, $messages);
+            console.log('Chamberboss: Payment check - hasPaymentElement:', hasPaymentElement, 'stripe:', !!this.stripe, 'paymentElement:', !!this.paymentElement);
+            
+            if (hasPaymentElement) {
+                // Payment is required - check if Stripe is properly initialized
+                if (!this.stripe) {
+                    $messages.html('<div class="form-message error">Payment system not initialized. Please refresh the page and try again.</div>');
+                    return;
+                }
+                
+                // If payment elements aren't ready, create them now
+                if (!this.paymentElement) {
+                    console.log('Chamberboss: Payment elements not ready, creating them now...');
+                    this.processPaymentAndRegistration($form, $submitButton, $messages);
+                } else {
+                    // Elements are ready, proceed with payment
+                    this.processPaymentAndRegistration($form, $submitButton, $messages);
+                }
             } else {
+                // No payment required, proceed with free registration
+                console.log('Chamberboss: No payment required, proceeding with free registration');
                 this.submitRegistration($form, $submitButton, $messages);
             }
         },

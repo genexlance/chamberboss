@@ -1046,9 +1046,12 @@ The %s Team
                 return;
             }
             
-            // Get member data from the form
-            $member_name = sanitize_text_field($_POST['member_name'] ?? '');
-            $member_email = sanitize_email($_POST['member_email'] ?? '');
+            // Check if this is just for UI setup
+            $setup_only = !empty($_POST['setup_only']);
+            
+            // Get member data from the form (only if not setup_only)
+            $member_name = $setup_only ? '' : sanitize_text_field($_POST['member_name'] ?? '');
+            $member_email = $setup_only ? '' : sanitize_email($_POST['member_email'] ?? '');
             
             // Get membership price
             $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
@@ -1079,14 +1082,20 @@ The %s Team
                     'currency' => strtolower($currency),
                     'automatic_payment_methods' => ['enabled' => true],
                     'metadata' => [
-                        'type' => 'membership_registration',
-                        'member_name' => $member_name,
-                        'member_email' => $member_email
+                        'type' => $setup_only ? 'setup_intent' : 'membership_registration'
                     ]
                 ];
                 
-                // Create Stripe customer if we have member data
-                if (!empty($member_email) && !empty($member_name)) {
+                // Add member data to metadata if available
+                if (!$setup_only && !empty($member_name)) {
+                    $intent_data['metadata']['member_name'] = $member_name;
+                }
+                if (!$setup_only && !empty($member_email)) {
+                    $intent_data['metadata']['member_email'] = $member_email;
+                }
+                
+                // Create Stripe customer if we have member data (not for setup_only)
+                if (!$setup_only && !empty($member_email) && !empty($member_name)) {
                     try {
                         $customer = \Stripe\Customer::create([
                             'email' => $member_email,

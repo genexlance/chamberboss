@@ -75,24 +75,9 @@
          * Initialize Payment Intent and Elements for form setup
          */
         initializePaymentIntent: function() {
-            // Make AJAX call to create payment intent
-            var ajaxData = {
-                action: 'chamberboss_create_payment_intent',
-                nonce: chamberboss_frontend.nonce
-            };
-            
-            $.post(chamberboss_frontend.ajax_url, ajaxData)
-            .done(function(response) {
-                if (response && response.success && response.data && response.data.clientSecret) {
-                    this.paymentIntentId = response.data.paymentIntentId;
-                    this.initializeElements(response.data.clientSecret);
-                } else {
-                    // Continue without payment elements for free memberships
-                }
-            }.bind(this))
-            .fail(function(xhr, status, error) {
-                console.error('Chamberboss: Payment intent creation failed');
-            });
+            // Skip pre-creating payment intent - we'll create it when form is submitted
+            // This prevents 400 errors from payment intents without proper member data
+            console.log('Chamberboss: Payment system initialized, payment intent will be created on form submission');
         },
 
         /**
@@ -212,34 +197,50 @@
         processPaymentAndRegistration: function($form, $submitButton, $messages) {
             var self = this;
             
-            // Use existing payment setup (elements are already mounted)
-            if (!this.paymentIntentId || !this.stripe || !this.elements) {
+            if (!this.stripe) {
                 $messages.html('<div class="form-message error">Payment system not properly initialized</div>');
                 self.resetForm($form, $submitButton);
                 return;
             }
             
-            // Confirm payment with existing elements
-            $messages.html('<div class="form-message info">Processing payment...</div>');
+            $messages.html('<div class="form-message info">Creating payment...</div>');
+            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
             
-            this.stripe.confirmPayment({
-                elements: this.elements,
-                redirect: 'if_required'
-            }).then(function(result) {
-                if (result.error) {
-                    $messages.html('<div class="form-message error">' + result.error.message + '</div>');
+            // Create payment intent with member data from form
+            this.createPaymentIntentWithMemberData($form, function(clientSecret, paymentIntentId) {
+                if (!clientSecret) {
+                    $messages.html('<div class="form-message error">Failed to initialize payment</div>');
                     self.resetForm($form, $submitButton);
-                } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                    // Payment successful, now submit registration
-                    self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                    return;
+                }
+                
+                // Initialize elements with the new client secret
+                self.elements = self.stripe.elements({
+                    clientSecret: clientSecret
+                });
+                
+                self.paymentElement = self.elements.create('payment');
+                
+                var paymentElementDiv = document.getElementById('payment-element');
+                if (paymentElementDiv) {
+                    // Clear and mount the payment element
+                    paymentElementDiv.innerHTML = '';
+                    self.paymentElement.mount('#payment-element');
+                    
+                    // Show payment section if hidden
+                    $('#payment-section').show();
+                    
+                    $messages.html('<div class="form-message info">Please complete your payment details below, then click "Complete Payment"</div>');
+                    
+                    // Change submit button to complete payment
+                    $submitButton.prop('disabled', false).html('Complete Payment').off('click').on('click', function(e) {
+                        e.preventDefault();
+                        self.confirmPaymentAndSubmit($form, $submitButton, $messages, paymentIntentId);
+                    });
                 } else {
-                    $messages.html('<div class="form-message error">Payment processing failed</div>');
+                    $messages.html('<div class="form-message error">Payment form not found</div>');
                     self.resetForm($form, $submitButton);
                 }
-            }).catch(function(error) {
-                console.error('Chamberboss: Payment confirmation error:', error);
-                $messages.html('<div class="form-message error">Payment processing failed</div>');
-                self.resetForm($form, $submitButton);
             });
         },
         
@@ -278,12 +279,16 @@
         },
         
         /**
-         * Create payment intent for form submission
+         * Create payment intent with member data for registration
          */
-        createPaymentIntent: function($form, callback) {
+        createPaymentIntentWithMemberData: function($form, callback) {
             var formData = new FormData($form[0]);
             formData.append('action', 'chamberboss_create_payment_intent');
             formData.append('nonce', $form.find('[name="registration_nonce"]').val());
+            
+            // Add member data to the request
+            formData.append('member_name', $form.find('[name="member_name"]').val());
+            formData.append('member_email', $form.find('[name="member_email"]').val());
             
             $.ajax({
                 url: chamberboss_frontend.ajax_url,
@@ -293,14 +298,47 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        callback(response.data.client_secret, response.data.payment_intent_id);
+                        callback(response.data.clientSecret, response.data.paymentIntentId);
                     } else {
+                        console.error('Payment intent creation failed:', response);
                         callback(null, null);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('Payment intent creation error:', xhr.responseText);
                     callback(null, null);
                 }
+            });
+        },
+        
+        /**
+         * Confirm payment and submit registration
+         */
+        confirmPaymentAndSubmit: function($form, $submitButton, $messages, paymentIntentId) {
+            var self = this;
+            
+            $messages.html('<div class="form-message info">Processing payment...</div>');
+            $submitButton.prop('disabled', true).html('<span class="loading-spinner"></span>Processing...');
+            
+            // Confirm payment with Stripe
+            this.stripe.confirmPayment({
+                elements: this.elements,
+                redirect: 'if_required'
+            }).then(function(result) {
+                if (result.error) {
+                    $messages.html('<div class="form-message error">' + result.error.message + '</div>');
+                    self.resetForm($form, $submitButton);
+                } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                    // Payment successful, now submit registration
+                    self.submitRegistration($form, $submitButton, $messages, result.paymentIntent.id);
+                } else {
+                    $messages.html('<div class="form-message error">Payment confirmation failed</div>');
+                    self.resetForm($form, $submitButton);
+                }
+            }).catch(function(error) {
+                console.error('Chamberboss: Payment confirmation error:', error);
+                $messages.html('<div class="form-message error">Payment processing failed</div>');
+                self.resetForm($form, $submitButton);
             });
         },
         

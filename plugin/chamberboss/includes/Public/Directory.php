@@ -1041,61 +1041,85 @@ The %s Team
      */
     public function handle_create_payment_intent() {
         try {
-            // DEBUG: Log that handler is being called - FIRST THING
-                    if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_frontend')) {
-            $this->send_json_response(['message' => 'Invalid nonce'], false);
-            return;
-        }
+            if (!$this->verify_nonce($_POST['nonce'] ?? '', 'chamberboss_frontend')) {
+                $this->send_json_response(['message' => 'Invalid nonce'], false);
+                return;
+            }
+            
+            // Get member data from the form
+            $member_name = sanitize_text_field($_POST['member_name'] ?? '');
+            $member_email = sanitize_email($_POST['member_email'] ?? '');
             
             // Get membership price
             $membership_price = floatval($this->get_option('chamberboss_membership_price', '100.00'));
             $currency = $this->get_option('chamberboss_currency', 'USD');
             
-    
-        
-        // Create payment intent via Stripe integration
-        $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
-        
-        try {
-            // Check if Stripe SDK is available
-            if (!class_exists('\\Stripe\\Stripe')) {
-                error_log('Stripe SDK not available for payment intent creation');
-                $this->send_json_response(['message' => 'Payment system not available'], false);
-                return;
+            // Create payment intent via Stripe integration
+            $stripe_integration = new \Chamberboss\Payments\StripeIntegration();
+            
+            try {
+                // Check if Stripe SDK is available
+                if (!class_exists('\\Stripe\\Stripe')) {
+                    error_log('Stripe SDK not available for payment intent creation');
+                    $this->send_json_response(['message' => 'Payment system not available'], false);
+                    return;
+                }
+                
+                $stripe_config = new \Chamberboss\Payments\StripeConfig();
+                if (!$stripe_config->is_configured()) {
+                    $this->send_json_response(['message' => 'Payment system not configured'], false);
+                    return;
+                }
+                
+                \Stripe\Stripe::setApiKey($stripe_config->get_secret_key());
+                
+                // Create payment intent with member information
+                $intent_data = [
+                    'amount' => intval($membership_price * 100), // Convert to cents
+                    'currency' => strtolower($currency),
+                    'automatic_payment_methods' => ['enabled' => true],
+                    'metadata' => [
+                        'type' => 'membership_registration',
+                        'member_name' => $member_name,
+                        'member_email' => $member_email
+                    ]
+                ];
+                
+                // Create Stripe customer if we have member data
+                if (!empty($member_email) && !empty($member_name)) {
+                    try {
+                        $customer = \Stripe\Customer::create([
+                            'email' => $member_email,
+                            'name' => $member_name,
+                            'metadata' => [
+                                'source' => 'chamberboss_registration'
+                            ]
+                        ]);
+                        
+                        $intent_data['customer'] = $customer->id;
+                        $intent_data['metadata']['stripe_customer_id'] = $customer->id;
+                        
+                    } catch (Exception $e) {
+                        error_log('Customer creation failed: ' . $e->getMessage());
+                        // Continue without customer - payment can still work
+                    }
+                }
+                
+                $intent = \Stripe\PaymentIntent::create($intent_data);
+                
+                $this->send_json_response([
+                    'clientSecret' => $intent->client_secret,
+                    'paymentIntentId' => $intent->id
+                ]);
+                
+            } catch (Exception $e) {
+                error_log('Payment intent creation error: ' . $e->getMessage());
+                $this->send_json_response(['message' => 'Failed to initialize payment: ' . $e->getMessage()], false);
             }
             
-            $stripe_config = new \Chamberboss\Payments\StripeConfig();
-            if (!$stripe_config->is_configured()) {
-                $this->send_json_response(['message' => 'Payment system not configured'], false);
-                return;
-            }
-            
-            \Stripe\Stripe::setApiKey($stripe_config->get_secret_key());
-            
-            $intent = \Stripe\PaymentIntent::create([
-                'amount' => intval($membership_price * 100), // Convert to cents
-                'currency' => strtolower($currency),
-                'automatic_payment_methods' => ['enabled' => true],
-                'metadata' => [
-                    'type' => 'membership_registration'
-                ]
-            ]);
-            
-
-            
-            $this->send_json_response([
-                'clientSecret' => $intent->client_secret,
-                'paymentIntentId' => $intent->id
-            ]);
-            
-        } catch (Exception $e) {
-            error_log('Payment intent creation error: ' . $e->getMessage());
-            $this->send_json_response(['message' => 'Failed to initialize payment'], false);
-        }
-        
         } catch (Exception $e) {
             error_log('ChamberBoss: Payment intent error: ' . $e->getMessage());
-            $this->send_json_response(['message' => 'Payment system error'], false);
+            $this->send_json_response(['message' => 'Payment system error: ' . $e->getMessage()], false);
         }
     }
 

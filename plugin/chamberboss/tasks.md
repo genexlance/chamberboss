@@ -1,6 +1,30 @@
 # Chamber Boss Plugin - Debugging Tasks
 
-## 🐛 Current Issues to Debug
+## ✅ RESOLVED: Payment Processing Error (January 2025)
+
+### Issue: Stripe Payment Intent 400 Error & Retry Loop
+**Problem**: Users getting "a processing error occurred" when trying to register, with console showing repeated Stripe API 400 errors for payment intent confirmation.
+
+**Root Cause**: 
+- Payment intent was being created during page initialization without member data
+- When user submitted form, payment confirmation failed because payment intent lacked necessary member information
+- Frontend got stuck in retry loop attempting to confirm invalid payment intent
+
+**Solution Implemented**:
+- ✅ **Modified payment flow**: Payment intents now created when form is submitted with member data
+- ✅ **Updated JavaScript**: Removed pre-initialization of payment intents, added proper member data handling
+- ✅ **Enhanced server-side handler**: Payment intents now include member name, email, and create Stripe customers
+- ✅ **Fixed retry loop**: Proper error handling prevents endless retry attempts
+- ✅ **Improved UX**: Better user feedback during payment process
+
+**Files Modified**:
+- `plugin/chamberboss/assets/js/frontend.js` - Updated payment processing flow
+- `plugin/chamberboss/includes/Public/Directory.php` - Enhanced payment intent creation
+- `plugin/chamberboss/chamberboss.php` - Updated to version 1.0.33
+
+**Version**: Updated to 1.0.33 (January 2025)
+
+## 🐛 Previously Resolved Issues
 
 ### Issue 1: Member edits go to pending (should stay published) ✅
 - [x] **INVESTIGATE**: Check if `$update` parameter is actually being passed correctly

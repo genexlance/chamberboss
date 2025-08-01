@@ -22,7 +22,12 @@
 - `plugin/chamberboss/includes/Public/Directory.php` - Enhanced payment intent creation
 - `plugin/chamberboss/chamberboss.php` - Updated to version 1.0.33
 
-**Version**: Updated to 1.0.34 (January 2025) - Added payment element initialization fixes
+**Version**: Updated to 1.0.35 (January 2025) - Fixed nonce validation error for payment intents
+
+### **Additional Fix - Version 1.0.35**:
+- ✅ **Fixed Nonce Mismatch**: JavaScript was sending `registration_nonce` but server expected `chamberboss_frontend` nonce
+- ✅ **Updated JavaScript**: `createPaymentIntentWithMemberData` now uses correct `chamberboss_frontend.nonce`
+- ✅ **Resolves "Invalid nonce" error**: Payment intent creation should now work properly
 
 ## 🐛 Previously Resolved Issues
 

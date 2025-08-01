@@ -317,7 +317,7 @@
         createPaymentIntentWithMemberData: function($form, callback) {
             var formData = new FormData($form[0]);
             formData.append('action', 'chamberboss_create_payment_intent');
-            formData.append('nonce', $form.find('[name="registration_nonce"]').val());
+            formData.append('nonce', chamberboss_frontend.nonce); // Use frontend nonce, not registration nonce
             
             // Add member data to the request
             formData.append('member_name', $form.find('[name="member_name"]').val());
